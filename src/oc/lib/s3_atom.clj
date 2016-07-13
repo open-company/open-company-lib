@@ -39,25 +39,25 @@
     (S3Backend. aws-creds bucket key)
     (apply hash-map opts)))
 
-(defonce db
-  (delay
-    (s3-atom
-      {}
-      {:access-key config/aws-access-key-id
-      :secret-key config/aws-secret-access-key}
-      config/secrets-bucket
-      config/secrets-file)))
+;; (defonce db
+;;   (delay
+;;     (s3-atom
+;;       {}
+;;       {:access-key config/aws-access-key-id
+;;       :secret-key config/aws-secret-access-key}
+;;       config/secrets-bucket
+;;       config/secrets-file)))
 
-(defn store! [k v]
-  (if (= v (get @@db k))
-    (timbre/infof "Same value for %s already stored: %s" k v)
-    (do (timbre/info "Storing:" k v)
-      (end/swap! @db assoc k v))))
+;; (defn store! [k v]
+;;   (if (= v (get @@db k))
+;;     (timbre/infof "Same value for %s already stored: %s" k v)
+;;     (do (timbre/info "Storing:" k v)
+;;       (end/swap! @db assoc k v))))
 
-(defn retrieve [& ks]
-  (if-let [v (get-in @@db ks)]
-    (do (timbre/info "Retrieved secrets for" ks) v)
-      (timbre/info "No secrets found for" ks)))
+;; (defn retrieve [& ks]
+;;   (if-let [v (get-in @@db ks)]
+;;     (do (timbre/info "Retrieved secrets for" ks) v)
+;;       (timbre/info "No secrets found for" ks)))
 
 (comment
   (def aws-credentials {:access-key config/aws-access-key-id

@@ -1,6 +1,6 @@
 ;; boot show --updates
 (set-env!
- :source-paths #{"src"}
+ :resource-paths #{"src"}
  :dependencies '[[org.clojure/clojure "1.9.0-alpha10" :scope "provided"]
                  ;; Pure Clojure/Script logging library
                  ;; https://github.com/ptaoussanis/timbre

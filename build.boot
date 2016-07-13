@@ -22,8 +22,10 @@
          '[adzerk.boot-test :refer [test]])
 
 (task-options!
+ push {:ensure-clean true
+       :repo "clojars"}
  pom {:project 'open-company/lib
-      :version "0.1.0"
+      :version (str "0.0.0-" (subs (boot.git/last-commit) 0 8))
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})
 
 (deftask test! []

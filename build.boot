@@ -8,12 +8,16 @@
                  ;; Interface to Sentry error reporting
                  ;; https://github.com/sethtrain/raven-clj
                  [raven-clj "1.4.2"]
+                 [com.fasterxml.jackson.core/jackson-core "2.5.3"]
                  ;; Durable atoms
                  ;; https://github.com/alandipert/enduro
                  [alandipert/enduro "1.2.0"]
                  ;; A comprehensive Clojure client for the entire Amazon AWS api.
                  ;; https://github.com/mcohen01/amazonica
                  [amazonica "0.3.66"]
+                 ;; A Clojure library for JSON Web Token(JWT)
+                 ;; https://github.com/liquidz/clj-jwt
+                 [clj-jwt "0.1.1"]
                  ;; Boot tasks ==========================================
                  [adzerk/boot-test "1.1.2" :scope "test"] ; clojure.test runner
                  ])

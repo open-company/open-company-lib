@@ -10,6 +10,22 @@
     (t/after? (t/now) (tc/from-long expire))
     (timbre/error "No expire field found in JWToken" jwt-claims)))
 
+(defn expire
+  "Add an `:expire` field to the JWT data"
+  [payload]
+  (let [expire-by (-> (if (:bot payload) 24 2)
+                      t/hours t/from-now .getMillis)]
+    (assoc payload :expire expire-by)))
+
+(defn generate
+  "Get a JSON Web Token from a payload"
+  [payload passphrase]
+  (-> payload
+      expire
+      jwt/jwt
+      (jwt/sign :HS256 passphrase)
+      jwt/to-str))
+
 (defn check-token
   "Verify a JSON Web Token"
   [token passphrase]

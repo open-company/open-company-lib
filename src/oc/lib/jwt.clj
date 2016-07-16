@@ -41,3 +41,12 @@
   "Decode a JSON Web Token"
   [token]
   (jwt/str->jwt token))
+
+(defprotocol IJwt
+  (-encode [this payload] "Generate JWT for given payload")
+  (-decode [this token] "Decode a given JWT"))
+
+(defrecord JwtCoder [passphrase]
+  IJwt
+  (-encode [this payload] (generate payload passphrase))
+  (-decode [this token] (check-token token passphrase)))

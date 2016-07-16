@@ -44,9 +44,9 @@
 
 (defprotocol IJwt
   (-encode [this payload] "Generate JWT for given payload")
-  (-decode [this token] "Decode a given JWT"))
+  (-decode [this token] "Decode a given JWT, nil if not verifiable or otherwise broken"))
 
 (defrecord JwtCoder [passphrase]
   IJwt
   (-encode [this payload] (generate payload passphrase))
-  (-decode [this token] (check-token token passphrase)))
+  (-decode [this token] (when (check-token token passphrase) (decode token))))

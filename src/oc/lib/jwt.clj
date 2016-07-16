@@ -42,11 +42,15 @@
   [token]
   (jwt/str->jwt token))
 
-(defprotocol IJwt
-  (-encode [this payload] "Generate JWT for given payload")
-  (-decode [this token] "Decode a given JWT, nil if not verifiable or otherwise broken"))
+;; Sign/unsign terminology coming from `buddy-sign` project
+;; which this namespace should eventually be switched to
+;; https://funcool.github.io/buddy-sign/latest/
 
-(defrecord JwtCoder [passphrase]
-  IJwt
-  (-encode [this payload] (generate payload passphrase))
-  (-decode [this token] (when (check-token token passphrase) (decode token))))
+(defprotocol ITokenSigner
+  (-sign [this payload] "Generate JWT for given payload")
+  (-unsign [this token] "Decode a given JWT, nil if not verifiable or otherwise broken"))
+
+(defrecord TokenSigner [passphrase]
+  ITokenSigner
+  (-sign [this payload] (generate payload passphrase))
+  (-unsign [this token] (when (check-token token passphrase) (decode token))))

@@ -30,6 +30,31 @@ To get started, head to: [OpenCompany](https://opencompany.com/)
 
 The OpenCompany Lib project provides a few namespaces which are shared among multiple OpenCompany projects.
 
+
+## Usage
+
+Include the following in your dependencies:
+
+[![Clojars Project](https://img.shields.io/clojars/v/open-company/lib.svg)](https://clojars.org/open-company/lib)
+
+To use local changes to the lib here in other projects in a development situation, build the lib and install it
+locally with:
+
+```
+boot build
+```
+
+Make sure your lein or boot environment is configured to use the local Maven repository.
+
+### Clojars
+
+The normal case is for a project to use this library from [Clojars](https://clojars.org/open-company/lib). To push a new version to Clojars:
+
+```
+boot build push
+```
+
+
 ## Testing
 
 Tests are run in continuous integration of the `master` and `mainline` branches on [Travis CI](https://travis-ci.org/open-company/open-company-lib):

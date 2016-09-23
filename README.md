@@ -48,12 +48,21 @@ Make sure your lein or boot environment is configured to use the local Maven rep
 
 ### Clojars
 
-The normal case is for a project to use this library from [Clojars](https://clojars.org/open-company/lib). To push a new version to Clojars:
+The normal case is for a project to use this library from [Clojars](https://clojars.org/open-company/lib). To push a new version to Clojars, first authorize the release by setting your credentials:
+
+```console
+export CLOJARS_USER="<your Clojars username>"
+export CLOJARS_PASS="<your Clojars password>"
+```
+
+Then build and push the lib:
 
 ```
 boot build push
 ```
 
+You can't have any changed or untracked files in your local repo or you'll get an `Assert failed: project repo is not clean`
+error.
 
 ## Testing
 

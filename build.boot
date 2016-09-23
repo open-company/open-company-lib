@@ -30,7 +30,7 @@
 (require '[clojure.java.io :as io]
          '[zilti.boot-midje :refer [midje]])
 
-(set-env! :repositories [["clojars" {:url "https://clojars.org/open-company/lib"
+(set-env! :repositories [["clojars" {:url "https://clojars.org/repo/"
                                      :username (System/getenv "CLOJARS_USER")
                                      :password (System/getenv "CLOJARS_PASS")}]])
 (task-options!

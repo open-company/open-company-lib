@@ -4,6 +4,8 @@
   :dependencies '[
     ;; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/clojure "1.9.0-alpha12" :scope "provided"]
+    ;; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
+    [defun "0.3.0-alapha"]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
     [com.taoensso/timbre "4.6.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj

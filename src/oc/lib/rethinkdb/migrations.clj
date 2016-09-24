@@ -133,7 +133,7 @@
     (create-table conn db-name "migrations" "name")
     ;; Run the migrations
     (println "\nRunning migrations.")
-    (->> (rest (file-seq (clojure.java.io/file migrations-dir)))
+    (->> (filter #(s/ends-with? % ".edn") (file-seq (clojure.java.io/file migrations-dir)))
          (new-migrations conn)
          report-migrations
          (run-migrations conn migrations-dir))

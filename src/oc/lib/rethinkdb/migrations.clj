@@ -5,8 +5,22 @@
             [clj-time.core :as t]
             [clj-time.coerce :as coerce]
             [rethinkdb.query :as r]
-            [defun :refer (defun)]
             [oc.lib.slugify :as slug]))
+
+;; ----- Utility functions for migrations -----
+
+(defn- create-database
+  "Create a RethinkDB database if it doesn't already exist."
+  [conn db-name]
+  (if-let [db-list (r/run (r/db-list) conn)]
+    (if (some #(= db-name %) db-list)
+      true ; already exists, return truthy
+      (r/run (r/db-create db-name) conn))))
+
+(defn- table-list
+  "Return a sequence of the table names in the RethinkDB."
+  [conn db-name]
+  (-> (r/db db-name) (r/table-list) (r/run conn)))
 
 (defn- migration-file-name [migrations-dir migration-name]
   (str (s/join java.io.File/separator [migrations-dir migration-name]) ".edn"))
@@ -21,13 +35,20 @@
 (defn- run-migration
   "Run the migration specified by the migration name."
   [conn migrations-dir migration-name]
-  (println "\nRunning migration: " migration-name)
+  (println "\nRunning migration:" migration-name)
   (let [file-name (migration-file-name migrations-dir migration-name)
         bare-name (s/join "-" (rest (s/split migration-name #"_"))) ; strip the timestamp
-        function-name (str "open-company.db.migrations." bare-name "/up")] ; function name
-    (println "Loading name: " file-name)
+        function-ns (s/join "." (-> file-name
+                                  (s/replace #"_" "-") ; swap _ for -
+                                  (s/split #"\/")
+                                  (rest) ; remove ./
+                                  (rest) ; remove /src/
+                                  (vec)
+                                  (drop-last))) ; remove file name portion
+        function-name (str function-ns "." bare-name "/up")] ; function name
+    (println "Loading name:" file-name)
     (load-file file-name)
-    (println "Running function: " function-name)
+    (println "Running function:" function-name)
     ((ns-resolve *ns* (symbol function-name)) conn))) ; run the migration
 
 (defn- run-migrations
@@ -55,17 +76,70 @@
         existing-slugs (set (map :name (r/run (r/table "migrations") conn)))] ; from the DB
     (sort (clojure.set/difference migration-slugs existing-slugs))))
 
-(defun migrate 
-  "Run any migrations that haven't already been run on this DB."
-  ([db-options :guard sequential? migrations-dir] 
-  (with-open [conn (apply r/connect db-options)]
-    (migrate conn migrations-dir)))
+;; ----- Utility functions for migration helpers -----
+
+(defn- index-list
+  "Return a sequence of the index names for a table in the RethinkDB."
+  [conn table-name]
+  (-> (r/table table-name) (r/index-list) (r/run conn)))
+
+(defn- wait-for-index
+  "Pause until an index with the specified name is finished being created."
+  [conn table-name index-name]
+  (-> (r/table table-name)
+    (r/index-wait index-name)
+    (r/run conn)))
+
+;; ----- Helper functions for implementing migrations -----
+
+(defn create-index
+  "Create RethinkDB table index for the specified field if it doesn't exist."
+  ([conn table-name index-name]
+  (when (not-any? #(= index-name %) (index-list conn table-name))
+    (-> (r/table table-name)
+      (r/index-create index-name)
+      (r/run conn))
+    (wait-for-index conn table-name index-name))))
+
+(defn create-table
+  "Create a RethinkDB table with the specified primary key if it doesn't exist."
+  [conn db-name table-name primary-key]
+  (when (not-any? #(= table-name %) (table-list conn db-name))
+    (-> (r/db db-name)
+      (r/table-create table-name {:primary-key primary-key :durability "hard"})
+      (r/run conn))))
+
+;; ----- Main entry-point functions for creating and running migrations -----
+
+(defn migrate 
+  "
+  Create the database (if needed) and the migration table (if needed) and run any
+  migrations that haven't already been run on this DB.
+  "
+  ([db-map migrations-dir]
+  {:pre [(map? db-map)
+         (string? migrations-dir)]}
+  (with-open [conn (apply r/connect (flatten (vec db-map)))]
+    (migrate conn (:db db-map) migrations-dir)))
   
-  ([conn migrations-dir]
-  (->> (rest (file-seq (clojure.java.io/file migrations-dir)))
-       (new-migrations conn)
-       report-migrations
-       (run-migrations conn migrations-dir))))
+  ([conn db-name migrations-dir]
+  {:pre [(instance? clojure.lang.IDeref conn)
+         (string? db-name)
+         (string? migrations-dir)]}
+  (println (str "\nInitializing database:" db-name))
+  ;; create DB (if it doesn't exist)
+  (when (create-database conn db-name)
+    ;; create migration table (if it doesn't exist)
+    (create-table conn db-name "migrations" "name")
+    ;; Run the migrations
+    (println "\nRunning migrations.")
+    (->> (rest (file-seq (clojure.java.io/file migrations-dir)))
+         (new-migrations conn)
+         report-migrations
+         (run-migrations conn migrations-dir))
+    (println "Migrations complete."))
+  (println "\nDatabase initialization complete.\n")))
+
 
 (defn create
   "Create a new migration with the current date and the name."
@@ -77,3 +151,14 @@
         template (slurp migration-template)
         contents (s/replace template #"MIGRATION-NAME" migration-name)]
     (spit file-name contents)))
+
+(comment
+  ;; REPL testing
+
+  (require '[open-company.db.migrations :as m] :reload)
+
+  (m/create "test-it")
+
+  (m/migrate)
+
+  )

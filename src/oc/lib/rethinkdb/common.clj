@@ -14,6 +14,13 @@
   []
   (format/unparse timestamp-format (time/now)))
 
+;; ----- Utility functions -----
+
+(defn updated-at-order
+  "Return items in a sequence sorted by their :updated-at key. Newest first."
+  [coll]
+  (sort #(compare (:updated-at %2) (:updated-at %1)) coll))
+
 ;; ----- DB Access Timeouts ----
 
 (def default-timeout 1000) ; 1 sec

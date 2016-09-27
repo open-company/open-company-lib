@@ -22,8 +22,6 @@
     [clj-time "0.12.0"]
 
     ;; Boot tasks ==========================================
-    ;; Network REPL https://github.com/clojure/tools.nrepl
-    [org.clojure/tools.nrepl "0.2.12" :scope "test"]
     ;; Example-based testing https://github.com/marick/Midje
     [midje "1.9.0-alpha5" :scope "test"]
     ;; Midje test runner https://bitbucket.org/zilti/boot-midje

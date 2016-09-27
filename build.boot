@@ -3,11 +3,11 @@
   :resource-paths #{"src"}
   :dependencies '[
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.9.0-alpha12" :scope "provided"]
+    [org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.2.391"]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
-    [com.taoensso/timbre "4.6.0"]
+    [com.taoensso/timbre "4.8.0-alpha1"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     [raven-clj "1.4.3"]
     ;; https://github.com/FasterXML/jackson-core

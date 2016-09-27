@@ -32,12 +32,13 @@
 (require '[clojure.java.io :as io]
          '[zilti.boot-midje :refer [midje]])
 
+; (set-env! :repositories [["clojars" {:url "https://clojars.org/repo/"
+;                                      :username (System/getenv "CLOJARS_USER")
+;                                      :password (System/getenv "CLOJARS_PASS")}]])
+
 (task-options!
  push {:ensure-clean true
-       :repo "clojars"
-       :repositories [["clojars" {:url "https://clojars.org/repo/"
-                                     :username (System/getenv "CLOJARS_USER")
-                                     :password (System/getenv "CLOJARS_PASS")}]]}
+       :repo "clojars"}
  pom {:project 'open-company/lib
       :version (str "0.0.2-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"

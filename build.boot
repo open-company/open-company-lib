@@ -3,7 +3,7 @@
   :resource-paths #{"src"}
   :dependencies '[
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.9.0-alpha13"]
+    [org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.2.391"]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
@@ -27,8 +27,7 @@
     ;; Midje test runner https://bitbucket.org/zilti/boot-midje
     [zilti/boot-midje "0.1.2" :scope "test"]])
 
-(require '[clojure.java.io :as io]
-         '[zilti.boot-midje :refer [midje]])
+(require '[zilti.boot-midje :refer [midje]])
 
 ; (set-env! :repositories [["clojars" {:url "https://clojars.org/repo/"
 ;                                      :username (System/getenv "CLOJARS_USER")

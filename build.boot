@@ -5,7 +5,9 @@
     ;; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "0.2.391"]
+    [org.clojure/core.async "0.2.395"]
+    ;; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
+    [defun "0.3.0-alapha"]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
     [com.taoensso/timbre "4.8.0-alpha1"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
@@ -25,7 +27,7 @@
     ;; Example-based testing https://github.com/marick/Midje
     [midje "1.9.0-alpha5" :scope "test"]
     ;; Midje test runner https://bitbucket.org/zilti/boot-midje
-    [zilti/boot-midje "0.1.2" :scope "test"]])
+    [zilti/boot-midje "0.2.2-SNAPSHOT" :scope "test"]])
 
 (require '[zilti.boot-midje :refer [midje]])
 
@@ -37,7 +39,7 @@
  push {:ensure-clean true
        :repo "clojars"}
  pom {:project 'open-company/lib
-      :version (str "0.0.2-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.0.3-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

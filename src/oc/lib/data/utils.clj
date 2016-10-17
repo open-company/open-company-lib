@@ -142,20 +142,25 @@
 
 (defn with-currency
   "Combine the value with the currency indicator, if available."
-  [currency value]
+  
+  ([currency value] (with-currency currency value false))
+
+  ([currency value explicit-positive?]
   (let [value-string (str value)
         negative? (s/starts-with? value "-")
+        positive? (and (not negative?) explicit-positive?)
         neg (when negative? "-")
+        pos (when positive? "+")
         clean-value (if negative? (subs value-string 1) value-string)
         currency-key (keyword currency)
         currency-entry (iso4217/iso4217 currency-key)
         currency-symbol (if currency-entry (:symbol currency-entry) false)
         currency-text (if currency-entry (:text currency-entry) false)]
     (if currency-symbol 
-      (str neg currency-symbol clean-value)
+      (str neg pos currency-symbol clean-value)
       (if currency-text
         (str value-string " " currency-text)
-        value-string))))
+        value-string)))))
 
 (defn- value-output [value]
   (cond

@@ -31,6 +31,7 @@
 
 (require '[zilti.boot-midje :refer [midje]])
 
+; Need this only for the build push task
 ; (set-env! :repositories [["clojars" {:url "https://clojars.org/repo/"
 ;                                      :username (System/getenv "CLOJARS_USER")
 ;                                      :password (System/getenv "CLOJARS_PASS")}]])

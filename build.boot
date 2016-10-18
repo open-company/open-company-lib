@@ -31,16 +31,13 @@
 
 (require '[zilti.boot-midje :refer [midje]])
 
-; Need this only for the build push task
-; (set-env! :repositories [["clojars" {:url "https://clojars.org/repo/"
-;                                      :username (System/getenv "CLOJARS_USER")
-;                                      :password (System/getenv "CLOJARS_PASS")}]])
-
 (task-options!
- push {:ensure-clean true
-       :repo "clojars"}
+ push {:ensure-clean false
+       :repo-map {:url "https://clojars.org/repo/"
+                  :username (System/getenv "CLOJARS_USER")
+                  :password (System/getenv "CLOJARS_PASS")}}
  pom {:project 'open-company/lib
-      :version (str "0.0.4-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.0.4.1-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

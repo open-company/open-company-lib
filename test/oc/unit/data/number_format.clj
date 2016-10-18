@@ -68,7 +68,7 @@
     (utils/with-size-label -650478) => "-650K"
     (utils/with-size-label -2546589) => "-2.55M")
 
-  (facts "with currency"
+  (facts "with currency that has a symbol"
     (utils/with-currency "USD" (utils/with-size-label 1.00123456)) => "$1"
     (utils/with-currency "EUR" (utils/with-size-label 1.00123456)) => "€1"
     (utils/with-currency "FKP" (utils/with-size-label 1.00123456) true) => "+£1"
@@ -143,4 +143,9 @@
     (utils/with-currency "FKP" (utils/with-size-label -10123456.7) true) => "-£10.1M"
     (utils/with-currency "USD" (utils/with-size-label -100123456)) => "-$100M"
     (utils/with-currency "EUR" (utils/with-size-label -100123456)) => "-€100M"
-    (utils/with-currency "FKP" (utils/with-size-label -100123456) true) => "-£100M"))
+    (utils/with-currency "FKP" (utils/with-size-label -100123456) true) => "-£100M")
+
+  (facts "with currency that has no symbol"
+    (utils/with-currency "DZD" (utils/with-size-label 1.00123456)) => "1 Algerian Dinar"
+    (utils/with-currency "DZD" (utils/with-size-label 10123456.7) true) => "+10.1M Algerian Dinar"
+    (utils/with-currency "DZD" (utils/with-size-label -10120.3456) true) => "-10.1K Algerian Dinar"))

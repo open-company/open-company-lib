@@ -159,8 +159,8 @@
     (if currency-symbol 
       (str neg pos currency-symbol clean-value)
       (if currency-text
-        (str value-string " " currency-text)
-        value-string)))))
+        (str pos value-string " " currency-text)
+        (str pos value-string))))))
 
 (defn- value-output [value]
   (cond

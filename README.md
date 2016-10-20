@@ -33,7 +33,7 @@ The OpenCompany Lib project provides a few namespaces which are shared among mul
 
 ## Usage
 
-Include the following in your dependencies:
+To use this library in your other projcets, include the following in your dependencies:
 
 [![Clojars Project](https://img.shields.io/clojars/v/open-company/lib.svg)](https://clojars.org/open-company/lib)
 
@@ -46,7 +46,15 @@ boot build
 
 Make sure your lein or boot environment is configured to use the local Maven repository.
 
-### Clojars
+## Development
+
+To start a REPL for local development on this library, run:
+
+```
+boot repl
+```
+
+### Pushing to Clojars
 
 The normal case is for a project to use this library from [Clojars](https://clojars.org/open-company/lib). To push a new version to Clojars, first authorize the release by setting your credentials:
 
@@ -74,6 +82,12 @@ To run the tests locally:
 
 ```console
 boot test!
+```
+
+To run tests watching for local changes during development:
+
+```console
+boot watch test!
 ```
 
 ## Participation

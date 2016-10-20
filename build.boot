@@ -32,7 +32,7 @@
 (require '[zilti.boot-midje :refer [midje]])
 
 (task-options!
- push {:ensure-clean false
+ push {:ensure-clean true
        :repo-map {:url "https://clojars.org/repo/"
                   :username (System/getenv "CLOJARS_USER")
                   :password (System/getenv "CLOJARS_PASS")}}

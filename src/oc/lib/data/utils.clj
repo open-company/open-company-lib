@@ -9,7 +9,7 @@
 (def intervals #{:weekly :monthly :quarterly})
 
 (def quarterly-period (f/formatter "YYYY-MM"))
-(def monthly-period (f/formatter "YYYY-M"))
+(def monthly-period (f/formatter "YYYY-MM"))
 (def weekly-period (f/formatter :date))
 
 (def yearly-date (f/formatter "YYYY"))

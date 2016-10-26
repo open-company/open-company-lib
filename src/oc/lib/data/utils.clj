@@ -1,7 +1,7 @@
 (ns oc.lib.data.utils
   "Utility functions for the 'data' (growth and finance) topics."
   (:require [clojure.string :as s]
-            [defun :refer (defun)]
+            [defun.core :refer (defun)]
             [clj-time.core :as t]
             [clj-time.format :as f]
             [oc.lib.data.iso4217 :as iso4217]))

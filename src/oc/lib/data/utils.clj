@@ -208,7 +208,8 @@
     (f/parse monthly-period value)))
 
 (defun contiguous
-  "Starting with the most recent period in the sequence, return the longest list of contiguous periods that exists.
+  "A recursive, pattern-matching function that, starting with the most recent period in the sequence,
+  returns the longest list of contiguous periods that exists.
 
   E.g.
 

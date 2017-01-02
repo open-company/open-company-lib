@@ -21,6 +21,11 @@
   [coll]
   (sort #(compare (:updated-at %2) (:updated-at %1)) coll))
 
+(defn unique-id
+  "Return a 12 character fragment from a UUID e.g. 51ab-4c86-a474"
+  []
+  (s/join "-" (take 3 (rest (s/split (str (java.util.UUID/randomUUID)) #"-")))))
+
 ;; ----- DB Access Timeouts ----
 
 (def default-timeout 5000) ; 5 sec

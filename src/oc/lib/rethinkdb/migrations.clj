@@ -94,12 +94,24 @@
 
 (defn create-index
   "Create RethinkDB table index for the specified field if it doesn't exist."
-  ([conn table-name index-name]
+
+  ([conn table-name index-name] (create-index conn table-name index-name {}))
+
+  ([conn table-name index-name options]    
   (when (not-any? #(= index-name %) (index-list conn table-name))
     (-> (r/table table-name)
-      (r/index-create index-name)
+      (r/index-create index-name nil options)
       (r/run conn))
     (wait-for-index conn table-name index-name))))
+
+(defn create-compound-index
+  "Create RethinkDB table compound index for the specified fields if it doesn't exist."
+  [conn table-name index-name index-function]
+  (when (not-any? #(= index-name %) (index-list conn table-name))
+    (-> (r/table table-name)
+      (r/index-create index-name index-function)
+      (r/run conn))
+    (wait-for-index conn table-name index-name)))
 
 (defn create-table
   "Create a RethinkDB table with the specified primary key if it doesn't exist."

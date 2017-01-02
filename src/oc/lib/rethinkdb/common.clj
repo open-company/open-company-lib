@@ -1,6 +1,7 @@
 (ns oc.lib.rethinkdb.common
   "CRUD functions on resources stored in RethinkDB."
-  (:require [clojure.core.async :as async]
+  (:require [clojure.string :as s]
+            [clojure.core.async :as async]
             [clj-time.format :as format]
             [clj-time.core :as time]
             [rethinkdb.query :as r]))

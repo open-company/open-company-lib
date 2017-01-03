@@ -50,9 +50,11 @@
   "Return `true` if the specified slug is potentially a valid slug (follows the rules), otherwise return `false`."
   [slug]
   (try
-    (= slug (slugify slug)) ; a valid slug slugifys to itself
+    (and (string? slug)
+         (not (s/blank? slug))
+         (= slug (slugify slug))) ; a valid slug slugifys to itself
     (catch Exception e
-      false))) ; must not have been a string
+      false)))
 
 (defn- positive-numbers
   ([] (positive-numbers 1))

@@ -17,6 +17,17 @@
 
 ;; ----- Utility functions -----
 
+(defn conn?
+  "Check if a var is a valid RethinkDB connection map/atom."
+  [conn]
+  (if (and 
+        (map? conn)
+        (:client @conn)
+        (:db @conn)
+        (:token @conn))
+    true
+    false))
+
 (defn updated-at-order
   "Return items in a sequence sorted by their :updated-at key. Newest first."
   [coll]

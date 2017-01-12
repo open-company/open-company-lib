@@ -9,13 +9,13 @@
     ;; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
     [defun "0.3.0-RC1"]
     ; Component Lifecycle https://github.com/stuartsierra/component
-    [com.stuartsierra/component "0.3.1"] 
+    [com.stuartsierra/component "0.3.2"] 
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
-    [com.taoensso/timbre "4.8.0-alpha1"]
+    [com.taoensso/timbre "4.8.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     [raven-clj "1.5.0"]
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
-    [amazonica "0.3.77"]
+    [amazonica "0.3.83"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -23,9 +23,9 @@
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
     [cheshire "5.6.3"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
-    [clj-time "0.12.2"]
+    [clj-time "0.13.0"]
     ;; Async programming tools https://github.com/ztellman/manifold
-    [manifold "0.1.6-alpha3"]
+    [manifold "0.1.6-alpha4"]
 
 
     ;; Boot tasks ==========================================

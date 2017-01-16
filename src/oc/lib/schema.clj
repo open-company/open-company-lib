@@ -1,6 +1,7 @@
 (ns oc.lib.schema
   "Prismatic schema common data schema fragments."
-  (:require [schema.core :as schema]))
+  (:require [clojure.string :as s]
+            [schema.core :as schema]))
   
 
 (def NonBlankString (schema/pred #(and (string? %) (not (s/blank? %)))))

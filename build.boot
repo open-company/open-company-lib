@@ -28,6 +28,8 @@
     [manifold "0.1.6-alpha4"]
     ; Data validation https://github.com/Prismatic/schema
     [prismatic/schema "1.1.3"]
+    ; More than one binding for if/when macros https://github.com/LockedOn/if-let
+    [lockedon/if-let "0.1.0"]
 
     ;; Boot tasks ==========================================
     ;; Example-based testing https://github.com/marick/Midje
@@ -43,7 +45,7 @@
                   :username (System/getenv "CLOJARS_USER")
                   :password (System/getenv "CLOJARS_PASS")}}
  pom {:project 'open-company/lib
-      :version (str "0.0.13-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.1.0-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

@@ -60,7 +60,10 @@
 (defn create-resource
   "Create a resource in the DB, returning the property map for the resource."
   [conn table-name resource timestamp]
-  {:pre [(conn? conn)]}
+  {:pre [(conn? conn)
+         (string? table-name)
+         (map? resource)
+         (string? timestamp)]}
   (let [timed-resource (merge resource {
           :created-at timestamp
           :updated-at timestamp})
@@ -76,7 +79,8 @@
   "Given a table name and a primary key value, retrieve the resource from the database,
   or return nil if it doesn't exist."
   [conn table-name primary-key-value]
-  {:pre [(conn? conn)]}
+  {:pre [(conn? conn)
+         (string? table-name)]}
   (-> (r/table table-name)
       (r/get primary-key-value)
       (r/run conn)))
@@ -103,6 +107,32 @@
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/get-all [index-value] {:index index-name})
+        (r/pluck fields)
+        (r/run conn)))))
+
+(defn read-resources-by-primary-keys
+  "Given a table name, a sequence of primary keys, and an optional set of fields, retrieve the
+  resources from the database."
+  ([conn table-name primary-keys]
+  {:pre [(conn? conn)
+         (string? table-name)
+         (sequential? primary-keys)
+         (every? string? primary-keys)]}
+  (with-timeout default-timeout
+    (-> (r/table table-name)
+        (r/get-all primary-keys)
+        (r/run conn))))
+
+  ([conn table-name primary-keys fields]
+  {:pre [(conn? conn)
+         (string? table-name)
+         (sequential? primary-keys)
+         (every? string? primary-keys)
+         (sequential? fields)
+         (every? #(or (keyword? %) (string? %)) fields)]}
+  (with-timeout default-timeout
+    (-> (r/table table-name)
+        (r/get-all primary-keys)
         (r/pluck fields)
         (r/run conn)))))
 
@@ -222,12 +252,12 @@
 
 (comment
 
-  (def conn (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_dev"]))
-  (def conn2 (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_auth_dev"]))
-
   (require '[rethinkdb.query :as r])
   (require '[oc.lib.rethinkdb.common :as db-common] :reload)
 
+  (def conn (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_dev"]))
+  (def conn2 (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_auth_dev"]))
+  
   (db-common/read-resource conn2 "teams" "c55c-47f1-898e")
   (db-common/add-to-set conn2 "teams" "c55c-47f1-898e" "admins" "1234-1234-1234")
   (db-common/remove-from-set conn2 "teams" "c55c-47f1-898e" "admins" "1234-1234-1234")

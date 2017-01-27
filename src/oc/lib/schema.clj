@@ -6,7 +6,7 @@
 (defn unique-id? [s]
   (if (and s (re-matches #"^(\d|[a-f]){4}-(\d|[a-f]){4}-(\d|[a-f]){4}$" s)) true false))
 
-(def NonBlankString (schema/pred #(and (string? %) (not (s/blank? %)))))
+(def NonBlankStr (schema/pred #(and (string? %) (not (s/blank? %)))))
 
 ;; 12 character fragment from a UUID e.g. 51ab-4c86-a474
 (def UniqueID (schema/pred #(and (string? %)

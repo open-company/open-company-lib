@@ -42,7 +42,7 @@
     (assoc payload :expire expire-by)))
 
 (defn generate
-  "Get a JSON Web Token from a payload."
+  "Create a JSON Web Token from a payload."
   [payload passphrase]
   (-> payload
       expire
@@ -79,7 +79,7 @@
   (try
     (if-let* [check? (check-token token passphrase)
               claims (:claims (decode token))
-              expired? (expired? claims)]
+              expired? (not (expired? claims))]
       (do (schema/validate Claims claims)
           true)
       false)

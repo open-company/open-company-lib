@@ -147,10 +147,11 @@
     (read-resources conn table-name index-name index-value fields)))
 
 (defn update-resource
-  "Given a table name, the name of the primary key, and the original and updated resource,
-  update a resource in the DB, returning the property map for the resource."
+  "
+  Given a table name, the name of the primary key, and the original and updated resource,
+  update a resource in the DB, returning the property map for the resource.
+  "
   ([conn table-name primary-key-name original-resource new-resource]
-  {:pre [(conn? conn)]}
   (update-resource conn table-name primary-key-name original-resource new-resource (current-timestamp)))
 
   ([conn table-name primary-key-name original-resource new-resource timestamp]
@@ -167,6 +168,31 @@
   (if (or (= 1 (:replaced update)) (= 1 (:unchanged update)))
     timed-resource
     (throw (RuntimeException. (str "RethinkDB update failure: " update)))))))
+
+; (defn remove-property
+;   "
+;   Given a table name, the name of the primary key, the original resource,
+;   and a property to remove, update a resource in the DB, removing the specified
+;   property of the resource.
+;   "
+;   ([conn table-name primary-key-value original-resource property-name]
+;   (remove-property table-name primary-key-value property-name (current-timestamp)))
+
+;   ([conn table-name primary-key-value original-resource property-name timestamp]
+;   {:pre [(conn? conn)]}
+;   (let [timed-resource ( new-resource {
+;           primary-key-name (original-resource primary-key-name)
+;           :created-at (:created-at original-resource)
+;           :updated-at timestamp})
+;         update (with-timeout default-timeout
+;                   (-> (r/table table-name)
+;                     (r/get primary-key-value)
+;                     (r/replace (r/fn [resource]
+;                       (r/without resource [property-name])))
+;                     (r/run c)))]
+;   (if (or (= 1 (:replaced update)) (= 1 (:unchanged update)))
+;     timed-resource
+;     (throw (RuntimeException. (str "RethinkDB update failure: " update)))))))
 
 (defn delete-resource
   "Delete the specified resource and return `true`."

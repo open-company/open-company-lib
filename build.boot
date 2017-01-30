@@ -14,6 +14,8 @@
     [com.taoensso/timbre "4.8.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     [raven-clj "1.5.0"]
+    ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
+    [liberator "0.14.1"] 
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     [amazonica "0.3.85"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
@@ -45,7 +47,7 @@
                   :username (System/getenv "CLOJARS_USER")
                   :password (System/getenv "CLOJARS_PASS")}}
  pom {:project 'open-company/lib
-      :version (str "0.2.4-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.3.0-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

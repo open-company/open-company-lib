@@ -5,6 +5,15 @@
 
 ;; ----- Utility functions -----
 
+(defn valid?
+  "Wrap Prismatic Schema's exception throwing validation, returning true or false instead."
+  [data-schema value]
+  (try
+    (schema/validate data-schema value)
+    true
+    (catch Exception e
+      false)))
+
 (defn uuid-string?
   "Is this string a UUID e.g. ce257963-843b-4dbb-91d3-a96ef6479b81"
   [s]

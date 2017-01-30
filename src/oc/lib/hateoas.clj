@@ -1,13 +1,22 @@
 (ns oc.lib.hateoas
   "Namespace of helpers for creating HATEOAS links.")
 
+(def OPTIONS "OPTIONS")
+(def HEAD "HEAD")
 (def GET "GET")
 (def POST "POST")
 (def PUT "PUT")
 (def PATCH "PATCH")
 (def DELETE "DELETE")
+(def http-methods #{OPTIONS HEAD GET POST PUT PATCH DELETE})
 
 (def json-collection-version "1.0")
+
+(defn- media-types?
+  "Ensure media types is either a map with :accept and/or :content-type keys, or nothing"
+  [media-types]
+  (and (or (nil? media-types) (map? media-types))
+       (clojure.set/subset? (keys media-types) #{:accept :content-type})))
 
 (defn link-map
   "
@@ -15,12 +24,19 @@
 
   Any additional key/values will be included as additional properties of the link.
   "
-  [rel method url media-type & others]
+  [rel method url media-types & others]
+  {:pre [(string? rel)
+         (http-methods method)
+         (string? url)
+         (media-types? media-types)]}
   (let [link-map (apply array-map (flatten (into
-          [:rel rel :method method :href url] others)))]
-    (if media-type
-      (assoc link-map :type media-type)
-      link-map)))
+                    [:rel rel :method method :href url] others)))
+        accept (:accept media-types)
+        accept-link-map (if accept (assoc link-map :accept accept) link-map)
+        content-type (:content-type media-types)]
+    (if content-type
+      (assoc accept-link-map :content-type content-type)
+      accept-link-map)))
 
 (defn self-link 
   "Link that points back to the resource itself."
@@ -75,17 +91,19 @@
 
 (defn update-link
   "Link to replace an existing resource with new content."
-  ([url media-type]
-  (link-map "update" PUT url media-type))
-  ([url media-type & others]
-  (link-map "update" PUT url media-type others)))
+  ([url media-types]
+  (link-map "update" PUT url media-types))
+
+  ([url media-types & others]
+  (link-map "update" PUT url media-types others)))
 
 (defn partial-update-link
   "Link to update an existing resource with a fragment of content that's merged into the existing content."
-  ([url media-type]
-  (link-map "partial-update" PATCH url media-type))
-  ([url media-type & others]
-  (link-map "partial-update" PATCH url media-type others)))
+  ([url media-types]
+  (link-map "partial-update" PATCH url media-types))
+  
+  ([url media-types & others]
+  (link-map "partial-update" PATCH url media-types others)))
 
 (defn delete-link [url]
   "Link to delete an existing resource."

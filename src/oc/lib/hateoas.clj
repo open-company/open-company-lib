@@ -59,6 +59,8 @@
 
 (defn remove-link
   "Link to remove an item from a collection."
+  ([url]
+  (link-map "remove" DELETE url nil))
   ([url media-type]
   (link-map "remove" DELETE url media-type))
   ([url media-type & others]

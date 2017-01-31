@@ -105,6 +105,9 @@
   ([url media-types & others]
   (link-map "partial-update" PATCH url media-types others)))
 
-(defn delete-link [url]
+(defn delete-link
   "Link to delete an existing resource."
-  (array-map :rel "delete" :method DELETE :href url))
+  ([url]
+  (link-map "delete" DELETE url {}))
+  ([url & others]
+  (link-map "delete" DELETE url {} others)))

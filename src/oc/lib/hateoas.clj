@@ -24,7 +24,9 @@
 
   Any additional key/values will be included as additional properties of the link.
   "
-  [rel method url media-types others]
+  ([rel method url media-types] (link-map rel method url media-types {}))
+  
+  ([rel method url media-types others]
   {:pre [(string? rel)
          (http-methods method)
          (string? url)
@@ -36,7 +38,7 @@
         content-type (:content-type media-types)]
     (if content-type
       (assoc accept-link-map :content-type content-type)
-      accept-link-map)))
+      accept-link-map))))
 
 (defn self-link 
   "Link that points back to the resource itself."

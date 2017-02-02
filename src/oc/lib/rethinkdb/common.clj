@@ -88,27 +88,53 @@
 (defn read-resources
   "Given a table name, and an optional index name and value, and an optional set of fields, retrieve
   the resources from the database."
+  ([conn table-name]
+  {:pre [(conn? conn)
+         (string? table-name)]}
+  (with-timeout default-timeout
+    (-> (r/table table-name)
+        (r/run conn))))
+
   ([conn table-name fields]
-  {:pre [(conn? conn)]}
+  {:pre [(conn? conn)
+         (string? table-name)
+         (sequential? fields)
+         (every? #(or (keyword? %) (string? %)) fields)]}
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/with-fields fields)
         (r/run conn))))
 
   ([conn table-name index-name index-value]
-  {:pre [(conn? conn)]}
-  (with-timeout default-timeout
-     (-> (r/table table-name)
-        (r/get-all [index-value] {:index index-name})
-        (r/run conn))))
+  {:pre [(conn? conn)
+         (string? table-name)
+         (or (keyword? index-name) (string? index-name))
+         (or (string? index-value) (sequential? index-value))
+         (if (sequential? index-value)
+            (every? #(or (keyword? %) (string? %)) index-value)
+            true)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])]
+    (with-timeout default-timeout
+       (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/run conn)))))
 
   ([conn table-name index-name index-value fields]
-  {:pre [(conn? conn)]}
-  (with-timeout default-timeout
-    (-> (r/table table-name)
-        (r/get-all [index-value] {:index index-name})
-        (r/pluck fields)
-        (r/run conn)))))
+  {:pre [(conn? conn)
+         (string? table-name)
+         (or (keyword? index-name) (string? index-name))
+         (or (string? index-value) (sequential? index-value))
+         (if (sequential? index-value)
+            (every? #(or (keyword? %) (string? %)) index-value)
+            true)         
+         (sequential? fields)
+         (every? #(or (keyword? %) (string? %)) fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])]
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/pluck fields)
+          (r/run conn))))))
 
 (defn read-resources-by-primary-keys
   "Given a table name, a sequence of primary keys, and an optional set of fields, retrieve the

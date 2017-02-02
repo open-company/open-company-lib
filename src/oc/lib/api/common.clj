@@ -97,11 +97,13 @@
       :body reason
       :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}}))
 
-(defn only-accept [status media-type]
+(defun only-accept
+  ([status media-types :guard sequential?] (only-accept status (s/join "," media-types)))
+  ([status media-types :guard string?]
   (ring-response
     {:status status
-     :body (format "Acceptable media type: %s\nAcceptable charset: %s" media-type UTF8)
-     :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}}))
+     :body (format "Acceptable media type: %s\nAcceptable charset: %s" media-types UTF8)
+     :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}})))
 
 (defn location-response [path-parts body media-type]
   (ring-response

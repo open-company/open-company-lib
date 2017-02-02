@@ -67,13 +67,6 @@
   [token]
   (jwt/str->jwt token))
 
-(defn read-token
-  "Read a JWToken from the HTTP Authorization header"
-  [headers]
-  (when-let* [auth-header (or (get headers "authorization") (get headers "Authorization"))
-              jwt         (last (string/split auth-header #" "))]
-    (when (check-token jwt) jwt)))
-
 (defn valid?
   [token passphrase]
   (try

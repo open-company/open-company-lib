@@ -109,10 +109,7 @@
   {:pre [(conn? conn)
          (string? table-name)
          (or (keyword? index-name) (string? index-name))
-         (or (string? index-value) (sequential? index-value))
-         (if (sequential? index-value)
-            (every? #(or (keyword? %) (string? %)) index-value)
-            true)]}
+         (or (string? index-value) (sequential? index-value))]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
     (with-timeout default-timeout
        (-> (r/table table-name)
@@ -124,9 +121,6 @@
          (string? table-name)
          (or (keyword? index-name) (string? index-name))
          (or (string? index-value) (sequential? index-value))
-         (if (sequential? index-value)
-            (every? #(or (keyword? %) (string? %)) index-value)
-            true)         
          (sequential? fields)
          (every? #(or (keyword? %) (string? %)) fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]

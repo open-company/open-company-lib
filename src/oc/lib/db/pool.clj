@@ -1,4 +1,4 @@
-(ns oc.lib.rethinkdb.pool
+(ns oc.lib.db.pool
   "RethinkDB database connection pool."
   (:require [rethinkdb.query :as r]
             [taoensso.timbre :as timbre])

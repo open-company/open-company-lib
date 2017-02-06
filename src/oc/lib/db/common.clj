@@ -1,4 +1,4 @@
-(ns oc.lib.rethinkdb.common
+(ns oc.lib.db.common
   "CRUD functions on resources stored in RethinkDB."
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
@@ -61,7 +61,7 @@
   "Create a resource in the DB, returning the property map for the resource."
   [conn table-name resource timestamp]
   {:pre [(conn? conn)
-         (string? table-name)
+         (or (string? table-name) (keyword? table-name))
          (map? resource)
          (string? timestamp)]}
   (let [timed-resource (merge resource {
@@ -80,7 +80,7 @@
   or return nil if it doesn't exist."
   [conn table-name primary-key-value]
   {:pre [(conn? conn)
-         (string? table-name)]}
+         (or (string? table-name) (keyword? table-name))]}
   (-> (r/table table-name)
       (r/get primary-key-value)
       (r/run conn)))
@@ -90,14 +90,14 @@
   the resources from the database."
   ([conn table-name]
   {:pre [(conn? conn)
-         (string? table-name)]}
+         (or (string? table-name) (keyword? table-name))]}
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/run conn))))
 
   ([conn table-name fields]
   {:pre [(conn? conn)
-         (string? table-name)
+         (or (string? table-name) (keyword? table-name))
          (sequential? fields)
          (every? #(or (keyword? %) (string? %)) fields)]}
   (with-timeout default-timeout
@@ -107,7 +107,7 @@
 
   ([conn table-name index-name index-value]
   {:pre [(conn? conn)
-         (string? table-name)
+         (or (string? table-name) (keyword? table-name))
          (or (keyword? index-name) (string? index-name))
          (or (string? index-value) (sequential? index-value))]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
@@ -118,7 +118,7 @@
 
   ([conn table-name index-name index-value fields]
   {:pre [(conn? conn)
-         (string? table-name)
+         (or (string? table-name) (keyword? table-name))
          (or (keyword? index-name) (string? index-name))
          (or (string? index-value) (sequential? index-value))
          (sequential? fields)
@@ -135,7 +135,7 @@
   resources from the database."
   ([conn table-name primary-keys]
   {:pre [(conn? conn)
-         (string? table-name)
+         (or (string? table-name) (keyword? table-name))
          (sequential? primary-keys)
          (every? string? primary-keys)]}
   (with-timeout default-timeout
@@ -145,7 +145,7 @@
 
   ([conn table-name primary-keys fields]
   {:pre [(conn? conn)
-         (string? table-name)
+         (or (string? table-name) (keyword? table-name))
          (sequential? primary-keys)
          (every? string? primary-keys)
          (sequential? fields)
@@ -158,13 +158,53 @@
 
 (defn read-resources-in-order
   "
-  Given a table name, an index name and value, and a set of fields, retrieve
+  Given a table name, an index name and value, and an optional set of fields, retrieve
   the resources from the database in updated-at property order.
   "
-  [conn table-name index-name index-value fields]
+  ([conn table-name index-name index-value]
   {:pre [(conn? conn)]}
   (updated-at-order
-    (read-resources conn table-name index-name index-value fields)))
+    (read-resources conn table-name index-name index-value)))
+
+  ([conn table-name index-name index-value fields]
+  {:pre [(conn? conn)]}
+  (updated-at-order
+    (read-resources conn table-name index-name index-value fields))))
+
+(defn read-resources-in-group
+  "
+  Given a table name, an index name and value, a field to group resources by, and an optional field to select
+  just 1 resource in each group (by max of that field), return the resources in a map with the group field value
+  as the key.
+
+  If the optional field is used, there is one resource as the value for each group value in the response map. If the
+  optional field is not used, then there is a sequence for each group value in the response map.
+  "
+  ([conn table-name index-name index-value group-by]
+  {:pre [(conn? conn)
+         (or (string? table-name) (keyword? table-name))
+         (or (keyword? index-name) (string? index-name))
+         (or (keyword? index-value) (string? index-value))
+         (or (keyword? group-by) (string? group-by))]}
+  (with-timeout default-timeout
+    (-> (r/table table-name)
+        (r/get-all [index-value] {:index index-name})
+        (r/group group-by)
+        (r/run conn))))
+
+  ([conn table-name index-name index-value group-by select-by]
+  {:pre [(conn? conn)
+         (or (string? table-name) (keyword? table-name))
+         (or (keyword? index-name) (string? index-name))
+         (or (keyword? index-value) (string? index-value))
+         (or (keyword? group-by) (string? group-by))
+         (or (keyword? select-by) (string? select-by))]}
+  (with-timeout default-timeout
+    (-> (r/table table-name)
+        (r/get-all [index-value] {:index index-name})
+        (r/group group-by)
+        (r/max select-by)
+        (r/run conn)))))
 
 (defn update-resource
   "
@@ -296,7 +336,7 @@
 (comment
 
   (require '[rethinkdb.query :as r])
-  (require '[oc.lib.rethinkdb.common :as db-common] :reload)
+  (require '[oc.lib.db.common :as db-common] :reload)
 
   (def conn (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_dev"]))
   (def conn2 (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_auth_dev"]))

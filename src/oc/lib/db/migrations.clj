@@ -1,5 +1,5 @@
 ;; Very loosely patterned after https://github.com/yogthos/migratus
-(ns oc.lib.rethinkdb.migrations
+(ns oc.lib.db.migrations
   "Migrate RethinkDB data."
   (:require [clojure.string :as s]
             [clj-time.core :as t]

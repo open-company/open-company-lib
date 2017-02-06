@@ -17,6 +17,7 @@
 (def Claims {
   :user-id lib-schema/UniqueID
   :teams [lib-schema/UniqueID]
+  :admin [lib-schema/UniqueID]
   :name schema/Str
   :first-name schema/Str
   :last-name schema/Str
@@ -44,11 +45,12 @@
 (defn generate
   "Create a JSON Web Token from a payload."
   [payload passphrase]
-  (-> payload
-      expire
-      jwt/jwt
-      (jwt/sign :HS256 passphrase)
-      jwt/to-str))
+  (let [expiring-payload (expire payload)]
+    (schema/validate Claims expiring-payload) ; ensure we only generate valid JWTokens
+    (-> expiring-payload
+        jwt/jwt
+        (jwt/sign :HS256 passphrase)
+        jwt/to-str)))
 
 (defn check-token
   "Verify a JSON Web Token with the passphrase that was (presumably) used to generate it."

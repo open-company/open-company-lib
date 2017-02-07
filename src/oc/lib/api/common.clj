@@ -143,19 +143,28 @@
   [ctx]
   (and (:jwtoken ctx) (:user ctx)))
 
-(defn- read-token
+(defn get-token
+  "
+  Read supplied JWToken from the Authorization in the request headers.
+
+  Return nil if no JWToken provided.
+  "
+  [headers]
+  (if-let [authorization (or (get headers "Authorization") (get headers "authorization"))]
+    (last (s/split authorization #" "))))
+
+(defn read-token
   "Read supplied JWToken from the request headers.
 
    If a valid token is supplied return a map containing :jwtoken and associated :user.
    If invalid token is supplied return {:jwtoken false}.
    If no Authorization headers are supplied return nil."
   [headers passphrase]
-  (if-let [authorization (or (get headers "Authorization") (get headers "authorization"))]
-    (let [jwtoken (last (s/split authorization #" "))]
-      (if (jwt/valid? jwtoken passphrase)
-        {:jwtoken jwtoken
-         :user (:claims (jwt/decode jwtoken))}
-        {:jwtoken false}))))
+  (let [token (get-token headers)]
+    (if (jwt/valid? token passphrase)
+      {:jwtoken token
+       :user (:claims (jwt/decode token))}
+      {:jwtoken false})))
 
 (defn allow-anonymous
   "Allow unless there is a JWToken provided and it's invalid."

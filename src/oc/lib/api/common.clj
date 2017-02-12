@@ -105,11 +105,14 @@
      :body (format "Acceptable media type: %s\nAcceptable charset: %s" media-types UTF8)
      :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}})))
 
-(defn location-response [path-parts body media-type]
+(defn location-response 
+  ([location body media-type] (location-response location body 201 media-type))
+  ([location body status media-type]
   (ring-response
     {:body body
-     :headers {"Location" (format "/%s" (s/join "/" path-parts))
-               "Content-Type" (format "%s;charset=%s" media-type UTF8)}}))
+     :status status
+     :headers {"Location" location
+               "Content-Type" (format "%s;charset=%s" media-type UTF8)}})))
 
 ;; ----- Validations -----
 

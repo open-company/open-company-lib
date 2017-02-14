@@ -160,7 +160,7 @@
   "Read supplied JWToken from the request headers.
 
    If a valid token is supplied return a map containing :jwtoken and associated :user.
-   If invalid token is supplied return {:jwtoken false}.
+   If invalid token is supplied return nil.
    If no Authorization headers are supplied return nil."
   [headers passphrase]
   (let [token (get-token headers)]

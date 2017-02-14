@@ -160,13 +160,14 @@
   "Read supplied JWToken from the request headers.
 
    If a valid token is supplied return a map containing :jwtoken and associated :user.
-   If invalid token is supplied return nil.
+   If invalid token is supplied return a map containing :jwtoken and false.
    If no Authorization headers are supplied return nil."
   [headers passphrase]
-  (let [token (get-token headers)]
-    (when (jwt/valid? token passphrase)
+  (when-let [token (get-token headers)]
+    (if (jwt/valid? token passphrase)
       {:jwtoken token
-       :user (:claims (jwt/decode token))})))
+       :user (:claims (jwt/decode token))}
+      {:jwtoken false})))
 
 (defn allow-anonymous
   "Allow unless there is a JWToken provided and it's invalid."

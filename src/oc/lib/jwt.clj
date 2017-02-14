@@ -27,6 +27,7 @@
   (schema/optional-key :slack-id) schema/Str
   (schema/optional-key :slack-token) schema/Str
   (schema/optional-key :slack-bots) SlackBots
+  :refresh-url lib-schema/NonBlankStr
   :expire schema/Num})
 
 (defn expired?

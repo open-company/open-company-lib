@@ -144,7 +144,9 @@
 (defn authenticated?
   "Return true if the request contains a valid JWToken"
   [ctx]
-  (and (:jwtoken ctx) (:user ctx)))
+  (if (= (-> ctx :request :request-method) :options)
+    true ; always allow options
+    (and (:jwtoken ctx) (:user ctx))))
 
 (defn get-token
   "
@@ -172,12 +174,16 @@
 (defn allow-anonymous
   "Allow unless there is a JWToken provided and it's invalid."
   [ctx]
-  (boolean (or (nil? (:jwtoken ctx)) (:jwtoken ctx))))
+  (if (= (-> ctx :request :request-method)) :options)
+    true ; allows allow options
+    (boolean (or (nil? (:jwtoken ctx)) (:jwtoken ctx))))
 
 (defn allow-authenticated
   "Allow only if a valid JWToken is provided."
   [ctx]
-  (authenticated? ctx))
+  (if (= (-> ctx :request :request-method) :options)
+    true ; always allow options
+    (authenticated? ctx)))
 
 ;; ----- Resources - see: http://clojure-liberator.github.io/liberator/assets/img/decision-graph.svg
 

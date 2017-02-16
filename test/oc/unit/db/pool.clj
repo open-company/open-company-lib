@@ -1,6 +1,6 @@
-(ns oc.unit.rethinkdb.pool
+(ns oc.unit.db.pool
   (:require [midje.sweet :refer :all]
-            [oc.lib.rethinkdb.pool :as p]))
+            [oc.lib.db.pool :as p]))
 
 (facts "about claiming & releasing pool inventory"
   (let [x (atom 0)

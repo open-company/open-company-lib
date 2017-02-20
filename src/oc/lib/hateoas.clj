@@ -121,3 +121,10 @@
   (delete-link url {}))
   ([url others]
   (link-map "delete" DELETE url {} others)))
+
+(defn archive-link
+  "Link to archive an existing resource."
+  ([url]
+  (archive-link url {}))
+  ([url others]
+  (link-map "archive" DELETE url {} others)))

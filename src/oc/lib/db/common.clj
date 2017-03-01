@@ -5,7 +5,8 @@
             [if-let.core :refer (if-let*)]
             [clj-time.format :as format]
             [clj-time.core :as time]
-            [rethinkdb.query :as r]))
+            [rethinkdb.query :as r]
+            [oc.lib.schema :as lib-schema]))
 
 ;; ----- ISO 8601 timestamp -----
 
@@ -21,13 +22,7 @@
 (defn conn?
   "Check if a var is a valid RethinkDB connection map/atom."
   [conn]
-  (if (and 
-        (map? conn)
-        (:client @conn)
-        (:db @conn)
-        (:token @conn))
-    true
-    false))
+  (lib-schema/conn? conn))
 
 (defn updated-at-order
   "Return items in a sequence sorted by their :updated-at key. Newest first."

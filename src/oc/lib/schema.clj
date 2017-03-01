@@ -48,6 +48,17 @@
   (and (string? password)
        (>= (count password) 5)))
 
+(defn conn?
+  "Check if a var is a valid RethinkDB connection map/atom."
+  [conn]
+  (if (and 
+        (map? conn)
+        (:client @conn)
+        (:db @conn)
+        (:token @conn))
+    true
+    false))
+
 ;; ----- Schema -----
 
 (def NonBlankStr (schema/pred #(and (string? %) (not (s/blank? %)))))
@@ -62,3 +73,5 @@
 (def EmailAddress (schema/pred valid-email-address?))
 
 (def EmailDomain (schema/pred valid-email-domain?))
+
+(def Conn (schema/pred #(conn? %)))

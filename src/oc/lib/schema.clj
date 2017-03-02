@@ -51,13 +51,16 @@
 (defn conn?
   "Check if a var is a valid RethinkDB connection map/atom."
   [conn]
-  (if (and 
-        (map? conn)
-        (:client @conn)
-        (:db @conn)
-        (:token @conn))
-    true
-    false))
+  (try
+    (if (and 
+          (map? conn)
+          (:client @conn)
+          (:db @conn)
+          (:token @conn))
+      true
+      false)
+    (catch Exception e
+      false)))
 
 ;; ----- Schema -----
 

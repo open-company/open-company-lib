@@ -97,14 +97,6 @@
       :body reason
       :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}}))
 
-(defun only-accept
-  ([status media-types :guard sequential?] (only-accept status (s/join "," media-types)))
-  ([status media-types :guard string?]
-  (ring-response
-    {:status status
-     :body (format "Acceptable media type: %s\nAcceptable charset: %s" media-types UTF8)
-     :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}})))
-
 (defn location-response 
   ([location body media-type] (location-response location body 201 media-type))
   ([location body status media-type]
@@ -115,6 +107,19 @@
                "Content-Type" (format "%s;charset=%s" media-type UTF8)}})))
 
 ;; ----- Validations -----
+
+(defun only-accept
+  ([status media-types :guard sequential?] (only-accept status (s/join "," media-types)))
+  ([status media-types :guard string?]
+  (ring-response
+    {:status status
+     :body (format "Acceptable media type: %s\nAcceptable charset: %s" media-types UTF8)
+     :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}})))
+
+(defun available-media-types
+  ([] (available-media-types []))
+  ([media-type :guard string?] (available-media-types [media-type]))
+  ([media-types :guard sequential?] (conj media-types "*/*")))
 
 (defn malformed-json?
   "Read in the body param from the request as a string, parse it into JSON, make sure all the

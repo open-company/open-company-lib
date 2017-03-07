@@ -116,11 +116,6 @@
      :body (format "Acceptable media type: %s\nAcceptable charset: %s" media-types UTF8)
      :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}})))
 
-(defun available-media-types
-  ([] (available-media-types []))
-  ([media-type :guard string?] (available-media-types [media-type]))
-  ([media-types :guard sequential?] (conj media-types "*/*")))
-
 (defn malformed-json?
   "Read in the body param from the request as a string, parse it into JSON, make sure all the
   keys are keywords, and then return it, mapped to :data as the 2nd value in a vector,

@@ -10,7 +10,7 @@
 
 (def media-type "application/jwt")
 
-(def SlackBots {lib-schema/UniqueID [{:id schema/Str :token schema/Str :slack-org schema/Str}]})
+(def SlackBots {lib-schema/UniqueID [{:id schema/Str :token schema/Str :slack-org-id schema/Str}]})
 
 (def auth-sources #{:email :slack})
 

@@ -39,7 +39,7 @@
 
 (defn expire [payload]
   "Set an expire property in the JWToken payload, longer if there's a bot, shorter if not."
-  (let [expire-by (-> (if (:bot payload) 24 2)
+  (let [expire-by (-> (if (empty? (:slack-bots payload)) 2 24)
                       t/hours t/from-now .getMillis)]
     (assoc payload :expire expire-by)))
 

@@ -6,11 +6,11 @@
     [org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.3.441"]
-    ; Erlang-esque pattern matching https://github.com/clojure/core.match
+    ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "0.3.0-alpha4"]
     ;; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
     [defun "0.3.0-RC1"]
-    ; More than one binding for if/when macros https://github.com/LockedOn/if-let
+    ;; More than one binding for if/when macros https://github.com/LockedOn/if-let
     [lockedon/if-let "0.1.0"]
     ; Component Lifecycle https://github.com/stuartsierra/component
     [com.stuartsierra/component "0.3.2"] 

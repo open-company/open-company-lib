@@ -3,9 +3,9 @@
   :resource-paths #{"src"}
   :dependencies '[
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
+    [org.clojure/clojure "1.9.0-alpha15" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "0.3.441"]
+    [org.clojure/core.async "0.3.442"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "0.3.0-alpha4"]
     ;; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun

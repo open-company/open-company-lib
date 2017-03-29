@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
             [if-let.core :refer (if-let*)]
+            [defun.core :refer (defun)]
             [clj-time.format :as format]
             [clj-time.core :as time]
             [rethinkdb.query :as r]
@@ -166,7 +167,7 @@
   (updated-at-order
     (read-resources conn table-name index-name index-value fields))))
 
-(defn read-resources-in-group
+(defun read-resources-in-group
   "
   Given a table name, an index name and value, a field to group resources by, and an optional field to select
   just 1 resource in each group (by max of that field), return the resources in a map with the group field value
@@ -186,6 +187,21 @@
         (r/get-all [index-value] {:index index-name})
         (r/group group-by)
         (r/run conn))))
+
+  ([conn table-name index-name index-value group-by select-by :guard #(= % :count)]
+  {:pre [(conn? conn)
+         (or (string? table-name) (keyword? table-name))
+         (or (keyword? index-name) (string? index-name))
+         (or (keyword? index-value) (string? index-value))
+         (or (keyword? group-by) (string? group-by))]}
+  (let [resources (with-timeout default-timeout
+                  (-> (r/table table-name)
+                    (r/get-all [index-value] {:index index-name})
+                    (r/pluck group-by)
+                    (r/group group-by)
+                    (r/run conn)))
+        groups (keys resources)]
+    (zipmap groups (map #(count (get resources %)) groups))))
 
   ([conn table-name index-name index-value group-by select-by]
   {:pre [(conn? conn)

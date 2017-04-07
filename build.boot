@@ -30,8 +30,8 @@
     [cheshire "5.7.0"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
     [clj-time "0.13.0"]
-    ;; Async programming tools https://github.com/ztellman/manifold
-    [manifold "0.1.6"]
+    ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
+    [com.climate/squeedo "0.1.4"]
     ;; Data validation https://github.com/Prismatic/schema
     [prismatic/schema "1.1.4"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
@@ -51,7 +51,7 @@
                   :username (System/getenv "CLOJARS_USER")
                   :password (System/getenv "CLOJARS_PASS")}}
  pom {:project 'open-company/lib
-      :version (str "0.7.0-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.8.0-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

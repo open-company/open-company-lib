@@ -6,75 +6,71 @@
   https://github.com/stuartsierra/component
   "
   (:require [com.stuartsierra.component :as component]
-            [amazonica.aws.sqs :as sqs]
-            [manifold.stream :as s]
-            [manifold.time :as t]
-            [manifold.deferred :as d]
+            [com.climate.squeedo.sqs-consumer :as sqs]
+            [clojure.core.async :as async]
             [taoensso.timbre :as timbre]))
 
-(defn- get-message
-  "Get a single message from SQS"
-  [sqs-creds sqs-queue-url]
-  (-> (sqs/receive-message sqs-creds
-                           :queue-url sqs-queue-url
-                           :wait-time-seconds 2
-                           :max-number-of-messages 1)
-      :messages first))
+(defn ack
+  "Acknowledge the completion of message handling."
+  [done-channel message]
+  (async/put! done-channel message))
 
-(defn- delete-message!
-  "Delete a previously received message so it cannot be retrieved by other consumers"
-  [sqs-creds sqs-queue-url msg]
-  (timbre/trace "Deleteing message" msg  "in queue" sqs-queue-url)
-  (sqs/delete-message sqs-creds (assoc msg :queue-url sqs-queue-url)))
-
-(defn- msg-tracer [m]
-  (timbre/trace "Processing message:" m)
-  m)
-
-(defn- process
-  "
-  Yield to a message handling deferred function that will ultimately call the `msg-delete` function if handling
-  succeeds.
-  
-  If the `msg-handler` function throws an exception, `msg-delete` will not be called and an error will be logged.
-  "
-  [msg-handler msg-delete]
-  (let [res (d/deferred)]
-    (-> res
-        (d/chain msg-tracer msg-handler msg-delete)
-        (d/catch #(do (timbre/error "Failed to process SQS message due to an exception.")
-                      (timbre/error %))))
-    res))
-
-(defn- dispatch-message
-  "Check for a message and, if one is available, put it into the given deferrred"
-  [sqs-creds sqs-queue-url deferred]
-  (timbre/trace "Checking for messages in queue:" sqs-queue-url)
-  (try
-    (when-let [m (get-message sqs-creds sqs-queue-url)]
-      (timbre/info "Got message from queue:" sqs-queue-url)
-      (d/success! deferred m))
-    (catch Throwable e
-      (timbre/error "Exception while polling SQS:" e)
-      (throw e))))
-
-(defrecord SQSListener [sqs-creds sqs-queue-url message-handler]
+(defrecord SQSListener [sqs-creds sqs-queue message-handler]
   
   ;; Implement the Lifecycle protocol
   component/Lifecycle
   
   (start [component]
     (timbre/info "Starting SQSListener")
-    (let [handle! (partial message-handler component)
-          delete! (partial delete-message! sqs-creds sqs-queue-url)
-          processor (fn [] (process handle! delete!))
-          retriever (t/every 3000 #(dispatch-message sqs-creds sqs-queue-url (processor)))]
-      (assoc component :retriever retriever)))
+    (assoc component :retriever (sqs/start-consumer sqs-queue message-handler)))
 
   (stop [component]
     (timbre/info "Stopping SQSListener")
-    (when-let [r (:retriever component)] (r))
+    (when-let [consumer (:retriever component)] 
+      (sqs/stop-consumer consumer))
     (dissoc component :retriever)))
 
-(defn sqs-listener [sqs-creds sqs-queue-url message-handler]
-  (map->SQSListener {:sqs-creds sqs-creds :sqs-queue-url sqs-queue-url :message-handler message-handler}))
+(defn sqs-listener [sqs-creds sqs-queue message-handler]
+  (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler message-handler}))
+
+(comment
+
+  (require '[environ.core :refer (env)])
+  (require '[com.stuartsierra.component :as component])
+  (require '[amazonica.aws.sqs :as sqs2])
+
+  (require '[oc.lib.sqs :as sqs] :reload)
+
+  (def access-creds {:access-key (env :aws-access-key-id)
+                     :secret-key (env :aws-secret-access-key)})
+
+  (def sqs-queue "oc-email-dev-sean") ;"replace-me")
+
+  (defn test-handler
+    "Handler for testing purposes. Users of this lib will write their own handler."
+    [message done-channel]
+    (println "Got message:\n" message)
+    (println "Oops!")
+    (/ 1 0)
+    (sqs/ack done-channel message))
+
+  (defn system
+    "System for testing purposes. Users of this lib will define their own system."
+    [config-options]
+    (let [{:keys [sqs-creds sqs-queue sqs-msg-handler]} config-options]
+      (component/system-map
+        :sqs (sqs/sqs-listener sqs-creds sqs-queue sqs-msg-handler))))
+
+  (def repl-system (system {:sqs-queue sqs-queue
+                            :sqs-msg-handler test-handler
+                            :sqs-creds access-creds}))
+
+  ;; Test starting a consumer  
+  (alter-var-root #'repl-system component/start)
+
+  (sqs2/send-message access-creds sqs-queue "Hello World!")
+
+  ;; Stop the consumer
+  (alter-var-root #'repl-system component/stop)
+
+)

@@ -21,7 +21,7 @@
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.14.1"] 
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
-    [amazonica "0.3.94"]
+    [amazonica "0.3.95"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -30,10 +30,11 @@
     [cheshire "5.7.0"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
     [clj-time "0.13.0"]
-    ;; Async programming tools https://github.com/ztellman/manifold
-    [manifold "0.1.6"]
+    ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
+    [com.climate/squeedo "0.1.4"]
+    [org.slf4j/slf4j-nop "1.8.0-alpha0"] ; Squeedo dependency
     ;; Data validation https://github.com/Prismatic/schema
-    [prismatic/schema "1.1.4"]
+    [prismatic/schema "1.1.5"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
     [environ "1.1.0"]
     
@@ -51,7 +52,7 @@
                   :username (System/getenv "CLOJARS_USER")
                   :password (System/getenv "CLOJARS_PASS")}}
  pom {:project 'open-company/lib
-      :version (str "0.7.0-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.8.1-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

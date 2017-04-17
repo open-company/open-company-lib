@@ -15,6 +15,15 @@
   [done-channel message]
   (async/put! done-channel message))
 
+(defn log-handler
+  "Message handler wrapper that logs unhandled errors."
+  [handler message done-channel]
+  (try
+    (handler message done-channel)
+    (catch Exception e
+      (timbre/error e)
+      (throw e))))
+
 (defrecord SQSListener [sqs-creds sqs-queue message-handler]
   
   ;; Implement the Lifecycle protocol
@@ -31,7 +40,7 @@
     (dissoc component :retriever)))
 
 (defn sqs-listener [sqs-creds sqs-queue message-handler]
-  (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler message-handler}))
+  (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)}))
 
 (comment
 
@@ -44,7 +53,7 @@
   (def access-creds {:access-key (env :aws-access-key-id)
                      :secret-key (env :aws-secret-access-key)})
 
-  (def sqs-queue "oc-email-dev-sean") ;"replace-me")
+  (def sqs-queue "replace-me")
 
   (defn test-handler
     "Handler for testing purposes. Users of this lib will write their own handler."

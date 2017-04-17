@@ -15,7 +15,7 @@
     ; Component Lifecycle https://github.com/stuartsierra/component
     [com.stuartsierra/component "0.3.2"] 
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
-    [com.taoensso/timbre "4.9.0-alpha1"]
+    [com.taoensso/timbre "4.10.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     [raven-clj "1.5.0"]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
@@ -32,7 +32,7 @@
     [clj-time "0.13.0"]
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     [com.climate/squeedo "0.1.4"]
-    [org.slf4j/slf4j-nop "1.8.0-alpha0"] ; Squeedo dependency
+    [org.slf4j/slf4j-nop "1.8.0-alpha1"] ; Squeedo dependency
     ;; Data validation https://github.com/Prismatic/schema
     [prismatic/schema "1.1.5"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
@@ -52,7 +52,7 @@
                   :username (System/getenv "CLOJARS_USER")
                   :password (System/getenv "CLOJARS_PASS")}}
  pom {:project 'open-company/lib
-      :version (str "0.8.1-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.8.2-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

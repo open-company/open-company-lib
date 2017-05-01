@@ -58,7 +58,9 @@ document.addEventListener(\"DOMContentLoaded\", function(event) {
   Used in development by the Web development service. Used in production by the OpenCompany Proxy Service.
   "
   [sheet-path params success-fn]
-  (let [url (str "https://docs.google.com/" sheet-path "?" (codec/form-encode params))]
+  (let [url (if (empty? params)
+              (str "https://docs.google.com/" sheet-path)
+              (str "https://docs.google.com/" sheet-path "?" (codec/form-encode params)))]
     (timbre/info "Proxying request to:" url)
     (let [{:keys [status body error]} @(http/request {:method :get
                                                       :url url

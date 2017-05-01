@@ -13,7 +13,9 @@
     ;; More than one binding for if/when macros https://github.com/LockedOn/if-let
     [lockedon/if-let "0.1.0"]
     ; Component Lifecycle https://github.com/stuartsierra/component
-    [com.stuartsierra/component "0.3.2"] 
+    [com.stuartsierra/component "0.3.2"]
+    ; Web server http://http-kit.org/
+    [http-kit "2.3.0-alpha2"]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
     [com.taoensso/timbre "4.10.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
@@ -37,7 +39,11 @@
     [prismatic/schema "1.1.5"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
     [environ "1.1.0"]
-    
+    ;; HTML as data https://github.com/davidsantiago/hickory
+    [hickory "0.7.1"]
+    ; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
+    [ring/ring-codec "1.0.1"]
+
     ;; Boot tasks ==========================================
     ;; Example-based testing https://github.com/marick/Midje
     [midje "1.9.0-alpha6" :scope "test"]
@@ -52,7 +58,7 @@
                   :username (System/getenv "CLOJARS_USER")
                   :password (System/getenv "CLOJARS_PASS")}}
  pom {:project 'open-company/lib
-      :version (str "0.8.2-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.9.0-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

@@ -6,6 +6,8 @@
             [hickory.core :as h]
             [hickory.select :as s]))
 
+(def chart-id "sheet-chart")
+
 (def inject-js "Some JavaScript that we add to the Google Sheets response that handles sizing the chart to the container size"
 "
 
@@ -26,7 +28,7 @@ document.addEventListener(\"DOMContentLoaded\", function(event) {
 
 ")
 
-(defn- fix-script-string [s chart-id]
+(defn- fix-script-string [s]
   (let [r0 #"(?i)(\"width\":\d+)"
         r01 #"(?i)(\"height\":\d+)"
         r1 #"(?i)safeDraw\(document.getElementById\('c'\)\)"
@@ -43,10 +45,10 @@ document.addEventListener(\"DOMContentLoaded\", function(event) {
         fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))]
     fixed-string-4))
 
-(defn- get-script-tag [s chart-id]
+(defn- get-script-tag [s]
   (if (empty? (:src (:attrs s)))
     ;; Provided script, rewritten by us
-    (str "<script type=\"text/javascript\">" (fix-script-string (apply str (:content s)) chart-id) "</script>")
+    (str "<script type=\"text/javascript\">" (fix-script-string (apply str (:content s))) "</script>")
     ;; Network loaded script, provided as a straight pass through
     (str "<script type=\"text/javascript\" src=\"/_/sheets-proxy-pass-through" (:src (:attrs s)) "\"></script>")))
 
@@ -83,14 +85,14 @@ document.addEventListener(\"DOMContentLoaded\", function(event) {
   (proxy-sheets sheet-path params (fn [status body]
     (let [parsed-html (h/as-hickory (h/parse body)) ; parse the HTML of the response
           scripts (s/select (s/tag :script) parsed-html) ; extract the script tags
-          script-strings (apply str (map #(get-script-tag % (get params "chart-id")) scripts))
+          script-strings (apply str (map #(get-script-tag %) scripts))
           output-html (str "<html><head>"
                             inject-js
                             "<style type=\"text/css\">html,body{margin:0;padding:0;border:none;overflow:hidden;}</style>"
                             "</head>"
                             "<body>"
                             script-strings
-                            "<div id=\""(get params "chart-id") "\"></div>"
+                            "<div id=\"" chart-id "\"></div>"
                             "</body></html>")]
       {:status 200 :body output-html}))))
 

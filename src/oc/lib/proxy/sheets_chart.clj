@@ -44,18 +44,22 @@ document.addEventListener(\"DOMContentLoaded\", function(event) {
     fixed-string-4))
 
 (defn- get-script-tag [s chart-id]
-  (str "<script type=\"text/javascript\">" (fix-script-string (apply str (:content s)) chart-id) "</script>"))
+  (if (empty? (:src (:attrs s)))
+    ;; Provided script, rewritten by us
+    (str "<script type=\"text/javascript\">" (fix-script-string (apply str (:content s)) chart-id) "</script>")
+    ;; Network loaded script, provided as a straight pass through
+    (str "<script type=\"text/javascript\" src=\"/_/sheets-proxy-pass-through" (:src (:attrs s)) "\"></script>")))
 
-(defn proxy-sheets
+(defn- proxy-sheets
   "
   Proxy requests to Google Sheets (needed for CORs). Rewrite the respones in a form ready for embedding as
   an iFrame. Return the response as a ring response (map).
 
   Used in development by the Web development service. Used in production by the OpenCompany Proxy Service.
   "
-  [sheet-path params]
+  [sheet-path params success-fn]
   (let [url (str "https://docs.google.com/" sheet-path "?" (codec/form-encode params))]
-    (timbre/info "Loading chart for:" url)
+    (timbre/info "Proxying request to:" url)
     (let [{:keys [status body error]} @(http/request {:method :get
                                                       :url url
                                                       :headers {
@@ -64,30 +68,51 @@ document.addEventListener(\"DOMContentLoaded\", function(event) {
       (timbre/info "Proxy request status:" status)
       (if error
         (do (timbre/error body) {:status status :body body})
-        (let [parsed-html (h/as-hickory (h/parse body)) ; parse the HTML of the response
-              scripts (s/select (s/tag :script) parsed-html) ; extract the script tags
-              script-strings (apply str (map #(get-script-tag % (get params "chart-id")) scripts))
-              output-html (str "<html><head>"
-                                inject-js
-                                "<style type=\"text/css\">html,body{margin:0;padding:0;border:none;overflow:hidden;}</style>"
-                                "</head>"
-                                "<body>"
-                                script-strings
-                                "<div id=\""(get params "chart-id") "\"></div>"
-                                "</body></html>")]
-          {:status 200 :body output-html})))))
+        (success-fn status body)))))
+
+(defn proxy-sheets-chart
+  "
+  Proxy requests to Google Sheets and rewrite the respones in a form ready for embedding as
+  an iFrame. Return the response as a ring response (map).
+
+  Used in development by the Web development service. Used in production by the OpenCompany Proxy Service.
+  "
+  [sheet-path params]
+  (proxy-sheets sheet-path params (fn [status body]
+    (let [parsed-html (h/as-hickory (h/parse body)) ; parse the HTML of the response
+          scripts (s/select (s/tag :script) parsed-html) ; extract the script tags
+          script-strings (apply str (map #(get-script-tag % (get params "chart-id")) scripts))
+          output-html (str "<html><head>"
+                            inject-js
+                            "<style type=\"text/css\">html,body{margin:0;padding:0;border:none;overflow:hidden;}</style>"
+                            "</head>"
+                            "<body>"
+                            script-strings
+                            "<div id=\""(get params "chart-id") "\"></div>"
+                            "</body></html>")]
+      {:status 200 :body output-html}))))
+
+(defn proxy-sheets-pass-through
+  "
+  Proxy requests through to Google Sheets (needed for CORs). Pass through the response as-is in a ring response (map).
+
+  Used in development by the Web development service. Used in production by the OpenCompany Proxy Service.
+  "
+  [sheet-path params]
+  (proxy-sheets sheet-path params (fn [status body] {:status 200 :body body :headers {"Content-Type" "text/html"}})))
 
 (comment 
 
 (require '[oc.lib.proxy.sheets-chart :as proxy] :reload)
 
 ;; https://docs.google.com/spreadsheets/d/1X5Ar6_JJ3IviO64-cJ0DeklFuS42BSdXxZV6x5W0qOc/pubchart?oid=1033950253&format=interactive
-(proxy/proxy-sheets "spreadsheets/d/1X5Ar6_JJ3IviO64-cJ0DeklFuS42BSdXxZV6x5W0qOc/pubchart" {:oid "1033950253"
-                                                                                            :format "interactive"})
-
+(proxy/proxy-sheets-chart "spreadsheets/d/1X5Ar6_JJ3IviO64-cJ0DeklFuS42BSdXxZV6x5W0qOc/pubchart" {:oid "1033950253"
+                                                                                                  :format "interactive"})
 
 ;; https://docs.google.com/spreadsheets/d/1X5Ar6_JJ3IviO64-cJ0DeklFuS42BSdXxZV6x5W0qOc/pubchart?oid=1138076795&format=interactive
-(proxy/proxy-sheets "spreadsheets/d/1X5Ar6_JJ3IviO64-cJ0DeklFuS42BSdXxZV6x5W0qOc/pubchart" {:oid "=1138076795"
-                                                                                            :format "interactive"})
+(proxy/proxy-sheets-chart "spreadsheets/d/1X5Ar6_JJ3IviO64-cJ0DeklFuS42BSdXxZV6x5W0qOc/pubchart" {:oid "=1138076795"
+                                                                                                  :format "interactive"})
+
+(proxy/proxy-sheets-pass-through "/static/spreadsheets2/caf7ecd791/ritz_charts_linked/ritz_charts_linked.nocache.js" {})
 
 )

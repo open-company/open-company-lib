@@ -12,12 +12,12 @@
 (defn- fix-script-string [s]
   (let [r0 #"(?i)(\"width\":\d+)"
         r01 #"(?i)(\"height\":\d+)"
-        r1 #"(?i)safeDraw\(document.getElementById\('c'\)\)"
+        r1 #"(?i)safeDraw\(document\.getElementById\('c'\)\)"
         ;; Regexp to match charts exported as HTML page
         r2 #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);"
         r3 #"(?i)\"containerId\":\"embed_\d+\""
         r4 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
-        r5 #"(?i)\"legend\":\"\c+\""
+        r5 #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
         ;; Replace all regexp
         fixed-string (clojure.string/replace s r0 (str "\"width\": getViewportWidth()"))
         fixed-string-01 (clojure.string/replace fixed-string r01 (str "\"height\": getViewportHeight()"))
@@ -71,9 +71,7 @@
           script-strings (apply str (map #(get-script-tag %) scripts))
           output-html (str "<html><head>"
                             "<script type=\"text/javascript\" src=\"" (env :open-company-web-cdn) (if (env :open-company-proxy-deploy-key) (str "/" (env :open-company-proxy-deploy-key))) "/lib/GoogleSheets/GoogleSheets.js\"></script>"
-                            "<link rel=\"stylesheet\" href=\"//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css\" />"
                             "<link rel=\"stylesheet\" href=\"" (env :open-company-web-cdn) (if (env :open-company-web-cdn) "/") (env :open-company-proxy-deploy-key) "/lib/GoogleSheets/GoogleSheets.css\" />"
-                            "<link >"
                             "</head>"
                             "<body class=\"loading\">"
                             script-strings

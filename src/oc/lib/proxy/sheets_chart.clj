@@ -18,7 +18,7 @@
         r4 #"(?i)\"containerId\":\"embed_\d+\""
         r5 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
         r6 #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
-        r7 #"(?i)function onNumberFormatApiLoad\(\){"
+        r7 #"(?i)(function onNumberFormatApiLoad\(\)\s?\{)"
         ;; Replace all regexp
         fixed-string-0 (clojure.string/replace s r0 (str "\"width\": getViewportWidth()"))
         fixed-string-1 (clojure.string/replace fixed-string-0 r1 (str "\"height\": getViewportHeight()"))

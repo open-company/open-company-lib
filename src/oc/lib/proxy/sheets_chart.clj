@@ -4,29 +4,10 @@
             [org.httpkit.client :as http]
             [ring.util.codec :as codec]
             [hickory.core :as h]
-            [hickory.select :as s]))
+            [hickory.select :as s]
+            [environ.core :refer (env)]))
 
 (def chart-id "sheet-chart")
-
-(def inject-js "Some JavaScript that we add to the Google Sheets response that handles sizing the chart to the container size"
-"
-
-<script type=\"text/javascript\">
-function getViewportWidth(){
-  return Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-}
-function getViewportHeight(){
-  return Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-}
-document.addEventListener(\"DOMContentLoaded\", function(event) {
-  window.addEventListener(\"resize\", function(event) {
-    if(window.onNumberFormatApiLoad !== undefined){
-      onNumberFormatApiLoad();
-    }
-  });
-});</script>
-
-")
 
 (defn- fix-script-string [s]
   (let [r0 #"(?i)(\"width\":\d+)"
@@ -87,10 +68,12 @@ document.addEventListener(\"DOMContentLoaded\", function(event) {
           scripts (s/select (s/tag :script) parsed-html) ; extract the script tags
           script-strings (apply str (map #(get-script-tag %) scripts))
           output-html (str "<html><head>"
-                            inject-js
-                            "<style type=\"text/css\">html,body{margin:0;padding:0;border:none;overflow:hidden;}</style>"
+                            "<script type=\"text/javascript\" src=\"" (env :open-company-web-cdn) (if (env :open-company-proxy-deploy-key) (str "/" (env :open-company-proxy-deploy-key))) "/lib/GoogleSheets/GoogleSheets.js\"></script>"
+                            "<link rel=\"stylesheet\" href=\"//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css\" />"
+                            "<link rel=\"stylesheet\" href=\"" (env :open-company-web-cdn) (if (env :open-company-web-cdn) "/") (env :open-company-proxy-deploy-key) "/lib/GoogleSheets/GoogleSheets.css\" />"
+                            "<link >"
                             "</head>"
-                            "<body>"
+                            "<body class=\"loading\">"
                             script-strings
                             "<div id=\"" chart-id "\"></div>"
                             "</body></html>")]

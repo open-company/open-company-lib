@@ -11,24 +11,24 @@
 
 (defn- fix-script-string [s]
   (let [r0 #"(?i)(\"width\":\d+)"
-        r01 #"(?i)(\"height\":\d+)"
-        r1 #"(?i)safeDraw\(document\.getElementById\('c'\)\)"
+        r1 #"(?i)(\"height\":\d+)"
+        r2 #"(?i)safeDraw\(document\.getElementById\('c'\)\)"
         ;; Regexp to match charts exported as HTML page
-        r2 #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);"
-        r3 #"(?i)\"containerId\":\"embed_\d+\""
-        r4 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
-        r5 #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
-        r6 #"(?i)function onNumberFormatApiLoad\(\){"
+        r3 #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);"
+        r4 #"(?i)\"containerId\":\"embed_\d+\""
+        r5 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
+        r6 #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
+        r7 #"(?i)function onNumberFormatApiLoad\(\){"
         ;; Replace all regexp
-        fixed-string (clojure.string/replace s r0 (str "\"width\": getViewportWidth()"))
-        fixed-string-01 (clojure.string/replace fixed-string r01 (str "\"height\": getViewportHeight()"))
-        fixed-string-1 (clojure.string/replace fixed-string-01 r1 (str "safeDraw(document.getElementById('" chart-id "'))"))
-        fixed-string-2 (clojure.string/replace fixed-string-1 r2 (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
-        fixed-string-3 (clojure.string/replace fixed-string-2 r3 (str "\"containerId\":\"" chart-id "\""))
-        fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
-        fixed-string-5 (clojure.string/replace fixed-string-4 r5 (str "\"legend\":{\"position\":\"none\"}"))
-        fixed-string-6 (clojure.string/replace fixed-string-5 r6 (str "function onNumberFormatApiLoad(){ document.body.classList.remove(\"loading\");"))]
-    fixed-string-6))
+        fixed-string-0 (clojure.string/replace s r0 (str "\"width\": getViewportWidth()"))
+        fixed-string-1 (clojure.string/replace fixed-string-0 r1 (str "\"height\": getViewportHeight()"))
+        fixed-string-2 (clojure.string/replace fixed-string-1 r2 (str "safeDraw(document.getElementById('" chart-id "'))"))
+        fixed-string-3 (clojure.string/replace fixed-string-2 r3 (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
+        fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "\"containerId\":\"" chart-id "\""))
+        fixed-string-5 (clojure.string/replace fixed-string-4 r5 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
+        fixed-string-6 (clojure.string/replace fixed-string-5 r6 (str "\"legend\":{\"position\":\"none\"}"))
+        fixed-string-7 (clojure.string/replace fixed-string-6 r7 (str "function onNumberFormatApiLoad(){ document.body.classList.remove(\"loading\");"))]
+    fixed-string-7))
 
 (defn- get-script-tag [s]
   (if (empty? (:src (:attrs s)))

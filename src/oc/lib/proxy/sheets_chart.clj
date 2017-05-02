@@ -17,14 +17,16 @@
         r2 #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);"
         r3 #"(?i)\"containerId\":\"embed_\d+\""
         r4 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
+        r5 #"(?i)\"legend\":\"\c+\""
         ;; Replace all regexp
         fixed-string (clojure.string/replace s r0 (str "\"width\": getViewportWidth()"))
         fixed-string-01 (clojure.string/replace fixed-string r01 (str "\"height\": getViewportHeight()"))
         fixed-string-1 (clojure.string/replace fixed-string-01 r1 (str "safeDraw(document.getElementById('" chart-id "'))"))
         fixed-string-2 (clojure.string/replace fixed-string-1 r2 (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
         fixed-string-3 (clojure.string/replace fixed-string-2 r3 (str "\"containerId\":\"" chart-id "\""))
-        fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))]
-    fixed-string-4))
+        fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
+        fixed-string-5 (clojure.string/replace fixed-string-4 r5 (str "\"legend\":{position:\"none\"}"))]
+    fixed-string-5))
 
 (defn- get-script-tag [s]
   (if (empty? (:src (:attrs s)))

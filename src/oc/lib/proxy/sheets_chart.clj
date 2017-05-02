@@ -25,7 +25,7 @@
         fixed-string-2 (clojure.string/replace fixed-string-1 r2 (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
         fixed-string-3 (clojure.string/replace fixed-string-2 r3 (str "\"containerId\":\"" chart-id "\""))
         fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
-        fixed-string-5 (clojure.string/replace fixed-string-4 r5 (str "\"legend\":{position:\"none\"}"))]
+        fixed-string-5 (clojure.string/replace fixed-string-4 r5 (str "\"legend\":{\"position\":\"none\"}"))]
     fixed-string-5))
 
 (defn- get-script-tag [s]

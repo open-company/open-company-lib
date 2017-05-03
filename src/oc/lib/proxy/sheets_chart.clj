@@ -18,7 +18,7 @@
         r4 #"(?i)\"containerId\":\"embed_\d+\""
         r5 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
         r6 #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
-        r7 #"(?i)(function onNumberFormatApiLoad\(\)\s?\{)"
+        r7 #"(?i)(function\s*onNumberFormatApiLoad\s*\(\s*\)\s*\{)"
         ;; Replace all regexp
         fixed-string-0 (clojure.string/replace s r0 (str "\"width\": getViewportWidth()"))
         fixed-string-1 (clojure.string/replace fixed-string-0 r1 (str "\"height\": getViewportHeight()"))
@@ -47,7 +47,7 @@
   [sheet-path params success-fn]
   (let [url (if (empty? params)
               (str "https://docs.google.com/" sheet-path)
-              (str "https://docs.google.com/" sheet-path "?" (codec/form-encode params)))]
+              (str "https://docs.google.com/" sheet-path "?" (codec/form-encode (dissoc params "cache-buster"))))]
     (timbre/info "Proxying request to:" url)
     (let [{:keys [status body error]} @(http/request {:method :get
                                                       :url url

@@ -71,8 +71,11 @@
     (let [parsed-html (h/as-hickory (h/parse body)) ; parse the HTML of the response
           scripts (s/select (s/tag :script) parsed-html) ; extract the script tags
           script-strings (apply str (map #(get-script-tag %) scripts))
+          geo-chart-regex #"\"chartType\":\s*\"GeoChart\""
           output-html (str "<html><head>"
                             "<script type=\"text/javascript\" src=\"" (env :open-company-web-cdn) (if (env :open-company-proxy-deploy-key) (str "/" (env :open-company-proxy-deploy-key))) "/lib/GoogleSheets/GoogleSheets.js\"></script>"
+                            (when (re-find (re-matcher geo-chart-regex body))
+                              (str "<script async defer src=\"https://maps.googleapis.com/maps/api/js?key=" (env :open-company-web-gmap-key) "\" type=\"text/javascript\"></script>"))
                             "<link rel=\"stylesheet\" href=\"" (env :open-company-web-cdn) (if (env :open-company-web-cdn) "/") (env :open-company-proxy-deploy-key) "/lib/GoogleSheets/GoogleSheets.css\" />"
                             "</head>"
                             "<body class=\"loading\">"

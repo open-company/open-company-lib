@@ -19,8 +19,9 @@
         r5 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
         r6 #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
         r7 #"(?i)(function\s*onNumberFormatApiLoad\s*\(\s*\)\s*\{)"
+        has_legend (re-find (re-matcher r6 s))
         ;; Replace all regexp
-        fixed-string-0 (clojure.string/replace s r0 (str "\"width\": getViewportWidth()"))
+        fixed-string-0 (clojure.string/replace s r0 (str "\"width\": (getViewportWidth() " (when has_legend "+ (getViewportWidth()/100*20)") ")"))
         fixed-string-1 (clojure.string/replace fixed-string-0 r1 (str "\"height\": getViewportHeight()"))
         fixed-string-2 (clojure.string/replace fixed-string-1 r2 (str "safeDraw(document.getElementById('" chart-id "'))"))
         fixed-string-3 (clojure.string/replace fixed-string-2 r3 (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))

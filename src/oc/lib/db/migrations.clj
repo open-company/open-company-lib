@@ -160,7 +160,7 @@
   ;; create DB (if it doesn't exist)
   (when (create-database conn db-name)
     ;; create migration table (if it doesn't exist)
-    (create-table conn db-name "migrations" "name")
+    (create-table conn "migrations" "name")
     ;; Run the migrations
     (println "\nRunning migrations.")
     (->> (filter #(s/ends-with? % ".edn") (file-seq (clojure.java.io/file migrations-dir)))

@@ -116,9 +116,10 @@
 
 (defn create-table
   "Create a RethinkDB table with the specified primary key if it doesn't exist."
-  [conn table-name primary-key]
+  [conn db-name table-name primary-key]
   (when (not-any? #(= table-name %) (table-list conn))
-    (-> (r/table-create table-name {:primary-key primary-key :durability "hard"})
+    (-> (r/db db-name)
+        (r/table-create table-name {:primary-key primary-key :durability "hard"})
         (r/run conn))))
 
 (defn rename-table
@@ -186,7 +187,7 @@
   ;; REPL testing
 
   (require '[rethinkdb.query :as r])
-  (require '[open-company.db.migrations :as m] :reload)
+  (require '[oc.lib.db.migrations :as m] :reload)
 
   (def conn [:host "127.0.0.1" :port 28015 :db "open_company_dev"])
 
@@ -195,6 +196,12 @@
   (m/migrate)
 
   (with-open [c (apply r/connect conn)]
-    (m/delete-table c "stakeholder_updates"))
+    (m/table-list c))
+
+  (with-open [c (apply r/connect conn)]
+    (m/create-table c "foo" "bar"))
+
+  (with-open [c (apply r/connect conn)]
+    (m/delete-table c "foo"))
   
   )

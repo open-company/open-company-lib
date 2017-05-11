@@ -23,18 +23,18 @@
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.14.1"] 
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
-    [amazonica "0.3.95"]
+    [amazonica "0.3.98"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
     [com.apa512/rethinkdb "0.15.26"]
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
-    [cheshire "5.7.0"] 
+    [cheshire "5.7.1"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
     [clj-time "0.13.0"]
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     [com.climate/squeedo "0.1.4"]
-    [org.slf4j/slf4j-nop "1.8.0-alpha1"] ; Squeedo dependency
+    [org.slf4j/slf4j-nop "1.8.0-alpha2"] ; Squeedo dependency
     ;; Data validation https://github.com/Prismatic/schema
     [prismatic/schema "1.1.5"]
     ;; Environment settings from different sources https://github.com/weavejester/environ

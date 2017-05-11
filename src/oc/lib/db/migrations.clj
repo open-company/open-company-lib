@@ -17,10 +17,11 @@
       true ; already exists, return truthy
       (r/run (r/db-create db-name) conn))))
 
-(defn- table-list
+(defn table-list
   "Return a sequence of the table names in the RethinkDB."
-  [conn db-name]
-  (-> (r/db db-name) (r/table-list) (r/run conn)))
+  [conn]
+  (-> (r/table-list)
+      (r/run conn)))
 
 (defn- migration-file-name [migrations-dir migration-name]
   (str (s/join java.io.File/separator [migrations-dir migration-name]) ".edn"))
@@ -115,11 +116,28 @@
 
 (defn create-table
   "Create a RethinkDB table with the specified primary key if it doesn't exist."
-  [conn db-name table-name primary-key]
-  (when (not-any? #(= table-name %) (table-list conn db-name))
-    (-> (r/db db-name)
-      (r/table-create table-name {:primary-key primary-key :durability "hard"})
-      (r/run conn))))
+  [conn table-name primary-key]
+  (when (not-any? #(= table-name %) (table-list conn))
+    (-> (r/table-create table-name {:primary-key primary-key :durability "hard"})
+        (r/run conn))))
+
+(defn rename-table
+  "Rename a RethinkDB table from the old name to the new name if it exists."
+  [conn db-name old-table-name new-table-name]
+  (let [table-list (table-list conn)]
+    (when (and (some #(= old-table-name %) table-list)
+               (not-any? #(= new-table-name %) table-list))
+      (-> (r/db "rethinkdb")
+          (r/table "table_config")
+          (r/filter (r/fn [table] {:db db-name :name old-table-name}))
+          (r/update {:name new-table-name})
+          (r/run conn)))))
+
+(defn delete-table
+  "Delete the specified RethinkDB table."
+  [conn table-name]
+  (-> (r/table-drop table-name)
+      (r/run conn)))
 
 ;; ----- Main entry-point functions for creating and running migrations -----
 
@@ -167,10 +185,16 @@
 (comment
   ;; REPL testing
 
+  (require '[rethinkdb.query :as r])
   (require '[open-company.db.migrations :as m] :reload)
+
+  (def conn [:host "127.0.0.1" :port 28015 :db "open_company_dev"])
 
   (m/create "test-it")
 
   (m/migrate)
 
+  (with-open [c (apply r/connect conn)]
+    (m/delete-table c "stakeholder_updates"))
+  
   )

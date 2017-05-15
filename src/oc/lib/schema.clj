@@ -83,3 +83,12 @@
   :avatar-url (schema/maybe schema/Str)})
 
 (def Conn (schema/pred #(conn? %)))
+
+(def User
+  "The portion of JWT properties that we care about for authorship attribution"
+  {
+    :user-id UniqueID
+    :name NonBlankStr
+    :avatar-url (schema/maybe schema/Str)
+    schema/Keyword schema/Any ; and whatever else is in the JWT map
+  })

@@ -77,4 +77,9 @@
 
 (def EmailDomain (schema/pred valid-email-domain?))
 
+(def Author {
+  :name NonBlankStr
+  :user-id UniqueID
+  :avatar-url (schema/maybe schema/Str)})
+
 (def Conn (schema/pred #(conn? %)))

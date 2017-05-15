@@ -62,6 +62,12 @@
     (catch Exception e
       false)))
 
+(declare Author)
+(defn author-for-user
+  "Extract the author from the JWToken claims."
+  [user]
+  (select-keys user (keys Author)))
+
 ;; ----- Schema -----
 
 (def NonBlankStr (schema/pred #(and (string? %) (not (s/blank? %)))))

@@ -9,7 +9,7 @@
 
 (def chart-id "sheet-chart")
 
-(defn- fix-script-string [s]
+(defn- fix-script-string [s keep-legend]
   (let [r0 #"(?i)(\"width\":\d+)"
         r1 #"(?i)(\"height\":\d+)"
         r2 #"(?i)safeDraw\(document\.getElementById\('c'\)\)"
@@ -19,22 +19,40 @@
         r5 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
         r6 #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
         r7 #"(?i)(function\s*onNumberFormatApiLoad\s*\(\s*\)\s*\{)"
-        has_legend (re-find (re-matcher r6 s))
+        has-legend-key (re-find (re-matcher #"(?i)\"legend\"" s))
+        has-visible-legend (re-find (re-matcher r6 s))
         ;; Replace all regexp
-        fixed-string-0 (clojure.string/replace s r0 (str "\"width\": (getViewportWidth() " (when has_legend "+ (getViewportWidth()/100*20)") ")"))
+        ;; Replace the width value with a function that calculates the viewport width
+        fixed-string-0 (clojure.string/replace s r0 (str "\"width\": (getViewportWidth() "
+                                                         ;; Add 20% more width if the chart had a legend set on left or right
+                                                         (when has-visible-legend
+                                                           "+ (getViewportWidth()/100*20)")
+                                                         ")"
+                                                         ;; Add the legend key set to none if
+                                                         ;; it's not a map chart (chartType: GeoChart)
+                                                         ;; and it has no other legend key
+                                                         (when (and (not keep-legend)
+                                                                    (not has-legend-key))
+                                                           ", \"legend\": \"none\"")))
+        ;; Replace the height value with a function that calculates the viewport height
         fixed-string-1 (clojure.string/replace fixed-string-0 r1 (str "\"height\": getViewportHeight()"))
+        ;; Replace the element id of the chart container
         fixed-string-2 (clojure.string/replace fixed-string-1 r2 (str "safeDraw(document.getElementById('" chart-id "'))"))
+        ;; Replace the element id of the chart container for another type of shared chart
         fixed-string-3 (clojure.string/replace fixed-string-2 r3 (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
+        ;; Replace the container id with our chart-id
         fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "\"containerId\":\"" chart-id "\""))
         fixed-string-5 (clojure.string/replace fixed-string-4 r5 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
-        fixed-string-6 (clojure.string/replace fixed-string-5 r6 (str "\"legend\":{\"position\":\"none\"}"))
+        ;; Set the legend to none if there is a legend key set to left or right already
+        fixed-string-6 (clojure.string/replace fixed-string-5 r6 (str "\"legend\":\"none\""))
+        ;; Remove the body class that shows the chart placeholder icon while loading and rendering the chart
         fixed-string-7 (clojure.string/replace fixed-string-6 r7 (str "function onNumberFormatApiLoad(){ document.body.classList.remove(\"loading\");"))]
     fixed-string-7))
 
-(defn- get-script-tag [s]
+(defn- get-script-tag [s keep-legend]
   (if (empty? (:src (:attrs s)))
     ;; Provided script, rewritten by us
-    (str "<script type=\"text/javascript\">" (fix-script-string (apply str (:content s))) "</script>")
+    (str "<script type=\"text/javascript\">" (fix-script-string (apply str (:content s)) keep-legend) "</script>")
     ;; Network loaded script, provided as a straight pass through
     (str "<script type=\"text/javascript\" src=\"/_/sheets-proxy-pass-through" (:src (:attrs s)) "\"></script>")))
 
@@ -71,11 +89,12 @@
   (proxy-sheets sheet-path params (fn [status body]
     (let [parsed-html (h/as-hickory (h/parse body)) ; parse the HTML of the response
           scripts (s/select (s/tag :script) parsed-html) ; extract the script tags
-          script-strings (apply str (map #(get-script-tag %) scripts))
           geo-chart-regex #"\"chartType\":\s*\"GeoChart\""
+          is-geo-chart (re-find (re-matcher geo-chart-regex body))
+          script-strings (apply str (map #(get-script-tag % is-geo-chart) scripts))
           output-html (str "<html><head>"
                             "<script type=\"text/javascript\" src=\"" (env :open-company-web-cdn) (if (env :open-company-proxy-deploy-key) (str "/" (env :open-company-proxy-deploy-key))) "/lib/GoogleSheets/GoogleSheets.js\"></script>"
-                            (when (re-find (re-matcher geo-chart-regex body))
+                            (when is-geo-chart
                               (str "<script async defer src=\"https://maps.googleapis.com/maps/api/js?key=" (env :open-company-web-gmap-key) "\" type=\"text/javascript\"></script>"))
                             "<link rel=\"stylesheet\" href=\"" (env :open-company-web-cdn) (if (env :open-company-web-cdn) "/") (env :open-company-proxy-deploy-key) "/lib/GoogleSheets/GoogleSheets.css\" />"
                             "</head>"

@@ -62,6 +62,12 @@
     (catch Exception e
       false)))
 
+(declare Author)
+(defn author-for-user
+  "Extract the author from the JWToken claims."
+  [user]
+  (select-keys user (keys Author)))
+
 ;; ----- Schema -----
 
 (def NonBlankStr (schema/pred #(and (string? %) (not (s/blank? %)))))
@@ -77,4 +83,18 @@
 
 (def EmailDomain (schema/pred valid-email-domain?))
 
+(def Author {
+  :name NonBlankStr
+  :user-id UniqueID
+  :avatar-url (schema/maybe schema/Str)})
+
 (def Conn (schema/pred #(conn? %)))
+
+(def User
+  "The portion of JWT properties that we care about for authorship attribution"
+  {
+    :user-id UniqueID
+    :name NonBlankStr
+    :avatar-url (schema/maybe schema/Str)
+    schema/Keyword schema/Any ; and whatever else is in the JWT map
+  })

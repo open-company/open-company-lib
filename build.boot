@@ -16,16 +16,18 @@
     [com.stuartsierra/component "0.3.2"]
     ;; Web server http://http-kit.org/
     [http-kit "2.3.0-alpha2"]
-    ;; WebSocket server https://github.com/ptaoussanis/sente
-    [com.taoensso/sente "1.11.0"]
+    ;; NB: Timbre needs to come before Sente due to conflicts in shared dependency: com.taoensso/encore
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
     [com.taoensso/timbre "4.10.0"]
+    ;; NB: Sente needs to come after Timbre due to conflicts in shared dependency: com.taoensso/encore
+    ;; WebSocket server https://github.com/ptaoussanis/sente
+    [com.taoensso/sente "1.11.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     [raven-clj "1.5.0"]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.14.1"] 
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
-    [amazonica "0.3.100"]
+    [amazonica "0.3.101"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -60,7 +62,7 @@
                   :username (System/getenv "CLOJARS_USER")
                   :password (System/getenv "CLOJARS_PASS")}}
  pom {:project 'open-company/lib
-      :version (str "0.10.7-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.10.8-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

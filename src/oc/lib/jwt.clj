@@ -24,9 +24,10 @@
   :avatar-url (schema/maybe schema/Str)
   :email lib-schema/NonBlankStr
   :auth-source (schema/pred #(auth-sources (keyword %)))
-  (schema/optional-key :slack-id) schema/Str
-  (schema/optional-key :slack-token) schema/Str
   (schema/optional-key :slack-bots) SlackBots
+  (schema/optional-key :slack-users) (schema/maybe {lib-schema/NonBlankStr {:slack-org-id lib-schema/NonBlankStr
+                                                                            :id lib-schema/NonBlankStr
+                                                                            :token lib-schema/NonBlankStr}})
   :refresh-url lib-schema/NonBlankStr
   :expire schema/Num})
 

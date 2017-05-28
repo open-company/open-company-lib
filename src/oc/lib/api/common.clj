@@ -174,9 +174,9 @@
 (defn allow-anonymous
   "Allow unless there is a JWToken provided and it's invalid."
   [ctx]
-  (if (= (-> ctx :request :request-method)) :options)
+  (if (= (-> ctx :request :request-method) :options)
     true ; allows allow options
-    (boolean (or (nil? (:jwtoken ctx)) (:jwtoken ctx))))
+    (boolean (or (nil? (:jwtoken ctx)) (:jwtoken ctx)))))
 
 (defn allow-authenticated
   "Allow only if a valid JWToken is provided."

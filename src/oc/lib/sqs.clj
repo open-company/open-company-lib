@@ -26,6 +26,8 @@
 
 (defrecord SQSListener [sqs-creds sqs-queue message-handler]
   
+  :load-ns true ; needed for Eastwood linting
+
   ;; Implement the Lifecycle protocol
   component/Lifecycle
   
@@ -41,6 +43,11 @@
 
 (defn sqs-listener [sqs-creds sqs-queue message-handler]
   (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)}))
+
+(defn __no-op__ 
+  "Ignore: needed for Eastwood linting."
+  []
+  (component/system-map {}))
 
 (comment
 

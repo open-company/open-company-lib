@@ -1,10 +1,11 @@
 (ns oc.lib.proxy.sheets-chart
   "Proxy a request to a published chart from a Google Sheet and rewrite the response."
-  (:require [taoensso.timbre :as timbre]
+  (:require [clojure.string :as s]
+            [taoensso.timbre :as timbre]
             [org.httpkit.client :as http]
             [ring.util.codec :as codec]
             [hickory.core :as h]
-            [hickory.select :as s]
+            [hickory.select :as hs]
             [environ.core :refer (env)]))
 
 (def chart-id "sheet-chart")
@@ -52,7 +53,7 @@
 (defn- get-script-tag [s keep-legend]
   (if (empty? (:src (:attrs s)))
     ;; Provided script, rewritten by us
-    (str "<script type=\"text/javascript\">" (fix-script-string (apply str (:content s)) keep-legend) "</script>")
+    (str "<script type=\"text/javascript\">" (fix-script-string (s/join (:content s)) keep-legend) "</script>")
     ;; Network loaded script, provided as a straight pass through
     (str "<script type=\"text/javascript\" src=\"/_/sheets-proxy-pass-through" (:src (:attrs s)) "\"></script>")))
 
@@ -88,10 +89,10 @@
   [sheet-path params]
   (proxy-sheets sheet-path params (fn [status body]
     (let [parsed-html (h/as-hickory (h/parse body)) ; parse the HTML of the response
-          scripts (s/select (s/tag :script) parsed-html) ; extract the script tags
+          scripts (hs/select (hs/tag :script) parsed-html) ; extract the script tags
           geo-chart-regex #"\"chartType\":\s*\"GeoChart\""
           is-geo-chart (re-find (re-matcher geo-chart-regex body))
-          script-strings (apply str (map #(get-script-tag % is-geo-chart) scripts))
+          script-strings (s/join (map #(get-script-tag % is-geo-chart) scripts))
           output-html (str "<html><head>"
                             "<script type=\"text/javascript\" src=\"" (env :open-company-web-cdn) (if (env :open-company-proxy-deploy-key) (str "/" (env :open-company-proxy-deploy-key))) "/lib/GoogleSheets/GoogleSheets.js\"></script>"
                             (when is-geo-chart

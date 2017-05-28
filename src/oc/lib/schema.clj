@@ -72,9 +72,9 @@
 
 (def NonBlankStr (schema/pred #(and (string? %) (not (s/blank? %)))))
 
-(def UUIDStr (schema/pred #(uuid-string? %)))
+(def UUIDStr (schema/pred uuid-string?))
 
-(def UniqueID (schema/pred #(unique-id? %)))
+(def UniqueID (schema/pred unique-id?))
 
 (def ISO8601 (schema/pred #(and (string? %)
                                 (re-matches #"(?i)^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$" %))))
@@ -88,7 +88,7 @@
   :user-id UniqueID
   :avatar-url (schema/maybe schema/Str)})
 
-(def Conn (schema/pred #(conn? %)))
+(def Conn (schema/pred conn?))
 
 (def User
   "The portion of JWT properties that we care about for authorship attribution"

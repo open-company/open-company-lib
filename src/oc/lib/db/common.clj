@@ -88,8 +88,7 @@
   {:pre [(conn? conn)
          (or (string? table-name) (keyword? table-name))]}
   (with-timeout default-timeout
-    (-> (r/table table-name)
-        (r/run conn))))
+    (r/run (r/table table-name) conn)))
 
   ([conn table-name fields]
   {:pre [(conn? conn)

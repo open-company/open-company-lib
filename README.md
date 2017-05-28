@@ -31,6 +31,43 @@ To get started, head to: [OpenCompany](https://opencompany.com/)
 The OpenCompany Lib project provides a few namespaces which are shared among multiple OpenCompany projects.
 
 
+## Local Setup
+
+Users of the [OpenCompany](https://opencompany.com/) platform should get started by going to [OpenCompany](https://opencompany.com/). The following local setup is **for developers** wanting to work on the storage service.
+
+Most of the dependencies are internal, meaning [Leiningen](https://github.com/technomancy/leiningen) will handle getting them for you. There are a few exceptions:
+
+* [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html) - a Java 8+ JRE is needed to run Clojure
+* [Leiningen](https://github.com/technomancy/leiningen) 2.7.1+ - Clojure's build and dependency management tool
+
+#### Java
+
+Chances are your system already has Java 8+ installed. You can verify this with:
+
+```console
+java -version
+```
+
+If you do not have Java 8+ [download it](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and follow the installation instructions.
+
+#### Leiningen
+
+Leiningen is easy to install:
+
+1. Download the latest [lein script from the stable branch](https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein).
+1. Place it somewhere that's on your $PATH (`env | grep PATH`). `/usr/local/bin` is a good choice if it is on your PATH.
+1. Set it to be executable. `chmod 755 /usr/local/bin/lein`
+1. Run it: `lein` This will finish the installation.
+
+Then let Leiningen install the rest of the dependencies:
+
+```console
+git clone https://github.com/open-company/open-company-api.git
+cd open-company-api
+lein deps
+```
+
+
 ## Usage
 
 To use this library in your other projcets, include the following in your dependencies:
@@ -41,7 +78,7 @@ To use local changes to the lib here in other projects in a development situatio
 locally with:
 
 ```
-boot build
+lein install
 ```
 
 Make sure your lein or boot environment is configured to use the local Maven repository.
@@ -51,7 +88,7 @@ Make sure your lein or boot environment is configured to use the local Maven rep
 To start a REPL for local development on this library, run:
 
 ```
-boot repl
+lein repl
 ```
 
 ### Pushing to Clojars
@@ -66,7 +103,7 @@ export CLOJARS_PASS="<your Clojars password>"
 Then build and push the lib:
 
 ```
-boot build push
+lein deploy clojars
 ```
 
 You can't have any changed or untracked files in your local repo or you'll get an `Assert failed: project repo is not clean`
@@ -81,13 +118,13 @@ Tests are run in continuous integration of the `master` and `mainline` branches 
 To run the tests locally:
 
 ```console
-boot test!
+lein test!
 ```
 
 To run tests watching for local changes during development:
 
 ```console
-boot watch test!
+lein autotest
 ```
 
 ## Participation

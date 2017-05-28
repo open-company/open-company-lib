@@ -3,6 +3,7 @@
   :resource-paths #{"src"}
   :dependencies '[
     ;; Lisp on the JVM http://clojure.org/documentation
+    ;; NB: Unlike lein, this does not control the Clojure version, see BOOT_CLOJURE_VERSION in boot.properties
     [org.clojure/clojure "1.9.0-alpha17" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.3.443"]

@@ -3,9 +3,9 @@
   :resource-paths #{"src"}
   :dependencies '[
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.9.0-alpha16" :scope "provided"]
+    [org.clojure/clojure "1.9.0-alpha17" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "0.3.442"]
+    [org.clojure/core.async "0.3.443"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "0.3.0-alpha4"]
     ;; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
@@ -62,7 +62,7 @@
                   :username (System/getenv "CLOJARS_USER")
                   :password (System/getenv "CLOJARS_PASS")}}
  pom {:project 'open-company/lib
-      :version (str "0.10.8-" (subs (boot.git/last-commit) 0 7))
+      :version (str "0.10.9-" (subs (boot.git/last-commit) 0 7))
       :url "https://opencompany.com/"
       :scm {:url "https://github.com/open-company/open-company-lib"}
       :license {"MPL" "https://www.mozilla.org/media/MPL/2.0/index.txt"}})

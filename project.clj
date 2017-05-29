@@ -98,6 +98,12 @@
     "ancient" ["ancient" ":all" ":allow-qualified"] ; check for out of date dependencies
   }
 
+  ;; ----- Clojars release configuration -----
+
+  :repositories [["release" {:url "https://clojars.org/repo"
+                              :username :env/clojars_user
+                              :password :env/clojars_pass}]]
+
   ;; ----- Code check configuration -----
 
   :eastwood {

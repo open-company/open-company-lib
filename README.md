@@ -103,7 +103,7 @@ export CLOJARS_PASS="<your Clojars password>"
 Then build and push the lib:
 
 ```
-lein deploy clojars
+lein deploy release
 ```
 
 You can't have any changed or untracked files in your local repo or you'll get an `Assert failed: project repo is not clean`

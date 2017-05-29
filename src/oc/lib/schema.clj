@@ -98,3 +98,8 @@
     :avatar-url (schema/maybe schema/Str)
     schema/Keyword schema/Any ; and whatever else is in the JWT map
   })
+
+(def slack-users
+  {(schema/optional-key :slack-users) (schema/maybe {schema/Keyword {:slack-org-id NonBlankStr
+                                                                     :id NonBlankStr
+                                                                     :token NonBlankStr}})})

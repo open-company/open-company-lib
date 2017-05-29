@@ -3,9 +3,10 @@
   :resource-paths #{"src"}
   :dependencies '[
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.9.0-alpha16" :scope "provided"]
+    ;; NB: Unlike lein, this does not control the Clojure version, see BOOT_CLOJURE_VERSION in boot.properties
+    [org.clojure/clojure "1.9.0-alpha17" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "0.3.442"]
+    [org.clojure/core.async "0.3.443"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "0.3.0-alpha4"]
     ;; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun

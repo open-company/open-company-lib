@@ -14,22 +14,20 @@
 
 (def auth-sources #{:email :slack})
 
-(def Claims {
-  :user-id lib-schema/UniqueID
-  :teams [lib-schema/UniqueID]
-  :admin [lib-schema/UniqueID]
-  :name schema/Str
-  :first-name schema/Str
-  :last-name schema/Str
-  :avatar-url (schema/maybe schema/Str)
-  :email lib-schema/NonBlankStr
-  :auth-source (schema/pred #(auth-sources (keyword %)))
-  (schema/optional-key :slack-bots) SlackBots
-  (schema/optional-key :slack-users) (schema/maybe {lib-schema/NonBlankStr {:slack-org-id lib-schema/NonBlankStr
-                                                                            :id lib-schema/NonBlankStr
-                                                                            :token lib-schema/NonBlankStr}})
-  :refresh-url lib-schema/NonBlankStr
-  :expire schema/Num})
+(def Claims
+  (merge {:user-id lib-schema/UniqueID
+          :teams [lib-schema/UniqueID]
+          :admin [lib-schema/UniqueID]
+          :name schema/Str
+          :first-name schema/Str
+          :last-name schema/Str
+          :avatar-url (schema/maybe schema/Str)
+          :email lib-schema/NonBlankStr
+          :auth-source (schema/pred #(auth-sources (keyword %)))
+          (schema/optional-key :slack-bots) SlackBots
+          :refresh-url lib-schema/NonBlankStr
+          :expire schema/Num}
+         lib-schema/slack-users))
 
 (defn expired?
   "Return true/false if the JWToken is expired."

@@ -27,21 +27,20 @@
    (make-sentry-appender \"YOUR SENTRY DSN\")"
   [dsn]
   (assert dsn "sentry-appender requires a dsn")
-  (merge
-   {:doc "A timbre appender that sends errors to getsentry.com"
-    :min-level :error
-    :enabled? true
-    :async? true
-    :rate-limit nil
-    :fn (fn [args]
+  {:doc "A timbre appender that sends errors to getsentry.com"
+   :min-level :error
+   :enabled? true
+   :async? true
+   :rate-limit nil
+   :fn (fn [args]
           (let [throwable @(:?err_ args)
                 data      (extract-data throwable @(:vargs_ args))]
             (when throwable
               (sentry/capture
-               dsn
-               (-> {:message (.getMessage throwable)}
-                   (assoc-in [:extra :exception-data] data)
-                   (sentry-interfaces/stacktrace throwable))))))}))
+                dsn
+                (-> {:message (.getMessage throwable)}
+                    (assoc-in [:extra :exception-data] data)
+                    (sentry-interfaces/stacktrace throwable))))))})
 
 (comment
   ;; for repl testing

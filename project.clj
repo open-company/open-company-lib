@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.10.10"
+(defproject open-company/lib "0.11.0"
   :description "OpenCompany Lib"
   :url "https://opencompany.com/"
   :license {
@@ -105,6 +105,8 @@
     :exclude-linters [:constant-test :wrong-arity]
     ;; Enable some linters that are disabled by default
     :add-linters [:unused-namespaces :unused-private-vars]
+    ;; Custom Eastwood config
+    :config-files [".eastwood.clj"]
 
     ;; Exclude testing namespaces
     :tests-paths ["test"]

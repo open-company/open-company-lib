@@ -184,7 +184,7 @@
   ([conn :guard conn?
     table-name :guard s-or-k?
     index-name :guard s-or-k?
-    index-value :guard s-or-k?
+    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
     group-by :guard s-or-k?]
   (with-timeout default-timeout
     (-> (r/table table-name)
@@ -195,7 +195,7 @@
   ([conn :guard conn?
     table-name :guard s-or-k?
     index-name :guard s-or-k?
-    index-value :guard s-or-k?
+    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
     group-by :guard s-or-k?
     select-by :guard #(= % :count)]
   (let [resources (with-timeout default-timeout
@@ -210,7 +210,7 @@
   ([conn :guard conn?
     table-name :guard s-or-k?
     index-name :guard s-or-k?
-    index-value :guard s-or-k?
+    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
     group-by :guard s-or-k?
     select-by :guard s-or-k?]
   (with-timeout default-timeout

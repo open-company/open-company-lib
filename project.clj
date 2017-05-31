@@ -68,6 +68,8 @@
       ]  
     }]
 
+    :prod {}
+
     :repl-config [:dev {
       :dependencies [
         [org.clojure/tools.nrepl "0.2.13"] ; Network REPL https://github.com/clojure/tools.nrepl
@@ -82,6 +84,7 @@
       ]
     }]
   }
+
 
   :repl-options {
     :welcome (println (str "\n" (slurp (clojure.java.io/resource "oc/assets/ascii_art.txt")) "\n"

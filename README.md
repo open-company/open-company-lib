@@ -113,7 +113,8 @@ error.
 
 Tests are run in continuous integration of the `master` and `mainline` branches on [Travis CI](https://travis-ci.org/open-company/open-company-lib):
 
-[![Build Status](https://travis-ci.org/open-company/open-company-lib.svg?branch=master)](https://travis-ci.org/open-company/open-company-lib)
+[![Build Status](https://travis-ci.org/open-company/open-company-lib.svg)](https://travis-ci.org/open-company/open-company-lib)
+
 
 To run the tests locally:
 

@@ -92,11 +92,11 @@
   }
 
   :aliases {
-    "build" ["with-profile" "prod" "do" "clean," "uberjar"] ; clean and build code
+    "build" ["with-profile" "prod" "do" "clean," "deps," "uberjar"] ; clean and build code
     "repl" ["with-profile" "+repl-config" "repl"]
     "spell!" ["spell" "-n"] ; check spelling in docs and docstrings
     "autotest" ["with-profile" "qa" "do" "midje" ":autotest"] ; watch for code changes and run affected tests
-    "test!" ["with-profile" "qa" "do" "clean," "midje"] ; build, and run all tests
+    "test!" ["with-profile" "qa" "do" "clean," "deps," "compile," "midje"] ; build, and run all tests
     "bikeshed!" ["bikeshed" "-v" "-m" "120"] ; code check with max line length warning of 120 characters
     "ancient" ["ancient" ":all" ":allow-qualified"] ; check for out of date dependencies
   }

@@ -35,6 +35,12 @@
   []
   (s/join "-" (take 3 (rest (s/split (str (java.util.UUID/randomUUID)) #"-")))))
 
+(defn s-or-k?
+  "Truthy if the provided value is a string or a keyword."
+  [value]
+  (or (string? value)
+      (keyword? value)))
+
 ;; ----- DB Access Timeouts ----
 
 (def default-timeout 5000) ; 5 sec
@@ -57,7 +63,7 @@
   "Create a resource in the DB, returning the property map for the resource."
   [conn table-name resource timestamp]
   {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))
+         (s-or-k? table-name)
          (map? resource)
          (string? timestamp)]}
   (let [timed-resource (merge resource {
@@ -76,7 +82,7 @@
   or return nil if it doesn't exist."
   [conn table-name primary-key-value]
   {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))]}
+         (s-or-k? table-name)]}
   (-> (r/table table-name)
       (r/get primary-key-value)
       (r/run conn)))
@@ -86,14 +92,13 @@
   the resources from the database."
   ([conn table-name]
   {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))]}
+         (s-or-k? table-name)]}
   (with-timeout default-timeout
-    (-> (r/table table-name)
-        (r/run conn))))
+    (r/run (r/table table-name) conn)))
 
   ([conn table-name fields]
   {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))
+         (s-or-k? table-name)
          (sequential? fields)
          (every? #(or (keyword? %) (string? %)) fields)]}
   (with-timeout default-timeout
@@ -103,8 +108,8 @@
 
   ([conn table-name index-name index-value]
   {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))
-         (or (keyword? index-name) (string? index-name))
+         (s-or-k? table-name)
+         (s-or-k? index-name)
          (or (string? index-value) (sequential? index-value))]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
     (with-timeout default-timeout
@@ -114,8 +119,8 @@
 
   ([conn table-name index-name index-value fields]
   {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))
-         (or (keyword? index-name) (string? index-name))
+         (s-or-k? table-name)
+         (s-or-k? index-name)
          (or (string? index-value) (sequential? index-value))
          (sequential? fields)
          (every? #(or (keyword? %) (string? %)) fields)]}
@@ -131,7 +136,7 @@
   resources from the database."
   ([conn table-name primary-keys]
   {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))
+         (s-or-k? table-name)
          (sequential? primary-keys)
          (every? string? primary-keys)]}
   (with-timeout default-timeout
@@ -141,7 +146,7 @@
 
   ([conn table-name primary-keys fields]
   {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))
+         (s-or-k? table-name)
          (sequential? primary-keys)
          (every? string? primary-keys)
          (sequential? fields)
@@ -176,24 +181,23 @@
   If the optional field is used, there is one resource as the value for each group value in the response map. If the
   optional field is not used, then there is a sequence for each group value in the response map.
   "
-  ([conn table-name index-name index-value group-by]
-  {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))
-         (or (keyword? index-name) (string? index-name))
-         (or (keyword? index-value) (string? index-value))
-         (or (keyword? group-by) (string? group-by))]}
+  ([conn :guard conn?
+    table-name :guard s-or-k?
+    index-name :guard s-or-k?
+    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
+    group-by :guard s-or-k?]
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/get-all [index-value] {:index index-name})
         (r/group group-by)
         (r/run conn))))
 
-  ([conn table-name index-name index-value group-by select-by :guard #(= % :count)]
-  {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))
-         (or (keyword? index-name) (string? index-name))
-         (or (keyword? index-value) (string? index-value))
-         (or (keyword? group-by) (string? group-by))]}
+  ([conn :guard conn?
+    table-name :guard s-or-k?
+    index-name :guard s-or-k?
+    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
+    group-by :guard s-or-k?
+    select-by :guard #(= % :count)]
   (let [resources (with-timeout default-timeout
                   (-> (r/table table-name)
                     (r/get-all [index-value] {:index index-name})
@@ -203,13 +207,12 @@
         groups (keys resources)]
     (zipmap groups (map #(count (get resources %)) groups))))
 
-  ([conn table-name index-name index-value group-by select-by]
-  {:pre [(conn? conn)
-         (or (string? table-name) (keyword? table-name))
-         (or (keyword? index-name) (string? index-name))
-         (or (keyword? index-value) (string? index-value))
-         (or (keyword? group-by) (string? group-by))
-         (or (keyword? select-by) (string? select-by))]}
+  ([conn :guard conn?
+    table-name :guard s-or-k?
+    index-name :guard s-or-k?
+    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
+    group-by :guard s-or-k?
+    select-by :guard s-or-k?]
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/get-all [index-value] {:index index-name})

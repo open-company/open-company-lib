@@ -20,8 +20,7 @@
 (defn table-list
   "Return a sequence of the table names in the RethinkDB."
   [conn]
-  (-> (r/table-list)
-      (r/run conn)))
+  (r/run (r/table-list) conn))
 
 (defn- migration-file-name [migrations-dir migration-name]
   (str (s/join java.io.File/separator [migrations-dir migration-name]) ".edn"))
@@ -137,8 +136,7 @@
 (defn delete-table
   "Delete the specified RethinkDB table."
   [conn table-name]
-  (-> (r/table-drop table-name)
-      (r/run conn)))
+  (r/run (r/table-drop table-name) conn))
 
 ;; ----- Main entry-point functions for creating and running migrations -----
 

@@ -1,6 +1,5 @@
 (ns oc.lib.jwt
-  (:require [clojure.string :as string]
-            [if-let.core :refer (if-let* when-let*)]
+  (:require [if-let.core :refer (if-let* when-let*)]
             [taoensso.timbre :as timbre]
             [schema.core :as schema]
             [clj-jwt.core :as jwt]
@@ -36,8 +35,9 @@
     (t/after? (t/now) (tc/from-long expire))
     (timbre/error "No expire field found in JWToken" jwt-claims)))
 
-(defn expire [payload]
+(defn expire
   "Set an expire property in the JWToken payload, longer if there's a bot, shorter if not."
+  [payload]
   (let [expire-by (-> (if (empty? (:slack-bots payload)) 2 24)
                       t/hours t/from-now .getMillis)]
     (assoc payload :expire expire-by)))

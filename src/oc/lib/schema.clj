@@ -100,6 +100,7 @@
   })
 
 (def slack-users
-  {(schema/optional-key :slack-users) (schema/maybe {schema/Keyword {:slack-org-id NonBlankStr
-                                                                     :id NonBlankStr
-                                                                     :token NonBlankStr}})})
+  "`:slack-users` map with entries for each Slack team, keyed by Slack team ID, e.g. `:T1N0ASD`"
+  {(schema/optional-key :slack-users) {schema/Keyword {:slack-org-id NonBlankStr
+                                                       :id NonBlankStr
+                                                       :token NonBlankStr}}})

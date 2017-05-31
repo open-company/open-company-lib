@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.11.1"
+(defproject open-company/lib "0.11.2"
   :description "OpenCompany Lib"
   :url "https://opencompany.com/"
   :license {

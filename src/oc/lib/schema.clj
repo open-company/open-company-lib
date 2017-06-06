@@ -88,6 +88,13 @@
   :user-id UniqueID
   :avatar-url (schema/maybe schema/Str)})
 
+(def SlackMirror {
+  :slack-org-id NonBlankStr
+  :channel-name NonBlankStr
+  :channel-id NonBlankStr})
+
+(def SlackThread (assoc SlackMirror :thread NonBlankStr))
+
 (def Conn (schema/pred conn?))
 
 (def User

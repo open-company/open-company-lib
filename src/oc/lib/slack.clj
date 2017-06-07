@@ -71,7 +71,7 @@
   ([token channel timestamp text author]
   (slack-api :chat.update {:token token
                            :text (-> text (as-proxy author) (with-reply channel timestamp))
-                           :ts timestamp
+                           :thread_ts timestamp
                            :channel channel
                            :parse "none"
                            :unfurl_links false})))
@@ -94,7 +94,7 @@
   (slack-api :chat.postMessage {:token user-token
                                 :text (as-echo text)
                                 :channel channel
-                                :ts timestamp
+                                :thread_ts timestamp
                                 :unfurl_links false
                                 :as_user true})))
 

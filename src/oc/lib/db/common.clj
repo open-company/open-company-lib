@@ -220,16 +220,24 @@
         (r/max select-by)
         (r/run conn)))))
 
-(defn update-resource
+(defun update-resource
   "
   Given a table name, the name of the primary key, and the original and updated resource,
   update a resource in the DB, returning the property map for the resource.
   "
-  ([conn table-name primary-key-name original-resource new-resource]
+  ([conn table-name primary-key-name original-resource :guard map? new-resource]
   (update-resource conn table-name primary-key-name original-resource new-resource (current-timestamp)))
 
-  ([conn table-name primary-key-name original-resource new-resource timestamp]
-  {:pre [(conn? conn)]}
+  ([conn table-name primary-key-name primary-key-value new-resource]
+  (if-let [original-resource (read-resource conn table-name primary-key-value)]
+    (update-resource conn table-name primary-key-name original-resource (merge original-resource new-resource))))
+
+  ([conn :guard conn?
+    table-name :guard s-or-k?
+    primary-key-name :guard s-or-k?
+    original-resource :guard map?
+    new-resource :guard map?
+    timestamp :guard string?]
   (let [timed-resource (merge new-resource {
           primary-key-name (original-resource primary-key-name)
           :created-at (:created-at original-resource)

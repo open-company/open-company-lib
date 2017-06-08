@@ -5,6 +5,9 @@
             [cheshire.core :as json]
             [taoensso.timbre :as timbre]))
 
+;; https://www.cs.tut.fi/~jkorpela/chars/spaces.html
+(def marker-char (char 8203)) ; U+200B a Unicode zero width space, used to mark comment messages originating with OC
+
 (defn- as-echo
   "
   Anything we send into Slack, include a marker (a Unicode non-width space) so we know it was from us.
@@ -12,7 +15,7 @@
   This is especially useful when getting incoming message events from Slack.
   "
   [text]
-  (str (char 8203) text))
+  (str marker-char text))
 
 (defn- as-proxy
   "Manually attribute the message to the person that said it with an English attribution."

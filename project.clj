@@ -105,7 +105,8 @@
 
   :repositories [["release" {:url "https://clojars.org/repo"
                               :username :env/clojars_user
-                              :password :env/clojars_pass}]]
+                              :password :env/clojars_pass
+                              :sign-releases false}]]
 
   ;; ----- Code check configuration -----
 

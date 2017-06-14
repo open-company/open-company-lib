@@ -120,8 +120,8 @@
   ([bot-token channel timestamp text author]
   (slack-api :chat.postMessage {:token bot-token
                                 :text (as-proxy text author)
-                                :ts timestamp
                                 :channel channel
+                                :thread_ts timestamp
                                 :unfurl_links false})))
 
 

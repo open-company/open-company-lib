@@ -222,8 +222,9 @@
 
 (defun update-resource
   "
-  Given a table name, the name of the primary key, and the original and updated resource,
-  update a resource in the DB, returning the property map for the resource.
+  Given a table name, the name of the primary key, an optional original resource (for efficiency if it's already
+  been retrieved) and the updated resource, update the resource in the DB, returning the property map for the
+  updated resource.
   "
   ([conn table-name primary-key-name original-resource :guard map? new-resource]
   (update-resource conn table-name primary-key-name original-resource new-resource (current-timestamp)))

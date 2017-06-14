@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.11.2"
+(defproject open-company/lib "0.11.9"
   :description "OpenCompany Lib"
   :url "https://opencompany.com/"
   :license {
@@ -19,7 +19,7 @@
     [defun "0.3.0-RC1"] ; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
     [lockedon/if-let "0.1.0"] ; More than one binding for if/when macros https://github.com/LockedOn/if-let
     [com.stuartsierra/component "0.3.2"] ; Component Lifecycle https://github.com/stuartsierra/component
-    [http-kit "2.3.0-alpha2"] ; Web server http://http-kit.org/
+    [http-kit "2.3.0-alpha2"] ; HTTP client and server http://http-kit.org/
     [ring/ring-codec "1.0.1"] ; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: Timbre needs to come before Sente due to conflicts in shared dependency: com.taoensso/encore
     [com.taoensso/timbre "4.10.0"] ; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
@@ -27,7 +27,7 @@
     [com.taoensso/sente "1.11.0"] ; WebSocket server https://github.com/ptaoussanis/sente
     [raven-clj "1.5.0"] ; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     [liberator "0.14.1"] ; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
-    [amazonica "0.3.101"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
+    [amazonica "0.3.103"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     [clj-jwt "0.1.1"] ; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [com.apa512/rethinkdb "0.15.26"] ; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
     [cheshire "5.7.1"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
@@ -104,8 +104,9 @@
   ;; ----- Clojars release configuration -----
 
   :repositories [["release" {:url "https://clojars.org/repo"
-                              :username :env/clojars_user
-                              :password :env/clojars_pass}]]
+                             :username :env/clojars_user
+                             :password :env/clojars_pass
+                             :sign-releases false}]]
 
   ;; ----- Code check configuration -----
 

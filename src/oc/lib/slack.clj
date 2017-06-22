@@ -8,7 +8,7 @@
 ;; https://www.cs.tut.fi/~jkorpela/chars/spaces.html
 (def marker-char (char 8203)) ; U+200B a Unicode zero width space, used to mark comment messages originating with OC
 
-(defn- as-echo
+(defn- with-marker
   "
   Anything we send into Slack, include a marker (a Unicode non-width space) so we know it was from us.
   
@@ -17,18 +17,13 @@
   [text]
   (str marker-char text))
 
-(defn- as-proxy
-  "Manually attribute the message to the person that said it with an English attribution."
-  [text author]
-  (as-echo (str author " said:\n" text)))
-
 (defn- with-reply
   "Given the text of a message, append a link to a threaded discussion to the message."
   [text channel timestamp]
   (let [ts (clojure.string/replace timestamp #"\." "")]
     (str text "\n\n<https://opencompanyhq.slack.com/conversation/" channel "/p" ts "|Reply>")))
 
-(defn slack-api [method params]
+(defn- slack-api [method params]
   (timbre/info "Making slack request:" method)
   (let [url (str "https://slack.com/api/" (name method))
         {:keys [status headers body error] :as resp} @(http/get url {:query-params params :as :text})]
@@ -39,6 +34,17 @@
                  :status status
                  :body body}))
       (-> body json/decode keywordize-keys))))
+
+(defn- link-message-to-thread
+  "Update the message in Slack to include a link to a threaded discussion."
+  ([token channel timestamp text]
+  (slack-api :chat.update {:token token
+                           :text (-> text with-marker (with-reply channel timestamp))
+                           :ts timestamp
+                           :channel channel
+                           :parse "none"
+                           :unfurl_links false
+                           :as-user true})))
 
 (defn get-team-info [token]
   (:team (slack-api :team.info {:token token})))
@@ -60,66 +66,53 @@
                                 :channel channel
                                 :unfurl_links false}))
 
-(defn- link-comment-to-thread
-  "Update the message in Slack to include a link to a threaded discussion."
-  ([token channel timestamp text]
-  (slack-api :chat.update {:token token
-                           :text (-> text as-echo (with-reply channel timestamp))
-                           :ts timestamp
-                           :channel channel
-                           :parse "none"
-                           :unfurl_links false
-                           :as-user true}))
-
-  ([token channel timestamp text author]
-  (slack-api :chat.update {:token token
-                           :text (-> text (as-proxy author) (with-reply channel timestamp))
-                           :thread_ts timestamp
-                           :channel channel
-                           :parse "none"
-                           :unfurl_links false})))
-
-(defn echo-comment
-  "Pass along a comment to a Slack channel, impersonating the user that authored the comment."
+(defn echo-message
+  "
+  Post a message to a Slack channel -or- a thread of a channel, impersonating the user that authored the message.
+  
+  If no thread is specified, a new thread is created.
+  "
   ([user-token channel text]
   (let [result (slack-api :chat.postMessage {:token user-token
-                                             :text (as-echo text)
+                                             :text (with-marker text)
                                              :channel channel
                                              :unfurl_links false
                                              :as_user true})
         timestamp (:ts result)]
     ;; If the initial message was successfully posted, edit it to include a link to a thread
     (if (and (:ok result) timestamp)
-      (link-comment-to-thread user-token channel timestamp text)
+      (link-message-to-thread user-token channel timestamp text)
       result)))
   
   ([user-token channel timestamp text]
   (slack-api :chat.postMessage {:token user-token
-                                :text (as-echo text)
+                                :text (with-marker text)
                                 :channel channel
                                 :thread_ts timestamp
                                 :unfurl_links false
                                 :as_user true})))
 
-(defn proxy-comment
+(defn proxy-message
   "
-  Pass along a comment to a Slack channel -or- a thread of a channel, using the bot and mentioning the user that
-  authored the comment.
+  Post a message to a Slack channel -or- a thread of a channel, using the bot and mentioning the user that
+  authored the message.
+
+  If no thread is specified, a new thread is created.
   "
-  ([bot-token channel text author]
+  ([bot-token channel text]
   (let [result (slack-api :chat.postMessage {:token bot-token
-                                             :text (as-proxy text author)
+                                             :text (with-marker text)
                                              :channel channel
                                              :unfurl_links false})
         timestamp (:ts result)]
     ;; If the initial message was successfully posted, edit it to include a link to a thread
     (if (and (:ok result) timestamp)
-      (link-comment-to-thread bot-token channel timestamp text author)
+      (link-message-to-thread bot-token channel timestamp text)
       result)))
 
-  ([bot-token channel timestamp text author]
+  ([bot-token channel timestamp text]
   (slack-api :chat.postMessage {:token bot-token
-                                :text (as-proxy text author)
+                                :text (with-marker text)
                                 :channel channel
                                 :thread_ts timestamp
                                 :unfurl_links false})))
@@ -150,10 +143,10 @@
   ;; Echo a comment as a user
   (def user-token "<user-token>")
   (def user-channels (slack/get-channels user-token))
-  (slack/echo-comment user-token (-> user-channels first :id) "Comment as user.")
+  (slack/echo-message user-token (-> user-channels first :id) "Comment as user.")
 
   ;; Proxy a comment for a user
   (def bot-channels (slack/get-channels bot-token))
-  (slack/proxy-comment user-token (-> user-channels first :id) "Comment by a user." "Albert Camus")
+  (slack/proxy-message user-token (-> user-channels first :id) "Albert Camus said: Comment by a user.")
 
   )

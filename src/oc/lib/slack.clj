@@ -49,6 +49,9 @@
 (defn get-team-info [token]
   (:team (slack-api :team.info {:token token})))
 
+(defn get-user-info [token user-id]
+  (:user (slack-api :users.info {:token token :user user-id})))
+
 (defn get-users [token]
   (:members (slack-api :users.list {:token token})))
 

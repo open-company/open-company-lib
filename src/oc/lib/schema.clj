@@ -93,7 +93,9 @@
   :channel-name NonBlankStr
   :channel-id NonBlankStr})
 
-(def SlackThread (assoc SlackMirror :thread NonBlankStr))
+(def SlackThread (merge SlackMirror {
+                    :thread NonBlankStr
+                    (schema/optional-key :bot-token) NonBlankStr}))
 
 (def Conn (schema/pred conn?))
 

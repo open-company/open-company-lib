@@ -32,7 +32,7 @@
     [com.apa512/rethinkdb "0.15.26"] ; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
     [cheshire "5.7.1"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
     [clj-time "0.13.0"] ; Date and time lib https://github.com/clj-time/clj-time
-    [com.climate/squeedo "0.1.4"] ; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
+    [com.climate/squeedo "0.2.1"] ; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     [org.slf4j/slf4j-nop "1.8.0-alpha2"] ; Squeedo dependency
     [prismatic/schema "1.1.6"] ; Data validation https://github.com/Prismatic/schema
     [environ "1.1.0"] ; Environment settings from different sources https://github.com/weavejester/environ

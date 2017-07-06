@@ -44,7 +44,7 @@
     ;; QA environment and dependencies
     :qa {
       :dependencies [
-        [philoskim/debux "0.3.3"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
+        [philoskim/debux "0.3.4"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
         [midje "1.9.0-alpha6"] ; Example-based testing https://github.com/marick/Midje
       ]
       :plugins [

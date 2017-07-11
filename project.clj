@@ -1,6 +1,6 @@
 (defproject open-company/lib "0.11.14"
-  :description "OpenCompany Lib"
-  :url "https://opencompany.com/"
+  :description "OpenCompany Common Library"
+  :url "https://github.com/open-company/open-company-lib"
   :license {
     :name "Mozilla Public License v2.0"
     :url "http://www.mozilla.org/MPL/2.0/"
@@ -26,8 +26,8 @@
     ;; NB: Sente needs to come after Timbre due to conflicts in shared dependency: com.taoensso/encore
     [com.taoensso/sente "1.11.0"] ; WebSocket server https://github.com/ptaoussanis/sente
     [raven-clj "1.5.0"] ; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
-    [liberator "0.15.0"] ; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
-    [amazonica "0.3.106"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
+    [liberator "0.15.1"] ; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
+    [amazonica "0.3.107"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     [clj-jwt "0.1.1"] ; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [com.apa512/rethinkdb "0.15.26"] ; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
     [cheshire "5.7.1"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
@@ -44,8 +44,8 @@
     ;; QA environment and dependencies
     :qa {
       :dependencies [
-        [philoskim/debux "0.3.4"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
-        [midje "1.9.0-alpha6"] ; Example-based testing https://github.com/marick/Midje
+        [philoskim/debux "0.3.6"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
+        [midje "1.9.0-alpha8"] ; Example-based testing https://github.com/marick/Midje
       ]
       :plugins [
         [lein-midje "3.2.1"] ; Example-based testing https://github.com/marick/lein-midje

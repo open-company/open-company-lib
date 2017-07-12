@@ -131,6 +131,58 @@
           (r/pluck fields)
           (r/run conn))))))
 
+(defn read-resources-and-relations
+  "Given a table name, an index name and value, and what amounts to a document key, foreign table, foreign key, 
+  foreign key index and the fields of the foreign table that are interesting, return all the resources that match
+  the index, and any related resources in the other table in an array in each resource.
+
+  E.g.
+
+  Table A: foo, bar
+  Table B: blat, a-bar, blu
+
+  Here `bar` and `a-bar` have the same value, with `a-bar` acting as a foreign key pointing each B at an A.
+
+  (read-resources-and-relations conn 'A' :foo-index '1234' :my-bees 'B' :bar :a-bar-index ['blat', 'blu'])
+
+  will return something like:
+
+  [
+    {
+      :foo '1234'
+      :bar 'abcd'
+      :my-bees [{:blat 'ferret' :blu 42} {:blat 'monkey' :blu 7}]
+    }
+    {
+      :foo '1234'
+      :bar 'efgh'
+      :my-bees [{:blat 'mouse' :blu 77} {:blat 'mudskipper' :blu 17}]
+    }
+  ]
+  "
+  [conn table-name index-name index-value
+   relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (s-or-k? relation-name)
+         (s-or-k? relation-table-name)
+         (s-or-k? relation-field-name)
+         (s-or-k? relation-index-name)
+         (sequential? relation-fields)
+         (every? #(or (keyword? %) (string? %)) relation-fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])]
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/merge (r/fn [resource]
+            {relation-name (-> (r/table relation-table-name)
+                               (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                               (r/pluck relation-fields)
+                               (r/coerce-to :array))}))
+          (r/run conn)))))
+
 (defn read-resources-by-primary-keys
   "Given a table name, a sequence of primary keys, and an optional set of fields, retrieve the
   resources from the database."
@@ -361,7 +413,7 @@
   (require '[rethinkdb.query :as r])
   (require '[oc.lib.db.common :as db-common] :reload)
 
-  (def conn (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_dev"]))
+  (def conn (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_storage_dev"]))
   (def conn2 (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_auth_dev"]))
   
   (db-common/read-resource conn2 "teams" "c55c-47f1-898e")

@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.11.14"
+(defproject open-company/lib "0.11.15"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -31,7 +31,7 @@
     [clj-jwt "0.1.1"] ; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [com.apa512/rethinkdb "0.15.26"] ; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
     [cheshire "5.7.1"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
-    [clj-time "0.13.0"] ; Date and time lib https://github.com/clj-time/clj-time
+    [clj-time "0.14.0"] ; Date and time lib https://github.com/clj-time/clj-time
     [com.climate/squeedo "0.2.1"] ; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     [org.slf4j/slf4j-nop "1.8.0-alpha2"] ; Squeedo dependency
     [prismatic/schema "1.1.6"] ; Data validation https://github.com/Prismatic/schema
@@ -44,7 +44,7 @@
     ;; QA environment and dependencies
     :qa {
       :dependencies [
-        [philoskim/debux "0.3.6"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
+        [philoskim/debux "0.3.9"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
         [midje "1.9.0-alpha8"] ; Example-based testing https://github.com/marick/Midje
       ]
       :plugins [

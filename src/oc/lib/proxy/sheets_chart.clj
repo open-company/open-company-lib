@@ -11,46 +11,63 @@
 (def chart-id "sheet-chart")
 
 (defn- fix-script-string [s keep-legend]
-  (let [r0 #"(?i)(\\x22width\\x22:\d+)"
-        r1 #"(?i)(\\x22height\\x22:\d+)"
-        r2 #"(?i)safeDraw\(document\.getElementById\('c'\)\)"
+  (let [r0  #"(?i)(\"width\":\d+)"
+        r01 #"(?i)(\\x22width\\x22:\d+)"
+        r1  #"(?i)(\"height\\x22:\d+)"
+        r11  #"(?i)(\\x22height\\x22:\d+)"
+        r2  #"(?i)safeDraw\(document\.getElementById\('c'\)\)"
         ;; Regexp to match charts exported as HTML page
-        r3 #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);"
-        r4 #"(?i)'elementId': 'embed_chart'"
-        r5 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
-        r6 #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
-        r7 #"(?i)(function\s*onChartsExportApiLoad\s*\(\s*\)\s*\{)"
-        r8 #"(?i)'fallbackUri': '"
-        has-legend-key (re-find (re-matcher #"(?i)\"legend\"" s))
+        r3  #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);"
+        r4  #"(?i)\"containerId\":\"embed_\d+\""
+        r41 #"(?i)'elementId': 'embed_chart'"
+        r5  #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
+        r6  #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
+        r61 #"(?i)\\x22legend\\x22:\\x22((\bleft\b)|(\bright\b))\\x22"
+        r7  #"(?i)(function\s*onNumberFormatApiLoad\s*\(\s*\)\s*\{)"
+        r71 #"(?i)(function\s*onChartsExportApiLoad\s*\(\s*\)\s*\{)"
+        r8  #"(?i)'fallbackUri': '"
+        has-legend-key (re-find (re-matcher #"(?i)[\"|\\x22]legend[\"|\\x22]" s))
         has-visible-legend (re-find (re-matcher r6 s))
         ;; Replace all regexp
         ;; Replace the width value with a function that calculates the viewport width
-        fixed-string-0 (clojure.string/replace s r0 (str "\\\\x22width\\\\x22: (getViewportWidth() "
-                                                         ;; Add 20% more width if the chart had a legend set on left or right
-                                                         (when has-visible-legend
-                                                           "+ (getViewportWidth()/100*20)")
-                                                         ")"
-                                                         ;; Add the legend key set to none if
-                                                         ;; it's not a map chart (chartType: GeoChart)
-                                                         ;; and it has no other legend key
-                                                         (when (and (not keep-legend)
-                                                                    (not has-legend-key))
-                                                           ", \\\\x22legend\\\\x22: \\\\x22none\\\\x22")))
+        width-replace (str " (getViewportWidth() "
+                        ;; Add 20% more width if the chart had a legend set on left or right
+                        (when has-visible-legend
+                          "+ (getViewportWidth()/100*20)")
+                        ")")
+        fixed-string-0  (clojure.string/replace s r0 (str "\"width\": " width-replace
+                                                          ;; Add the legend key set to none if
+                                                          ;; it's not a map chart (chartType: GeoChart)
+                                                          ;; and it has no other legend key
+                                                          (when (and (not keep-legend)
+                                                                     (not has-legend-key))
+                                                            ", \"legend\": \"none\"")))
+        fixed-string-01 (clojure.string/replace fixed-string-0 r01 (str "\\\\x22width\\\\x22: " width-replace
+                                                                      ;; Add the legend key set to none if
+                                                                      ;; it's not a map chart (chartType: GeoChart)
+                                                                      ;; and it has no other legend key
+                                                                      (when (and (not keep-legend)
+                                                                                 (not has-legend-key))
+                                                                        ", \\\\x22legend\\\\x22: \\\\x22none\\\\x22")))
         ;; Replace the height value with a function that calculates the viewport height
-        fixed-string-1 (clojure.string/replace fixed-string-0 r1 (str "\\\\x22height\\\\x22: getViewportHeight()"))
+        fixed-string-1 (clojure.string/replace fixed-string-01 r1 (str "\"height\": getViewportHeight()"))
+        fixed-string-11 (clojure.string/replace fixed-string-1 r11 (str "\"height\": getViewportHeight()"))
         ;; Replace the element id of the chart container
-        fixed-string-2 (clojure.string/replace fixed-string-1 r2 (str "safeDraw(document.getElementById('" chart-id "'))"))
+        fixed-string-2 (clojure.string/replace fixed-string-11 r2 (str "safeDraw(document.getElementById('" chart-id "'))"))
         ;; Replace the element id of the chart container for another type of shared chart
         fixed-string-3 (clojure.string/replace fixed-string-2 r3 (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
         ;; Replace the container id with our chart-id
-        fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "'elementId': '" chart-id "'"))
-        fixed-string-5 (clojure.string/replace fixed-string-4 r5 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
+        fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "\"containerId\":\"" chart-id "\""))
+        fixed-string-41 (clojure.string/replace fixed-string-4 r41 (str "'elementId': '" chart-id "'"))
+        fixed-string-5 (clojure.string/replace fixed-string-41 r5 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
         ;; Set the legend to none if there is a legend key set to left or right already
-        fixed-string-6 (clojure.string/replace fixed-string-5 r6 (str "\\\\x22legend\\\\x22:\\\\x22none\\\\x22"))
+        fixed-string-6 (clojure.string/replace fixed-string-5 r6 (str "\"legend\":\"none\""))
+        fixed-string-61 (clojure.string/replace fixed-string-6 r61 (str "\\\\x22legend\\\\x22:\\\\x22none\\\\x22"))
         ;; Remove the body class that shows the chart placeholder icon while loading and rendering the chart
-        fixed-string-7 (clojure.string/replace fixed-string-6 r7 (str "document.addEventListener(\"DOMContentLoaded\", function(event) { document.body.classList.remove(\"loading\");}); function onChartsExportApiLoad(){ "))
+        fixed-string-7 (clojure.string/replace fixed-string-61 r7 (str "function onNumberFormatApiLoad(){ document.body.classList.remove(\"loading\");"))
+        fixed-string-71 (clojure.string/replace fixed-string-7 r71 (str "document.addEventListener(\"DOMContentLoaded\", function(event) { document.body.classList.remove(\"loading\");}); function onChartsExportApiLoad(){ "))
         ;; Rewrite the fallbackUri param, prefix it with goodle docs url since it's relative
-        fixed-string-8 (clojure.string/replace fixed-string-7 r8 (str "'fallbackUri': 'https:\\\\/\\\\/docs.google.com"))]
+        fixed-string-8 (clojure.string/replace fixed-string-71 r8 (str "'fallbackUri': 'https:\\\\/\\\\/docs.google.com"))]
     fixed-string-8))
 
 (defn- get-script-tag [s keep-legend]
@@ -93,7 +110,7 @@
   (proxy-sheets sheet-path params (fn [status body]
     (let [parsed-html (h/as-hickory (h/parse body)) ; parse the HTML of the response
           scripts (hs/select (hs/tag :script) parsed-html) ; extract the script tags
-          geo-chart-regex #"\\x22chartType\\x22:\s*\\x22GeoChart\\x22"
+          geo-chart-regex #"GeoChart"
           is-geo-chart (re-find (re-matcher geo-chart-regex body))
           script-strings (s/join (map #(get-script-tag % is-geo-chart) scripts))
           output-html (str "<html><head>"

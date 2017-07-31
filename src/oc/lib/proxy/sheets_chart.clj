@@ -13,7 +13,7 @@
 (defn- fix-script-string [s keep-legend]
   (let [r0  #"(?i)(\"width\":\d+)"
         r01 #"(?i)(\\x22width\\x22:\d+)"
-        r1  #"(?i)(\"height\\x22:\d+)"
+        r1  #"(?i)(\"height\":\d+)"
         r11  #"(?i)(\\x22height\\x22:\d+)"
         r2  #"(?i)safeDraw\(document\.getElementById\('c'\)\)"
         ;; Regexp to match charts exported as HTML page
@@ -51,7 +51,7 @@
                                                                                  (not has-legend-key))
                                                                         ", \\\\x22legend\\\\x22:\\\\x22none\\\\x22")))
         ;; Replace the height value with a function that calculates the viewport height
-        fixed-string-1 (clojure.string/replace fixed-string-01 r1 (str "\"height\":315"))
+        fixed-string-1 (clojure.string/replace fixed-string-01 r1 (str "\"height\":(getViewportHeight())"))
         fixed-string-11 (clojure.string/replace fixed-string-1 r11 (str "\"height\":315"))
         ;; Replace the element id of the chart container
         fixed-string-2 (clojure.string/replace fixed-string-11 r2 (str "safeDraw(document.getElementById('" chart-id "'))"))

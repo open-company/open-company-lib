@@ -30,28 +30,29 @@
         has-visible-legend (or (re-find (re-matcher r6 s)) (re-find (re-matcher r61 s)))
         ;; Replace all regexp
         ;; Replace the width value with a function that calculates the viewport width
-        width-replace (str " (getViewportWidth() "
+        width-replace (str "(getViewportWidth()"
                         ;; Add 20% more width if the chart had a legend set on left or right
                         (when has-visible-legend
-                          "+ (getViewportWidth()/100*20)")
+                          "+(getViewportWidth()/100*20)")
                         ")")
-        fixed-string-0  (clojure.string/replace s r0 (str "\"width\": " width-replace
+        width-replace1 "560"
+        fixed-string-0  (clojure.string/replace s r0 (str "\"width\":" width-replace
                                                           ;; Add the legend key set to none if
                                                           ;; it's not a map chart (chartType: GeoChart)
                                                           ;; and it has no other legend key
                                                           (when (and (not keep-legend)
                                                                      (not has-legend-key))
                                                             ", \"legend\": \"none\"")))
-        fixed-string-01 (clojure.string/replace fixed-string-0 r01 (str "\\\\x22width\\\\x22: " width-replace
+        fixed-string-01 (clojure.string/replace fixed-string-0 r01 (str "\\\\x22width\\\\x22:" width-replace1
                                                                       ;; Add the legend key set to none if
                                                                       ;; it's not a map chart (chartType: GeoChart)
                                                                       ;; and it has no other legend key
                                                                       (when (and (not keep-legend)
                                                                                  (not has-legend-key))
-                                                                        ", \\\\x22legend\\\\x22: \\\\x22none\\\\x22")))
+                                                                        ", \\\\x22legend\\\\x22:\\\\x22none\\\\x22")))
         ;; Replace the height value with a function that calculates the viewport height
-        fixed-string-1 (clojure.string/replace fixed-string-01 r1 (str "\"height\": getViewportHeight()"))
-        fixed-string-11 (clojure.string/replace fixed-string-1 r11 (str "\"height\": getViewportHeight()"))
+        fixed-string-1 (clojure.string/replace fixed-string-01 r1 (str "\"height\":315"))
+        fixed-string-11 (clojure.string/replace fixed-string-1 r11 (str "\"height\":315"))
         ;; Replace the element id of the chart container
         fixed-string-2 (clojure.string/replace fixed-string-11 r2 (str "safeDraw(document.getElementById('" chart-id "'))"))
         ;; Replace the element id of the chart container for another type of shared chart

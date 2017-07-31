@@ -22,12 +22,12 @@
         r41 #"(?i)'elementId': 'embed_chart'"
         r5  #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
         r6  #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
-        r61 #"(?i)\\x22legend\\x22:\\x22((\bleft\b)|(\bright\b))\\x22"
+        r61 #"(?i)(\\x22legend\\x22:\\x22(left|right)\\x22)"
         r7  #"(?i)(function\s*onNumberFormatApiLoad\s*\(\s*\)\s*\{)"
         r71 #"(?i)(function\s*onChartsExportApiLoad\s*\(\s*\)\s*\{)"
         r8  #"(?i)'fallbackUri': '"
-        has-legend-key (re-find (re-matcher #"(?i)[\"|\\x22]legend[\"|\\x22]" s))
-        has-visible-legend (re-find (re-matcher r6 s))
+        has-legend-key (re-find (re-matcher #"(?i)([\"|\\x22]legend[\"|\\x22])" s))
+        has-visible-legend (or (re-find (re-matcher r6 s)) (re-find (re-matcher r61 s)))
         ;; Replace all regexp
         ;; Replace the width value with a function that calculates the viewport width
         width-replace (str " (getViewportWidth() "

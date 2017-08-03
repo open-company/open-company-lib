@@ -10,7 +10,7 @@
 
 (def chart-id "sheet-chart")
 
-(defn fix-script-string [script-string keep-legend]
+(defn- fix-script-string [script-string keep-legend]
   (let [legend-re-quotes #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
         legend-re #"(?i)(\\x22legend\\x22:\\x22(left|right)\\x22)"
         has-legend-key (re-find (re-matcher #"(?i)([\"|\\x22]legend[\"|\\x22])" script-string))

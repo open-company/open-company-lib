@@ -3,10 +3,11 @@
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
             [if-let.core :refer (if-let*)]
-            [defun.core :refer (defun)]
+            [defun.core :refer (defun defun-)]
             [clj-time.format :as format]
             [clj-time.core :as time]
             [rethinkdb.query :as r]
+            [rethinkdb.net :as rn]
             [oc.lib.schema :as lib-schema]))
 
 ;; ----- ISO 8601 timestamp -----
@@ -40,6 +41,13 @@
   [value]
   (or (string? value)
       (keyword? value)))
+
+(defn- drain-cursor
+  "If the result is a cursor, drain it into a Clojure sequence."
+  [result]
+  (if (= (type result) rethinkdb.net.Cursor)
+    (seq result)
+    result))
 
 ;; ----- DB Access Timeouts ----
 
@@ -94,7 +102,9 @@
   {:pre [(conn? conn)
          (s-or-k? table-name)]}
   (with-timeout default-timeout
-    (r/run (r/table table-name) conn)))
+    (-> (r/table table-name)
+        (r/run conn)
+        (drain-cursor))))
 
   ([conn table-name fields]
   {:pre [(conn? conn)
@@ -104,7 +114,8 @@
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/with-fields fields)
-        (r/run conn))))
+        (r/run conn)
+        (drain-cursor))))
 
   ([conn table-name index-name index-value]
   {:pre [(conn? conn)
@@ -115,7 +126,8 @@
     (with-timeout default-timeout
        (-> (r/table table-name)
           (r/get-all index-values {:index index-name})
-          (r/run conn)))))
+          (r/run conn)
+          (drain-cursor)))))
 
   ([conn table-name index-name index-value fields]
   {:pre [(conn? conn)
@@ -129,7 +141,8 @@
       (-> (r/table table-name)
           (r/get-all index-values {:index index-name})
           (r/pluck fields)
-          (r/run conn))))))
+          (r/run conn)
+          (drain-cursor))))))
 
 (defn read-resources-and-relations
   "Given a table name, an index name and value, and what amounts to a document key, foreign table, foreign key, 
@@ -181,7 +194,8 @@
                                (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
                                (r/pluck relation-fields)
                                (r/coerce-to :array))}))
-          (r/run conn)))))
+          (r/run conn)
+          (drain-cursor)))))
 
 (defn read-resources-by-primary-keys
   "Given a table name, a sequence of primary keys, and an optional set of fields, retrieve the
@@ -194,7 +208,8 @@
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/get-all primary-keys)
-        (r/run conn))))
+        (r/run conn)
+        (drain-cursor))))
 
   ([conn table-name primary-keys fields]
   {:pre [(conn? conn)
@@ -207,7 +222,8 @@
     (-> (r/table table-name)
         (r/get-all primary-keys)
         (r/pluck fields)
-        (r/run conn)))))
+        (r/run conn)
+        (drain-cursor)))))
 
 (defn read-resources-in-order
   "
@@ -242,7 +258,8 @@
     (-> (r/table table-name)
         (r/get-all [index-value] {:index index-name})
         (r/group group-by)
-        (r/run conn))))
+        (r/run conn)
+        (drain-cursor))))
 
   ([conn :guard conn?
     table-name :guard s-or-k?
@@ -255,7 +272,8 @@
                     (r/get-all [index-value] {:index index-name})
                     (r/pluck group-by)
                     (r/group group-by)
-                    (r/run conn)))
+                    (r/run conn)
+                    (drain-cursor)))
         groups (keys resources)]
     (zipmap groups (map #(count (get resources %)) groups))))
 
@@ -270,7 +288,8 @@
         (r/get-all [index-value] {:index index-name})
         (r/group group-by)
         (r/max select-by)
-        (r/run conn)))))
+        (r/run conn)
+        (drain-cursor)))))
 
 (defun update-resource
   "

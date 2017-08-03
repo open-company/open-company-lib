@@ -173,7 +173,7 @@
     }
   ]
   "
-  [conn table-name index-name index-value
+  ([conn table-name index-name index-value
    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
   {:pre [(conn? conn)
          (s-or-k? table-name)
@@ -196,6 +196,37 @@
                                (r/coerce-to :array))}))
           (r/run conn)
           (drain-cursor)))))
+
+  ([conn table-name index-name index-value
+    limit order-by start direction
+   relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (s-or-k? relation-name)
+         (s-or-k? relation-table-name)
+         (s-or-k? relation-field-name)
+         (s-or-k? relation-index-name)
+         (sequential? relation-fields)
+         (every? #(or (keyword? %) (string? %)) relation-fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])
+        order (if (= direction :desc) r/desc r/asc)]
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/filter (r/fn [row]
+                      (r/le "2016-02-05T03:14:00.000Z" (r/get-field row "created-at"))))
+          (r/order-by (order order-by))
+          (r/limit limit)
+          (r/merge (r/fn [resource]
+            {relation-name (-> (r/table relation-table-name)
+                               (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                               (r/pluck relation-fields)
+                               (r/coerce-to :array))}))
+          (r/run conn)
+          (drain-cursor))))))
+
 
 (defn read-resources-by-primary-keys
   "Given a table name, a sequence of primary keys, and an optional set of fields, retrieve the

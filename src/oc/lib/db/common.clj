@@ -7,7 +7,6 @@
             [clj-time.format :as format]
             [clj-time.core :as time]
             [rethinkdb.query :as r]
-            [rethinkdb.net :as rn]
             [oc.lib.schema :as lib-schema]))
 
 ;; ----- ISO 8601 timestamp -----

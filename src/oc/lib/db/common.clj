@@ -225,7 +225,7 @@
          (every? #(or (keyword? %) (string? %)) relation-fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])
         order-fn (if (= order :desc) r/desc r/asc)
-        filter-fn (if (= direction :before) r/ge r/le)]
+        filter-fn (if (= direction :before) r/gt r/lt)]
     (with-timeout default-timeout
       (-> (r/table table-name)
           (r/get-all index-values {:index index-name})

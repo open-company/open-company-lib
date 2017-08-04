@@ -59,7 +59,7 @@
 
 (defn- proxy-sheets
   "
-  Proxy requests to Google Sheets (needed for CORs). Rewrite the respones in a form ready for embedding as
+  Proxy requests to Google Sheets (needed for CORs). Rewrite the responses in a form ready for embedding as
   an iFrame. Return the response as a ring response (map).
 
   Used in development by the Web development service. Used in production by the OpenCompany Proxy Service.
@@ -81,7 +81,7 @@
 
 (defn proxy-sheets-chart
   "
-  Proxy requests to Google Sheets and rewrite the respones in a form ready for embedding as
+  Proxy requests to Google Sheets and rewrite the responses in a form ready for embedding as
   an iFrame. Return the response as a ring response (map).
 
   Used in development by the Web development service. Used in production by the OpenCompany Proxy Service.

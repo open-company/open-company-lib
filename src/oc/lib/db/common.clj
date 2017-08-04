@@ -55,7 +55,7 @@
 (defmacro with-timeout
   "A basic macro to wrap things in a timeout.
   Will throw an exception if the operation times out.
-  Note: This is a simplistic approach and piggiebacks on core.asyncs executor-pool.
+  Note: This is a simplistic approach and piggybacks on core.asyncs executor-pool.
   Read this discussion for more info: https://gist.github.com/martinklepsch/0caf92b5e42eefa3a894"
   [ms & body]
   `(let [c# (async/thread-call #(do ~@body))]

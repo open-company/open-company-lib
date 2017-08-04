@@ -145,9 +145,9 @@
           (drain-cursor))))))
 
 (defn read-resources-and-relations
-  "Given a table name, an index name and value, and what amounts to a document key, foreign table, foreign key, 
-  foreign key index and the fields of the foreign table that are interesting, return all the resources that match
-  the index, and any related resources in the other table in an array in each resource.
+  "In the first arity (9): Given a table name, an index name and value, and what amounts to a document key, foreign table,
+  foreign key, foreign key index and the fields of the foreign table that are interesting, return all the resources
+  that match the index, and any related resources in the other table in an array in each resource.
 
   E.g.
 
@@ -172,6 +172,15 @@
       :my-bees [{:blat 'mouse' :blu 77} {:blat 'mudskipper' :blu 17}]
     }
   ]
+
+  The second arity (13) is largely the same functionality as the first, but with more control over the selection and
+  order of the returned resources in the form of:
+
+  - an `order-by` field for the order of the returned resources
+  - an `order`, one of either `:desc` or `:asc`
+  - an initial value of the order-by field to `start` the limited set from
+  - a `direction`, one of either `:before` or `:after` the `start` value
+  - `limit`, a numeric limit to the number returned
   "
   ([conn table-name index-name index-value
    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
@@ -198,12 +207,17 @@
           (drain-cursor)))))
 
   ([conn table-name index-name index-value
-    limit order-by start direction
-   relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+    order-by order start direction limit
+    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
          (or (string? index-value) (sequential? index-value))
+         (s-or-k? order-by)
+         (#{:desc :asc} order)
+         (not (nil? start))
+         (#{:before :after} direction)
+         (number? limit)
          (s-or-k? relation-name)
          (s-or-k? relation-table-name)
          (s-or-k? relation-field-name)
@@ -211,13 +225,14 @@
          (sequential? relation-fields)
          (every? #(or (keyword? %) (string? %)) relation-fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])
-        order (if (= direction :desc) r/desc r/asc)]
+        order-fn (if (= order :desc) r/desc r/asc)
+        filter-fn (if (= direction :before) r/ge r/le)]
     (with-timeout default-timeout
       (-> (r/table table-name)
           (r/get-all index-values {:index index-name})
           (r/filter (r/fn [row]
-                      (r/le "2016-02-05T03:14:00.000Z" (r/get-field row "created-at"))))
-          (r/order-by (order order-by))
+                      (filter-fn start (r/get-field row order-by))))
+          (r/order-by (order-fn order-by))
           (r/limit limit)
           (r/merge (r/fn [resource]
             {relation-name (-> (r/table relation-table-name)

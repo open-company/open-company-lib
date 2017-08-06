@@ -336,6 +336,33 @@
         (r/run conn)
         (drain-cursor)))))
 
+(defn months-with-resource
+  "
+  Given a table name, an index name and value, and an ISO8601 date field, return a sequence of all the months 
+  that have at least one resource.
+
+  Response:
+
+  [[2016 '05'] ['2017' '06'] ['2017' '01']]
+
+  Sequence is NOT ordered.
+  "
+  [conn table-name index-name index-value date-field]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])]
+    (with-timeout default-timeout
+        (-> (r/table table-name)
+            (r/get-all index-values {:index index-name})
+            (r/get-field date-field)
+            (r/map (r/fn [value] (-> (r/split value "-" 2) ; split the first 2 parts of the ISO8601 date
+                                     (r/limit 2)))) ; only interested in those first 2 parts
+            (r/distinct)
+            (r/run conn)
+            (drain-cursor)))))
+
 (defun update-resource
   "
   Given a table name, the name of the primary key, an optional original resource (for efficiency if it's already

@@ -338,14 +338,14 @@
 
 (defn months-with-resource
   "
-  Given a table name, an index name and value, and an ISO8601 date field, return a sequence of all the months 
+  Given a table name, an index name and value, and an ISO8601 date field, return an ordered sequence of all the months 
   that have at least one resource.
 
   Response:
 
-  [[2016 '05'] ['2017' '06'] ['2017' '01']]
+  [['2017' '06'] ['2017' '01'] [2016 '05']]
 
-  Sequence is NOT ordered.
+  Sequence is ordered, newest to oldest.
   "
   [conn table-name index-name index-value date-field]
   {:pre [(conn? conn)
@@ -353,7 +353,8 @@
          (s-or-k? index-name)
          (or (string? index-value) (sequential? index-value))]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
-    (with-timeout default-timeout
+    (reverse (sort-by #(str (first %) "-" (last %))
+      (with-timeout default-timeout
         (-> (r/table table-name)
             (r/get-all index-values {:index index-name})
             (r/get-field date-field)
@@ -361,7 +362,7 @@
                                      (r/limit 2)))) ; only interested in those first 2 parts
             (r/distinct)
             (r/run conn)
-            (drain-cursor)))))
+            (drain-cursor)))))))
 
 (defun update-resource
   "

@@ -10,45 +10,51 @@
 
 (def chart-id "sheet-chart")
 
-(defn- fix-script-string [s keep-legend]
-  (let [r0 #"(?i)(\"width\":\d+)"
-        r1 #"(?i)(\"height\":\d+)"
-        r2 #"(?i)safeDraw\(document\.getElementById\('c'\)\)"
-        ;; Regexp to match charts exported as HTML page
-        r3 #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);"
-        r4 #"(?i)\"containerId\":\"embed_\d+\""
-        r5 #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};"
-        r6 #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
-        r7 #"(?i)(function\s*onNumberFormatApiLoad\s*\(\s*\)\s*\{)"
-        has-legend-key (re-find (re-matcher #"(?i)\"legend\"" s))
-        has-visible-legend (re-find (re-matcher r6 s))
-        ;; Replace all regexp
-        ;; Replace the width value with a function that calculates the viewport width
-        fixed-string-0 (clojure.string/replace s r0 (str "\"width\": (getViewportWidth() "
-                                                         ;; Add 20% more width if the chart had a legend set on left or right
-                                                         (when has-visible-legend
-                                                           "+ (getViewportWidth()/100*20)")
-                                                         ")"
-                                                         ;; Add the legend key set to none if
-                                                         ;; it's not a map chart (chartType: GeoChart)
-                                                         ;; and it has no other legend key
-                                                         (when (and (not keep-legend)
-                                                                    (not has-legend-key))
-                                                           ", \"legend\": \"none\"")))
-        ;; Replace the height value with a function that calculates the viewport height
-        fixed-string-1 (clojure.string/replace fixed-string-0 r1 (str "\"height\": getViewportHeight()"))
-        ;; Replace the element id of the chart container
-        fixed-string-2 (clojure.string/replace fixed-string-1 r2 (str "safeDraw(document.getElementById('" chart-id "'))"))
-        ;; Replace the element id of the chart container for another type of shared chart
-        fixed-string-3 (clojure.string/replace fixed-string-2 r3 (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
-        ;; Replace the container id with our chart-id
-        fixed-string-4 (clojure.string/replace fixed-string-3 r4 (str "\"containerId\":\"" chart-id "\""))
-        fixed-string-5 (clojure.string/replace fixed-string-4 r5 (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
-        ;; Set the legend to none if there is a legend key set to left or right already
-        fixed-string-6 (clojure.string/replace fixed-string-5 r6 (str "\"legend\":\"none\""))
-        ;; Remove the body class that shows the chart placeholder icon while loading and rendering the chart
-        fixed-string-7 (clojure.string/replace fixed-string-6 r7 (str "function onNumberFormatApiLoad(){ document.body.classList.remove(\"loading\");"))]
-    fixed-string-7))
+(defn- fix-script-string [script-string keep-legend]
+  (let [legend-re-quotes #"(?i)\"legend\":\"((\bleft\b)|(\bright\b))\""
+        legend-re #"(?i)(\\x22legend\\x22:\\x22(left|right)\\x22)"
+        has-legend-key (re-find (re-matcher #"(?i)([\"|\\x22]legend[\"|\\x22])" script-string))
+        has-visible-legend (or (re-find (re-matcher legend-re-quotes script-string)) (re-find (re-matcher legend-re script-string)))
+        width-replace-dynamic (str "(getViewportWidth()"
+                                ;; Add 20% more width if the chart had a legend set on left or right
+                                (when has-visible-legend
+                                  "+(getViewportWidth()/100*20)")
+                                ")")
+        width-replace-fixed "560"]
+    (-> script-string
+      ;; Replace the height value with a function that calculates the viewport height
+      (s/replace #"(?i)(\"width\":\d+)" (str "\"width\":" width-replace-dynamic
+                                                        ;; Add the legend key set to none if
+                                                        ;; it's not a map chart (chartType: GeoChart)
+                                                        ;; and it has no other legend key
+                                                        (when (and (not keep-legend)
+                                                                   (not has-legend-key))
+                                                          ", \"legend\": \"none\"")))
+      (s/replace #"(?i)(\\x22width\\x22:\d+)" (str "\\\\x22width\\\\x22:" width-replace-fixed
+                                                                      ;; Add the legend key set to none if
+                                                                      ;; it's not a map chart (chartType: GeoChart)
+                                                                      ;; and it has no other legend key
+                                                                      (when (and (not keep-legend)
+                                                                                 (not has-legend-key))
+                                                                        ", \\\\x22legend\\\\x22:\\\\x22none\\\\x22")))
+      (s/replace #"(?i)(\"height\":\d+)" (str "\"height\":(getViewportHeight())"))
+      (s/replace #"(?i)(\\x22height\\x22:\d+)" (str "\"height\":315"))
+      ;; Replace the element id of the chart container
+      (s/replace #"(?i)safeDraw\(document\.getElementById\('c'\)\)" (str "safeDraw(document.getElementById('" chart-id "'))"))
+      ;; Replace the element id of the chart container for another type of shared chart
+      (s/replace #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);" (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
+      ;; Replace the container id with our chart-id
+      (s/replace #"(?i)\"containerId\":\"embed_\d+\"" (str "\"containerId\":\"" chart-id "\""))
+      (s/replace #"(?i)'elementId': 'embed_chart'" (str "'elementId': '" chart-id "'"))
+      (s/replace #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};" (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
+      ;; Set the legend to none if there is a legend key set to left or right already
+      (s/replace legend-re-quotes (str "\"legend\":\"none\""))
+      (s/replace legend-re (str "\\\\x22legend\\\\x22:\\\\x22none\\\\x22"))
+      ;; Remove the body class that shows the chart placeholder icon while loading and rendering the chart
+      (s/replace #"(?i)(function\s*onNumberFormatApiLoad\s*\(\s*\)\s*\{)" (str "function onNumberFormatApiLoad(){ document.body.classList.remove(\"loading\");"))
+      (s/replace #"(?i)(function\s*onChartsExportApiLoad\s*\(\s*\)\s*\{)" (str "document.addEventListener(\"DOMContentLoaded\", function(event) { document.body.classList.remove(\"loading\");}); function onChartsExportApiLoad(){ "))
+      ;; Rewrite the fallbackUri param, prefix it with goodle docs url since it's relative
+      (s/replace #"(?i)'fallbackUri': '" (str "'fallbackUri': 'https:\\\\/\\\\/docs.google.com")))))
 
 (defn- get-script-tag [s keep-legend]
   (if (empty? (:src (:attrs s)))
@@ -90,7 +96,7 @@
   (proxy-sheets sheet-path params (fn [status body]
     (let [parsed-html (h/as-hickory (h/parse body)) ; parse the HTML of the response
           scripts (hs/select (hs/tag :script) parsed-html) ; extract the script tags
-          geo-chart-regex #"\"chartType\":\s*\"GeoChart\""
+          geo-chart-regex #"GeoChart"
           is-geo-chart (re-find (re-matcher geo-chart-regex body))
           script-strings (s/join (map #(get-script-tag % is-geo-chart) scripts))
           output-html (str "<html><head>"

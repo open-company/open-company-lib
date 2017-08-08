@@ -23,38 +23,38 @@
         width-replace-fixed "560"]
     (-> script-string
       ;; Replace the height value with a function that calculates the viewport height
-      (clojure.string/replace #"(?i)(\"width\":\d+)" (str "\"width\":" width-replace-dynamic
+      (s/replace #"(?i)(\"width\":\d+)" (str "\"width\":" width-replace-dynamic
                                                         ;; Add the legend key set to none if
                                                         ;; it's not a map chart (chartType: GeoChart)
                                                         ;; and it has no other legend key
                                                         (when (and (not keep-legend)
                                                                    (not has-legend-key))
                                                           ", \"legend\": \"none\"")))
-      (clojure.string/replace #"(?i)(\\x22width\\x22:\d+)" (str "\\\\x22width\\\\x22:" width-replace-fixed
+      (s/replace #"(?i)(\\x22width\\x22:\d+)" (str "\\\\x22width\\\\x22:" width-replace-fixed
                                                                       ;; Add the legend key set to none if
                                                                       ;; it's not a map chart (chartType: GeoChart)
                                                                       ;; and it has no other legend key
                                                                       (when (and (not keep-legend)
                                                                                  (not has-legend-key))
                                                                         ", \\\\x22legend\\\\x22:\\\\x22none\\\\x22")))
-      (clojure.string/replace #"(?i)(\"height\":\d+)" (str "\"height\":(getViewportHeight())"))
-      (clojure.string/replace #"(?i)(\\x22height\\x22:\d+)" (str "\"height\":315"))
+      (s/replace #"(?i)(\"height\":\d+)" (str "\"height\":(getViewportHeight())"))
+      (s/replace #"(?i)(\\x22height\\x22:\d+)" (str "\"height\":315"))
       ;; Replace the element id of the chart container
-      (clojure.string/replace #"(?i)safeDraw\(document\.getElementById\('c'\)\)" (str "safeDraw(document.getElementById('" chart-id "'))"))
+      (s/replace #"(?i)safeDraw\(document\.getElementById\('c'\)\)" (str "safeDraw(document.getElementById('" chart-id "'))"))
       ;; Replace the element id of the chart container for another type of shared chart
-      (clojure.string/replace #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);" (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
+      (s/replace #"(?i)activeSheetId = '\d+'; switchToSheet\('\d+'\);" (str "activeSheetId = '" chart-id "'; switchToSheet('" chart-id "');"))
       ;; Replace the container id with our chart-id
-      (clojure.string/replace #"(?i)\"containerId\":\"embed_\d+\"" (str "\"containerId\":\"" chart-id "\""))
-      (clojure.string/replace #"(?i)'elementId': 'embed_chart'" (str "'elementId': '" chart-id "'"))
-      (clojure.string/replace #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};" (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
+      (s/replace #"(?i)\"containerId\":\"embed_\d+\"" (str "\"containerId\":\"" chart-id "\""))
+      (s/replace #"(?i)'elementId': 'embed_chart'" (str "'elementId': '" chart-id "'"))
+      (s/replace #"(?i)posObj\('\d+', 'embed_\d+', 0, 0, 0, 0\);};" (str "posObj('" chart-id "', '" chart-id "', 0, 0, 0, 0);};"))
       ;; Set the legend to none if there is a legend key set to left or right already
-      (clojure.string/replace legend-re-quotes (str "\"legend\":\"none\""))
-      (clojure.string/replace legend-re (str "\\\\x22legend\\\\x22:\\\\x22none\\\\x22"))
+      (s/replace legend-re-quotes (str "\"legend\":\"none\""))
+      (s/replace legend-re (str "\\\\x22legend\\\\x22:\\\\x22none\\\\x22"))
       ;; Remove the body class that shows the chart placeholder icon while loading and rendering the chart
-      (clojure.string/replace #"(?i)(function\s*onNumberFormatApiLoad\s*\(\s*\)\s*\{)" (str "function onNumberFormatApiLoad(){ document.body.classList.remove(\"loading\");"))
-      (clojure.string/replace #"(?i)(function\s*onChartsExportApiLoad\s*\(\s*\)\s*\{)" (str "document.addEventListener(\"DOMContentLoaded\", function(event) { document.body.classList.remove(\"loading\");}); function onChartsExportApiLoad(){ "))
+      (s/replace #"(?i)(function\s*onNumberFormatApiLoad\s*\(\s*\)\s*\{)" (str "function onNumberFormatApiLoad(){ document.body.classList.remove(\"loading\");"))
+      (s/replace #"(?i)(function\s*onChartsExportApiLoad\s*\(\s*\)\s*\{)" (str "document.addEventListener(\"DOMContentLoaded\", function(event) { document.body.classList.remove(\"loading\");}); function onChartsExportApiLoad(){ "))
       ;; Rewrite the fallbackUri param, prefix it with goodle docs url since it's relative
-      (clojure.string/replace #"(?i)'fallbackUri': '" (str "'fallbackUri': 'https:\\\\/\\\\/docs.google.com")))))
+      (s/replace #"(?i)'fallbackUri': '" (str "'fallbackUri': 'https:\\\\/\\\\/docs.google.com")))))
 
 (defn- get-script-tag [s keep-legend]
   (if (empty? (:src (:attrs s)))

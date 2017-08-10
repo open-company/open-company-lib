@@ -358,8 +358,7 @@
         (-> (r/table table-name)
             (r/get-all index-values {:index index-name})
             (r/get-field date-field)
-            (r/map (r/fn [value] (-> (r/split value "-" 2) ; split the first 2 parts of the ISO8601 date
-                                     (r/limit 2)))) ; only interested in those first 2 parts
+            (r/map (r/fn [value] (r/limit (r/split value "-" 2) 2))) ; only the first 2 parts of the ISO8601 date
             (r/distinct)
             (r/run conn)
             (drain-cursor)))))))

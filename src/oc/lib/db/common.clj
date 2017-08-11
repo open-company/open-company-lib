@@ -285,57 +285,6 @@
   (updated-at-order
     (read-resources conn table-name index-name index-value fields))))
 
-(defun read-resources-in-group
-  "
-  Given a table name, an index name and value, a field to group resources by, and an optional field to select
-  just 1 resource in each group (by max of that field), return the resources in a map with the group field value
-  as the key.
-
-  If the optional field is used, there is one resource as the value for each group value in the response map. If the
-  optional field is not used, then there is a sequence for each group value in the response map.
-  "
-  ([conn :guard conn?
-    table-name :guard s-or-k?
-    index-name :guard s-or-k?
-    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
-    group-by :guard s-or-k?]
-  (with-timeout default-timeout
-    (-> (r/table table-name)
-        (r/get-all [index-value] {:index index-name})
-        (r/group group-by)
-        (r/run conn)
-        (drain-cursor))))
-
-  ([conn :guard conn?
-    table-name :guard s-or-k?
-    index-name :guard s-or-k?
-    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
-    group-by :guard s-or-k?
-    select-by :guard #(= % :count)]
-  (let [resources (with-timeout default-timeout
-                  (-> (r/table table-name)
-                    (r/get-all [index-value] {:index index-name})
-                    (r/pluck group-by)
-                    (r/group group-by)
-                    (r/run conn)
-                    (drain-cursor)))
-        groups (keys resources)]
-    (zipmap groups (map #(count (get resources %)) groups))))
-
-  ([conn :guard conn?
-    table-name :guard s-or-k?
-    index-name :guard s-or-k?
-    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
-    group-by :guard s-or-k?
-    select-by :guard s-or-k?]
-  (with-timeout default-timeout
-    (-> (r/table table-name)
-        (r/get-all [index-value] {:index index-name})
-        (r/group group-by)
-        (r/max select-by)
-        (r/run conn)
-        (drain-cursor)))))
-
 (defn months-with-resource
   "
   Given a table name, an index name and value, and an ISO8601 date field, return an ordered sequence of all the months 

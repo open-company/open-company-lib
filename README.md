@@ -12,7 +12,7 @@
 
 > -- [Dharmesh Shah](https://twitter.com/dharmesh)
 
-Companies struggle to keep everyone on the same page. People are hyper-connected in the moment but still don’t know what’s happening across the company. Employees and investors, co-founders and execs, customers and community, they all want more transparency. The solution is surprisingly simple and effective - great company updates that build transparency and alignment.
+Companies struggle to keep everyone on the same page. People are hyper-connected in the moment but still don't know what's happening across the company. Employees and investors, co-founders and execs, customers and community, they all want more transparency. The solution is surprisingly simple and effective - great company updates that build transparency and alignment.
 
 With that in mind we designed the [Carrot](https://carrot.io/) software-as-a-service application, powered by the open source [OpenCompany platform](https://github.com/open-company). The product design is based on three principles:
 
@@ -73,7 +73,7 @@ lein deps
 
 ## Usage
 
-To use this library in your other projcets, include the following in your dependencies:
+To use this library in your other projects, include the following in your dependencies:
 
 [![Clojars Project](https://img.shields.io/clojars/v/open-company/lib.svg)](https://clojars.org/open-company/lib)
 

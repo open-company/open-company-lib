@@ -3,7 +3,7 @@
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
             [if-let.core :refer (if-let*)]
-            [defun.core :refer (defun)]
+            [defun.core :refer (defun defun-)]
             [clj-time.format :as format]
             [clj-time.core :as time]
             [rethinkdb.query :as r]
@@ -41,6 +41,13 @@
   (or (string? value)
       (keyword? value)))
 
+(defn- drain-cursor
+  "If the result is a cursor, drain it into a Clojure sequence."
+  [result]
+  (if (= (type result) rethinkdb.net.Cursor)
+    (seq result)
+    result))
+
 ;; ----- DB Access Timeouts ----
 
 (def default-timeout 5000) ; 5 sec
@@ -48,7 +55,7 @@
 (defmacro with-timeout
   "A basic macro to wrap things in a timeout.
   Will throw an exception if the operation times out.
-  Note: This is a simplistic approach and piggiebacks on core.asyncs executor-pool.
+  Note: This is a simplistic approach and piggybacks on core.asyncs executor-pool.
   Read this discussion for more info: https://gist.github.com/martinklepsch/0caf92b5e42eefa3a894"
   [ms & body]
   `(let [c# (async/thread-call #(do ~@body))]
@@ -94,7 +101,9 @@
   {:pre [(conn? conn)
          (s-or-k? table-name)]}
   (with-timeout default-timeout
-    (r/run (r/table table-name) conn)))
+    (-> (r/table table-name)
+        (r/run conn)
+        (drain-cursor))))
 
   ([conn table-name fields]
   {:pre [(conn? conn)
@@ -104,7 +113,8 @@
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/with-fields fields)
-        (r/run conn))))
+        (r/run conn)
+        (drain-cursor))))
 
   ([conn table-name index-name index-value]
   {:pre [(conn? conn)
@@ -115,7 +125,8 @@
     (with-timeout default-timeout
        (-> (r/table table-name)
           (r/get-all index-values {:index index-name})
-          (r/run conn)))))
+          (r/run conn)
+          (drain-cursor)))))
 
   ([conn table-name index-name index-value fields]
   {:pre [(conn? conn)
@@ -129,12 +140,13 @@
       (-> (r/table table-name)
           (r/get-all index-values {:index index-name})
           (r/pluck fields)
-          (r/run conn))))))
+          (r/run conn)
+          (drain-cursor))))))
 
 (defn read-resources-and-relations
-  "Given a table name, an index name and value, and what amounts to a document key, foreign table, foreign key, 
-  foreign key index and the fields of the foreign table that are interesting, return all the resources that match
-  the index, and any related resources in the other table in an array in each resource.
+  "In the first arity (9): Given a table name, an index name and value, and what amounts to a document key, foreign table,
+  foreign key, foreign key index and the fields of the foreign table that are interesting, return all the resources
+  that match the index, and any related resources in the other table in an array in each resource.
 
   E.g.
 
@@ -159,8 +171,17 @@
       :my-bees [{:blat 'mouse' :blu 77} {:blat 'mudskipper' :blu 17}]
     }
   ]
+
+  The second arity (13) is largely the same functionality as the first, but with more control over the selection and
+  order of the returned resources in the form of:
+
+  - an `order-by` field for the order of the returned resources
+  - an `order`, one of either `:desc` or `:asc`
+  - an initial value of the order-by field to `start` the limited set from
+  - a `direction`, one of either `:before` or `:after` the `start` value
+  - `limit`, a numeric limit to the number returned
   "
-  [conn table-name index-name index-value
+  ([conn table-name index-name index-value
    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
   {:pre [(conn? conn)
          (s-or-k? table-name)
@@ -181,7 +202,45 @@
                                (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
                                (r/pluck relation-fields)
                                (r/coerce-to :array))}))
-          (r/run conn)))))
+          (r/run conn)
+          (drain-cursor)))))
+
+  ([conn table-name index-name index-value
+    order-by order start direction limit
+    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (s-or-k? order-by)
+         (#{:desc :asc} order)
+         (not (nil? start))
+         (#{:before :after} direction)
+         (number? limit)
+         (s-or-k? relation-name)
+         (s-or-k? relation-table-name)
+         (s-or-k? relation-field-name)
+         (s-or-k? relation-index-name)
+         (sequential? relation-fields)
+         (every? #(or (keyword? %) (string? %)) relation-fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])
+        order-fn (if (= order :desc) r/desc r/asc)
+        filter-fn (if (= direction :before) r/gt r/lt)]
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/filter (r/fn [row]
+                      (filter-fn start (r/get-field row order-by))))
+          (r/order-by (order-fn order-by))
+          (r/limit limit)
+          (r/merge (r/fn [resource]
+            {relation-name (-> (r/table relation-table-name)
+                               (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                               (r/pluck relation-fields)
+                               (r/coerce-to :array))}))
+          (r/run conn)
+          (drain-cursor))))))
+
 
 (defn read-resources-by-primary-keys
   "Given a table name, a sequence of primary keys, and an optional set of fields, retrieve the
@@ -194,7 +253,8 @@
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/get-all primary-keys)
-        (r/run conn))))
+        (r/run conn)
+        (drain-cursor))))
 
   ([conn table-name primary-keys fields]
   {:pre [(conn? conn)
@@ -207,7 +267,8 @@
     (-> (r/table table-name)
         (r/get-all primary-keys)
         (r/pluck fields)
-        (r/run conn)))))
+        (r/run conn)
+        (drain-cursor)))))
 
 (defn read-resources-in-order
   "
@@ -224,53 +285,32 @@
   (updated-at-order
     (read-resources conn table-name index-name index-value fields))))
 
-(defun read-resources-in-group
+(defn months-with-resource
   "
-  Given a table name, an index name and value, a field to group resources by, and an optional field to select
-  just 1 resource in each group (by max of that field), return the resources in a map with the group field value
-  as the key.
+  Given a table name, an index name and value, and an ISO8601 date field, return an ordered sequence of all the months 
+  that have at least one resource.
 
-  If the optional field is used, there is one resource as the value for each group value in the response map. If the
-  optional field is not used, then there is a sequence for each group value in the response map.
+  Response:
+
+  [['2017' '06'] ['2017' '01'] [2016 '05']]
+
+  Sequence is ordered, newest to oldest.
   "
-  ([conn :guard conn?
-    table-name :guard s-or-k?
-    index-name :guard s-or-k?
-    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
-    group-by :guard s-or-k?]
-  (with-timeout default-timeout
-    (-> (r/table table-name)
-        (r/get-all [index-value] {:index index-name})
-        (r/group group-by)
-        (r/run conn))))
-
-  ([conn :guard conn?
-    table-name :guard s-or-k?
-    index-name :guard s-or-k?
-    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
-    group-by :guard s-or-k?
-    select-by :guard #(= % :count)]
-  (let [resources (with-timeout default-timeout
-                  (-> (r/table table-name)
-                    (r/get-all [index-value] {:index index-name})
-                    (r/pluck group-by)
-                    (r/group group-by)
-                    (r/run conn)))
-        groups (keys resources)]
-    (zipmap groups (map #(count (get resources %)) groups))))
-
-  ([conn :guard conn?
-    table-name :guard s-or-k?
-    index-name :guard s-or-k?
-    index-value :guard #(or (s-or-k? %) (and (sequential? %) (every? s-or-k? %)))
-    group-by :guard s-or-k?
-    select-by :guard s-or-k?]
-  (with-timeout default-timeout
-    (-> (r/table table-name)
-        (r/get-all [index-value] {:index index-name})
-        (r/group group-by)
-        (r/max select-by)
-        (r/run conn)))))
+  [conn table-name index-name index-value date-field]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])]
+    (reverse (sort-by #(str (first %) "-" (last %))
+      (with-timeout default-timeout
+        (-> (r/table table-name)
+            (r/get-all index-values {:index index-name})
+            (r/get-field date-field)
+            (r/map (r/fn [value] (r/limit (r/split value "-" 2) 2))) ; only the first 2 parts of the ISO8601 date
+            (r/distinct)
+            (r/run conn)
+            (drain-cursor)))))))
 
 (defun update-resource
   "

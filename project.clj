@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.11.20"
+(defproject open-company/lib "0.12.4"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -50,7 +50,7 @@
       :plugins [
         [lein-midje "3.2.1"] ; Example-based testing https://github.com/marick/lein-midje
         [jonase/eastwood "0.2.4"] ; Linter https://github.com/jonase/eastwood
-        [lein-kibit "0.1.6-beta1"] ; Static code search for non-idiomatic code https://github.com/jonase/kibit
+        [lein-kibit "0.1.6-beta2"] ; Static code search for non-idiomatic code https://github.com/jonase/kibit
       ]
     }
 

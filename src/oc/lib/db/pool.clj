@@ -66,13 +66,13 @@
       (future (grow this)))))
 
 (defn fixed-pool
-  "A fixed pool of thingys. (open) is called to generate a thingy. (close
-  thingy) is called when a thingy is invalidated. When thingys are invalidated,
+  "A fixed pool of thingies. (open) is called to generate a thingy. (close
+  thingy) is called when a thingy is invalidated. When thingies are invalidated,
   the pool will immediately try to open a new one; if open throws or returns
   nil, the pool will sleep for regenerate-interval seconds before retrying
   (open).
   :regenerate-interval    How long to wait between retrying (open).
-  :size                   Number of thingys in the pool.
+  :size                   Number of thingies in the pool.
   :block-start            Should (fixed-pool) wait until the pool is full
                           before returning?
   Note that fixed-pool is correct only if every successful (claim) is followed

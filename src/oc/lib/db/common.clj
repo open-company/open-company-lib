@@ -95,7 +95,7 @@
       (r/run conn)))
 
 (defn read-resources
-  "Given a table name, and an optional index name and value, and an optional set of fields, retrieve
+  "Given a table name, and an optional index name and value, an optional set of fields, and an optional limit, retrieve
   the resources from the database."
   ([conn table-name]
   {:pre [(conn? conn)
@@ -139,6 +139,23 @@
     (with-timeout default-timeout
       (-> (r/table table-name)
           (r/get-all index-values {:index index-name})
+          (r/pluck fields)
+          (r/run conn)
+          (drain-cursor)))))
+
+  ([conn table-name index-name index-value fields limit]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (sequential? fields)
+         (every? #(or (keyword? %) (string? %)) fields)
+         (number? limit)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])]
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/limit limit)
           (r/pluck fields)
           (r/run conn)
           (drain-cursor))))))

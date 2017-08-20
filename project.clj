@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.12.4"
+(defproject open-company/lib "0.12.5"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -27,10 +27,10 @@
     [com.taoensso/sente "1.11.0"] ; WebSocket server https://github.com/ptaoussanis/sente
     [raven-clj "1.5.0"] ; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     [liberator "0.15.1"] ; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
-    [amazonica "0.3.108"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
+    [amazonica "0.3.111"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     [clj-jwt "0.1.1"] ; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [com.apa512/rethinkdb "0.15.26"] ; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
-    [cheshire "5.7.1"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
+    [cheshire "5.8.0"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
     [clj-time "0.14.0"] ; Date and time lib https://github.com/clj-time/clj-time
     [com.climate/squeedo "0.2.1"] ; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     [org.slf4j/slf4j-nop "1.8.0-alpha2"] ; Squeedo dependency
@@ -44,7 +44,7 @@
     ;; QA environment and dependencies
     :qa {
       :dependencies [
-        [philoskim/debux "0.3.9"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
+        [philoskim/debux "0.3.12"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
         [midje "1.9.0-alpha8"] ; Example-based testing https://github.com/marick/Midje
       ]
       :plugins [

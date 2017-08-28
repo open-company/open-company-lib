@@ -124,8 +124,8 @@
   ([ctx allow-nil?]
   (try
     (if-let [data (-> (get-in ctx [:request :body]) slurp (json/parse-string true))]
-      ; handle case of a string which is valid JSON, but still malformed for us (since it's not a map)
-      (do (when-not (map? data) (throw (Exception.)))
+      ; handle case of a string which is valid JSON, but still malformed for us (since it's not a map or seq)
+      (do (when-not (or (map? data) (seq? data)) (throw (Exception.)))
         [good-json {:data data}]))
     (catch Exception e
       (if allow-nil?

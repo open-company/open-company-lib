@@ -88,12 +88,12 @@
   :user-id UniqueID
   :avatar-url (schema/maybe schema/Str)})
 
-(def SlackMirror {
+(def SlackChannel {
   :slack-org-id NonBlankStr
   :channel-name NonBlankStr
   :channel-id NonBlankStr})
 
-(def SlackThread (merge SlackMirror {
+(def SlackThread (merge SlackChannel {
                     :thread NonBlankStr
                     (schema/optional-key :bot-token) NonBlankStr}))
 

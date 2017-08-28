@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.12.5"
+(defproject open-company/lib "0.12.6"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -13,13 +13,13 @@
 
   ;; All profile dependencies
   :dependencies [
-    [org.clojure/clojure "1.9.0-alpha17" :scope "provided"] ; Lisp on the JVM http://clojure.org/documentation
+    [org.clojure/clojure "1.9.0-alpha19" :scope "provided"] ; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/core.async "0.3.443"] ; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.match "0.3.0-alpha5"] ; Erlang-esque pattern matching https://github.com/clojure/core.match
     [defun "0.3.0-RC1"] ; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
     [lockedon/if-let "0.1.0"] ; More than one binding for if/when macros https://github.com/LockedOn/if-let
     [com.stuartsierra/component "0.3.2"] ; Component Lifecycle https://github.com/stuartsierra/component
-    [http-kit "2.3.0-alpha2"] ; HTTP client and server http://http-kit.org/
+    [http-kit "2.3.0-alpha3"] ; HTTP client and server http://http-kit.org/
     [ring/ring-codec "1.0.1"] ; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: Timbre needs to come before Sente due to conflicts in shared dependency: com.taoensso/encore
     [com.taoensso/timbre "4.10.0"] ; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
@@ -45,7 +45,7 @@
     :qa {
       :dependencies [
         [philoskim/debux "0.3.12"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
-        [midje "1.9.0-alpha8"] ; Example-based testing https://github.com/marick/Midje
+        [midje "1.9.0-alpha9"] ; Example-based testing https://github.com/marick/Midje
       ]
       :plugins [
         [lein-midje "3.2.1"] ; Example-based testing https://github.com/marick/lein-midje
@@ -64,7 +64,7 @@
         [lein-spell "0.1.0"] ; Catch spelling mistakes in docs and docstrings https://github.com/cldwalker/lein-spell
         [lein-deps-tree "0.1.2"] ; Print a tree of project dependencies https://github.com/the-kenny/lein-deps-tree
         [venantius/yagni "0.1.4"] ; Dead code finder https://github.com/venantius/yagni
-        [com.jakemccrary/lein-test-refresh "0.20.0"] ; Autotest https://github.com/jakemcc/lein-test-refresh
+        [com.jakemccrary/lein-test-refresh "0.21.1"] ; Autotest https://github.com/jakemcc/lein-test-refresh
       ]  
     }]
 

@@ -15,6 +15,9 @@
 (def json-mime-type "application/json")
 (def text-mime-type "text/plain")
 
+(def help-email "hello@carrot.io")
+(def error-msg (str "Notification of this error has been made. Please contact" help-email "for help."))
+
 ;; ----- Responses -----
 
 (defn text-response
@@ -206,6 +209,7 @@
   :available-charsets [UTF8]
   :handle-not-found (fn [_] (missing-response))
   :handle-not-implemented (fn [_] (missing-response))
+  :handle-exception (fn [_] (error-response error-msg 500))
   :allowed-methods [:options :get :put :patch :delete]
   :respond-with-entity? (by-method {
     :options false

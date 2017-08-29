@@ -16,7 +16,7 @@
 (def text-mime-type "text/plain")
 
 (def help-email "hello@carrot.io")
-(def error-msg (str "Notification of this error has been made. Please contact" help-email "for help."))
+(def error-msg (str "We've been notified of this error. Please contact " help-email " for additional help."))
 
 ;; ----- Responses -----
 

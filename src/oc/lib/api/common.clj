@@ -209,7 +209,8 @@
   :available-charsets [UTF8]
   :handle-not-found (fn [_] (missing-response))
   :handle-not-implemented (fn [_] (missing-response))
-  :handle-exception (fn [_] (error-response error-msg 500))
+  :handle-exception (fn [{ex :exception}] (error ex)
+                                          (error-response error-msg 500))
   :allowed-methods [:options :get :put :patch :delete]
   :respond-with-entity? (by-method {
     :options false

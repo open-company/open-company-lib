@@ -6,26 +6,28 @@
             [raven-clj.interfaces :as sentry-interfaces]
             [taoensso.timbre :as timbre]))
 
-(defn extract-ex-data [throwable]
+(defn- extract-ex-data [throwable]
   (if-let [data (ex-data throwable)]
     {:ex-data data}
     {}))
 
-(defn extract-arg-data [raw-args]
+(defn- extract-arg-data [raw-args]
   (if-let [m (first (filter map? raw-args))]
     m
     {}))
 
-(defn extract-data [throwable raw-args]
+(defn- extract-data [throwable raw-args]
   (let [arg-data (extract-arg-data raw-args)
         ex-data (extract-ex-data throwable)]
     (merge
       arg-data
       {:custom-data (merge ex-data (:custom-data arg-data {}))})))
 
+(defn- extract-message [args]
+  (clojure.string/join " " (map str args)))
+
 (defn sentry-appender
-  "Create a Sentry timbre appender.
-   (make-sentry-appender \"YOUR SENTRY DSN\")"
+  "Sentry timbre appender to send error level messages with a throwable to Sentry."
   [dsn]
   (assert dsn "sentry-appender requires a dsn")
   {:doc "A timbre appender that sends errors to getsentry.com"
@@ -36,14 +38,19 @@
    :fn (fn [args]
           (timbre/warn "Sentry appender: invoked")
           (let [throwable @(:?err_ args)
-                data      (extract-data throwable @(:vargs_ args))]
-            (when throwable
-              (timbre/warn "Sentry appender: capturing to -" dsn)
-              (let [result (sentry/capture dsn
-                            (-> {:message (.getMessage throwable)}
-                                (assoc-in [:extra :exception-data] data)
-                                (sentry-interfaces/stacktrace throwable)))]
-                (timbre/warn "Sentry appender: captured -\n" result)))))})
+                data      (if throwable
+                            (extract-data throwable @(:vargs_ args))
+                            (extract-message (:vargs args)))]
+            (timbre/warn "Sentry appender: capturing to -" dsn)
+            (let [result (if throwable
+                            ;; Capture an exception
+                            (sentry/capture dsn
+                              (-> {:message (.getMessage throwable)}
+                                  ;;(assoc-in [:extra :exception-data] data) ; bloating the payload too much?
+                                  (sentry-interfaces/stacktrace throwable)))
+                            ;; Capture just logged information
+                            (sentry/capture dsn {:message data}))]
+              (timbre/warn "Sentry appender: captured -\n" result))))})
 
 (comment
 
@@ -55,5 +62,12 @@
       (dotimes [_ 1]
         (timbre/error (ex-info "921392813" {:foo 1})
                       {:custom-data {:params {:user-id 1}}})))
+
+  (do (require '[taoensso.timbre :as timbre])
+      (require '[oc.lib.sentry-appender :reload true])
+      (timbre/merge-config! {:appenders {:sentry-appender (oc.lib.sentry-appender/sentry-appender
+        "https://50ad5c0d6ffa47119259403854dc4d5d:2721d28d6622450c85cec0d4b5ea27e8@sentry.io/51845")}})
+      (dotimes [_ 1]
+        (timbre/error "Test just" "string stuff")))
 
   )

@@ -6,6 +6,8 @@
             [raven-clj.interfaces :as sentry-interfaces]
             [taoensso.timbre :as timbre]))
 
+(def *stacktrace-depth* 20)
+
 (defn- extract-ex-data [throwable]
   (if-let [data (ex-data throwable)]
     {:ex-data data}
@@ -25,6 +27,17 @@
 
 (defn- extract-message [args]
   (clojure.string/join " " (map str args)))
+
+(defn- trim-stacktrace
+  [ex-map]
+  (let [ex (-> ex-map :exception first)
+        trimmed (reverse
+                  (take *stacktrace-depth*
+                    (-> ex                    
+                      :stacktrace
+                      :frames
+                      reverse)))]
+    (assoc ex-map :exception [(assoc-in ex [:stacktrace :frames] trimmed)])))
 
 (defn sentry-appender
   "Sentry timbre appender to send error level messages with a throwable to Sentry."
@@ -46,8 +59,9 @@
                             ;; Capture an exception
                             (sentry/capture dsn
                               (-> {:message (.getMessage throwable)}
-                                  ;;(assoc-in [:extra :exception-data] data) ; bloating the payload too much?
-                                  (sentry-interfaces/stacktrace throwable)))
+                                  (assoc-in [:extra :exception-data] data) ; bloating the payload too much?
+                                  (sentry-interfaces/stacktrace throwable)
+                                  (trim-stacktrace)))
                             ;; Capture just logged information
                             (sentry/capture dsn {:message data}))]
               (timbre/warn "Sentry appender: captured -\n" result))))})
@@ -62,6 +76,16 @@
       (dotimes [_ 1]
         (timbre/error (ex-info "921392813" {:foo 1})
                       {:custom-data {:params {:user-id 1}}})))
+
+  (do (require '[taoensso.timbre :as timbre])
+      (require '[oc.lib.sentry-appender :reload true])
+      (timbre/merge-config! {:appenders {:sentry-appender (oc.lib.sentry-appender/sentry-appender
+        "https://50ad5c0d6ffa47119259403854dc4d5d:2721d28d6622450c85cec0d4b5ea27e8@sentry.io/51845")}})
+      (dotimes [_ 1]
+        (try
+          (/ 1 0)
+          (catch Exception e
+            (timbre/error e)))))
 
   (do (require '[taoensso.timbre :as timbre])
       (require '[oc.lib.sentry-appender :reload true])

@@ -1,7 +1,7 @@
 (ns oc.lib.api.common
   (:require [clojure.string :as s]
             [defun.core :refer (defun)]
-            [taoensso.timbre :refer (debug info warn error fatal spy)]
+            [taoensso.timbre :as timbre]
             [cheshire.core :as json]
             [liberator.representation :refer (ring-response)]
             [liberator.core :refer (by-method)]
@@ -33,6 +33,7 @@
           (assoc response :body error-msg)
           response))
       (catch Throwable t
+        (timbre/error t)
         {:status 500 :body error-msg}))))
 
 ;; ----- Responses -----
@@ -150,7 +151,7 @@
     (catch Exception e
       (if allow-nil?
         [good-json {:data {}}]
-        (do (warn "Request body not processable as JSON: " e)
+        (do (timbre/warn "Request body not processable as JSON: " e)
           [malformed]))))))
 
 (defn known-content-type?
@@ -226,7 +227,7 @@
   :available-charsets [UTF8]
   :handle-not-found (fn [_] (missing-response))
   :handle-not-implemented (fn [_] (missing-response))
-  :handle-exception (fn [{ex :exception}] (error ex)
+  :handle-exception (fn [{ex :exception}] (timbre/error ex)
                                           (error-response error-msg 500))
   :allowed-methods [:options :get :put :patch :delete]
   :respond-with-entity? (by-method {

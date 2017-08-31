@@ -6,7 +6,7 @@
             [raven-clj.interfaces :as sentry-interfaces]
             [taoensso.timbre :as timbre]))
 
-(def *stacktrace-depth* 20)
+(def stacktrace-depth 20)
 
 (defn- extract-ex-data [throwable]
   (if-let [data (ex-data throwable)]
@@ -29,10 +29,11 @@
   (clojure.string/join " " (map str args)))
 
 (defn- trim-stacktrace
+  "Reduce the stacktrace to just `stacktrace-depth` many frames to avoid too big a body for Sentry."
   [ex-map]
   (let [ex (-> ex-map :exception first)
         trimmed (reverse
-                  (take *stacktrace-depth*
+                  (take stacktrace-depth
                     (-> ex                    
                       :stacktrace
                       :frames

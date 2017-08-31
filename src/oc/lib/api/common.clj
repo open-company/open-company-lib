@@ -18,6 +18,23 @@
 (def help-email "hello@carrot.io")
 (def error-msg (str "We've been notified of this error. Please contact " help-email " for additional help."))
 
+;; ----- Ring Middleware -----
+
+(defn wrap-500
+  "
+  Ring middleware to ensure that in the case of a 500 error response or an exception, we don't leak error
+  details in the body of the response.
+  "
+  [handler]
+  (fn [request]
+    (try
+      (let [response (handler request)]
+        (if (= 500 (:status response))
+          (assoc response :body error-msg)
+          response))
+      (catch Throwable t
+        {:status 500 :body error-msg}))))
+
 ;; ----- Responses -----
 
 (defn text-response

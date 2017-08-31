@@ -3,7 +3,8 @@
 
 (ns oc.lib.sentry-appender
   (:require [raven-clj.core :as sentry]
-            [raven-clj.interfaces :as sentry-interfaces]))
+            [raven-clj.interfaces :as sentry-interfaces]
+            [taoensso.timbre :as timbre]))
 
 (defn extract-ex-data [throwable]
   (if-let [data (ex-data throwable)]
@@ -28,25 +29,29 @@
   [dsn]
   (assert dsn "sentry-appender requires a dsn")
   {:doc "A timbre appender that sends errors to getsentry.com"
-   :min-level :error
+   :min-level :error ; critical this not drop to warn or below as this appender logs at warning level (infinite loop!)
    :enabled? true
    :async? true
    :rate-limit nil
    :fn (fn [args]
+          (timbre/warn "Sentry appender: invoked")
           (let [throwable @(:?err_ args)
                 data      (extract-data throwable @(:vargs_ args))]
             (when throwable
-              (sentry/capture
-                dsn
-                (-> {:message (.getMessage throwable)}
-                    (assoc-in [:extra :exception-data] data)
-                    (sentry-interfaces/stacktrace throwable))))))})
+              (timbre/warn "Sentry appender: capturing to -" dsn)
+              (let [result (sentry/capture dsn
+                            (-> {:message (.getMessage throwable)}
+                                (assoc-in [:extra :exception-data] data)
+                                (sentry-interfaces/stacktrace throwable)))]
+                (timbre/warn "Sentry appender: captured -\n" result)))))})
 
 (comment
+
   ;; for repl testing
   (do (require '[taoensso.timbre :as timbre])
-      (require '[oc.sentry-appender :reload true])
-      (timbre/merge-config! {:appenders {:sentry-appender (oc.sentry-appender/sentry-appender {:dsn "https://2ee09cf318a14215af9350bf4151e302:affc13dc0b11466bab6546a190c29ddd@app.getsentry.com/76929"})}})
+      (require '[oc.lib.sentry-appender :reload true])
+      (timbre/merge-config! {:appenders {:sentry-appender (oc.lib.sentry-appender/sentry-appender
+        "https://50ad5c0d6ffa47119259403854dc4d5d:2721d28d6622450c85cec0d4b5ea27e8@sentry.io/51845")}})
       (dotimes [_ 1]
         (timbre/error (ex-info "921392813" {:foo 1})
                       {:custom-data {:params {:user-id 1}}})))

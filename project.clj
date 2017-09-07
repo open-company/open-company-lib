@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.12.15"
+(defproject open-company/lib "0.12.16"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -19,7 +19,7 @@
     [defun "0.3.0-RC1"] ; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
     [lockedon/if-let "0.1.0"] ; More than one binding for if/when macros https://github.com/LockedOn/if-let
     [com.stuartsierra/component "0.3.2"] ; Component Lifecycle https://github.com/stuartsierra/component
-    [http-kit "2.3.0-alpha3"] ; HTTP client and server http://http-kit.org/
+    [http-kit "2.3.0-alpha4"] ; HTTP client and server http://http-kit.org/
     [ring/ring-codec "1.0.1"] ; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: Timbre needs to come before Sente due to conflicts in shared dependency: com.taoensso/encore
     [com.taoensso/timbre "4.10.0"] ; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre

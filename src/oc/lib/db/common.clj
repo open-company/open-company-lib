@@ -426,8 +426,7 @@
   {:pre [(conn? conn)]}
   (if-let* [resource (read-resource conn table-name primary-key-value)
             field-key (keyword field)
-            initial-value (field-key resource)
-            initial-set (if (sequential? initial-value) (set initial-value) #{})
+            initial-set (set (field-key resource))
             updated-set (set-function initial-set element)
             not-same? (not= initial-set updated-set) ; short-circuit this if nothing to do
             updated-resource (-> resource
@@ -442,7 +441,7 @@
         updated-resource
         (throw (RuntimeException. (str "RethinkDB update failure: " update)))))))
 
-;; TODO - maybe desirable to use RethinkDB's set operations: (r/set-insert element)
+;; TODO - may be desirable to use RethinkDB's set operations: (r/set-insert element)
 ;; Not yet implemented in clj-rethinkdb
 (defn add-to-set
   "

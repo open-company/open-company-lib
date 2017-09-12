@@ -13,7 +13,7 @@
 
   ;; All profile dependencies
   :dependencies [
-    [org.clojure/clojure "1.9.0-alpha19" :scope "provided"] ; Lisp on the JVM http://clojure.org/documentation
+    [org.clojure/clojure "1.9.0-alpha20" :scope "provided"] ; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/core.async "0.3.443"] ; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.match "0.3.0-alpha5"] ; Erlang-esque pattern matching https://github.com/clojure/core.match
     [defun "0.3.0-RC1"] ; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
@@ -45,7 +45,7 @@
     :qa {
       :dependencies [
         [philoskim/debux "0.3.12"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
-        [midje "1.9.0-alpha9"] ; Example-based testing https://github.com/marick/Midje
+        [midje "1.9.0-alpha10"] ; Example-based testing https://github.com/marick/Midje
       ]
       :plugins [
         [lein-midje "3.2.1"] ; Example-based testing https://github.com/marick/lein-midje

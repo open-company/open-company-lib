@@ -422,45 +422,41 @@
 ;; ----- Set operations -----
 
 (defn- update-set
-  [conn table-name primary-key-value field element set-function]
-  {:pre [(conn? conn)]}
-  (if-let* [resource (read-resource conn table-name primary-key-value)
-            field-key (keyword field)
-            initial-set (set (field-key resource))
-            updated-set (set-function initial-set element)
-            not-same? (not= initial-set updated-set) ; short-circuit this if nothing to do
-            updated-resource (-> resource
-                              (assoc field-key (vec updated-set))
-                              (assoc :updated-at (current-timestamp)))]
-    (let [update (with-timeout default-timeout
-                   (-> (r/table table-name)
-                       (r/get primary-key-value)
-                       (r/update {field-key updated-set})
-                       (r/run conn)))]
-      (if (or (= 1 (:replaced update)) (= 1 (:unchanged update)))
-        updated-resource
-        (throw (RuntimeException. (str "RethinkDB update failure: " update)))))))
+  "
+  For the resource specified by the primary key, add the element to the set of elements with the specified field
+  name. Return the updated resource if a change is made, and an exception on DB error.
+  "
+  [conn table-name primary-key-value field element set-operation]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? field)]}
+  (let [field-key (keyword field)
+        ts (current-timestamp)
+        update (with-timeout default-timeout
+                  (-> (r/table table-name)
+                      (r/get primary-key-value)
+                      (r/update (r/fn [document]
+                        {:updated-at ts field-key (-> (r/get-field document field-key)(set-operation element))}))
+                      (r/run conn)))]
+    (if (or (= 1 (:replaced update)) (= 1 (:unchanged update)))
+      (read-resource conn table-name primary-key-value)
+      (throw (RuntimeException. (str "RethinkDB update failure: " update))))))
 
-;; TODO - may be desirable to use RethinkDB's set operations: (r/set-insert element)
-;; Not yet implemented in clj-rethinkdb
 (defn add-to-set
   "
   For the resource specified by the primary key, add the element to the set of elements with the specified field
-  name. Return the updated resource if a change is made, nil if not, and an exception on DB error.
+  name. Return the updated resource if a change is made, and an exception on DB error.
   "
   [conn table-name primary-key-value field element]
-  (update-set conn table-name primary-key-value field element conj))
+  (update-set conn table-name primary-key-value field element r/set-insert))
 
-
-;; TODO - maybe desirable to use RethinkDB's set operations: (r/set-difference element)
-;; Not yet implemented in clj-rethinkdb
 (defn remove-from-set
   "
   For the resource specified by the primary key, remove the element to the set of elements with the specified
   field name. Return the updated resource if a change is made, nil if not, and an exception on DB error.
   "
   [conn table-name primary-key-value field element]
-  (update-set conn table-name primary-key-value field element disj))
+  (update-set conn table-name primary-key-value field [element] r/set-difference))
 
 ;; ----- REPL usage -----
 

@@ -189,7 +189,7 @@
     }
   ]
 
-  The second arity (13) is largely the same functionality as the first, but with more control over the selection and
+  The second arity (14) is largely the same functionality as the first, but with more control over the selection and
   order of the returned resources in the form of:
 
   - an `order-by` field for the order of the returned resources
@@ -197,6 +197,16 @@
   - an initial value of the order-by field to `start` the limited set from
   - a `direction`, one of either `:before` or `:after` the `start` value
   - `limit`, a numeric limit to the number returned
+
+  The third arity (17) is largely the same functionality as the second, but with an additonal filter value and function
+  in the form of:
+
+  - a `filter-by-field` field for filtering the returned resources
+  - a `filter-by-fn` RethinkDB function for filtering the returned resources
+  - a `filter-by-value`
+
+  NB: This last 17 arity (pretty ridiculous!) version of the function leaks the RethinkDB driver to the client
+  of this namespace since the `filter-by-fn` musst be a RethinkDB driver function. This isn't ideal.
   "
   ([conn table-name index-name index-value
    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
@@ -256,7 +266,48 @@
                                (r/pluck relation-fields)
                                (r/coerce-to :array))}))
           (r/run conn)
+          (drain-cursor)))))
+
+  ([conn table-name index-name index-value
+    order-by order start direction limit
+    filter-by-field filter-by-fn filter-by-value
+    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (s-or-k? order-by)
+         (#{:desc :asc} order)
+         (not (nil? start))
+         (#{:before :after} direction)
+         (number? limit)
+         (s-or-k? filter-by-field)
+         (s-or-k? relation-name)
+         (s-or-k? relation-table-name)
+         (s-or-k? relation-field-name)
+         (s-or-k? relation-index-name)
+         (sequential? relation-fields)
+         (every? #(or (keyword? %) (string? %)) relation-fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])
+        order-fn (if (= order :desc) r/desc r/asc)
+        filter-fn (if (= direction :before) r/gt r/lt)]
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/filter (r/fn [row]
+            (filter-by-fn filter-by-value (r/get-field row filter-by-field))))
+          (r/filter (r/fn [row]
+                      (filter-fn start (r/get-field row order-by))))
+          (r/order-by (order-fn order-by))
+          (r/limit limit)
+          (r/merge (r/fn [resource]
+            {relation-name (-> (r/table relation-table-name)
+                               (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                               (r/pluck relation-fields)
+                               (r/coerce-to :array))}))
+          (r/run conn)
           (drain-cursor))))))
+
 
 
 (defn read-resources-by-primary-keys

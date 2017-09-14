@@ -46,7 +46,7 @@
   "Return true if the password is valid, false if not."
   [password]
   (and (string? password)
-       (>= (count password) 5)))
+       (>= (count password) 8)))
 
 (defn conn?
   "Check if a var is a valid RethinkDB connection map/atom."

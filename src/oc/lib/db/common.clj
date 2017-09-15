@@ -2,7 +2,6 @@
   "CRUD functions on resources stored in RethinkDB."
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
-            [if-let.core :refer (if-let*)]
             [defun.core :refer (defun defun-)]
             [clj-time.format :as format]
             [clj-time.core :as time]

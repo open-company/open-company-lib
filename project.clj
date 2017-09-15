@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.12.4"
+(defproject open-company/lib "0.12.19"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -13,13 +13,13 @@
 
   ;; All profile dependencies
   :dependencies [
-    [org.clojure/clojure "1.9.0-alpha17" :scope "provided"] ; Lisp on the JVM http://clojure.org/documentation
+    [org.clojure/clojure "1.9.0-alpha20" :scope "provided"] ; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/core.async "0.3.443"] ; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.match "0.3.0-alpha5"] ; Erlang-esque pattern matching https://github.com/clojure/core.match
     [defun "0.3.0-RC1"] ; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
     [lockedon/if-let "0.1.0"] ; More than one binding for if/when macros https://github.com/LockedOn/if-let
     [com.stuartsierra/component "0.3.2"] ; Component Lifecycle https://github.com/stuartsierra/component
-    [http-kit "2.3.0-alpha2"] ; HTTP client and server http://http-kit.org/
+    [http-kit "2.3.0-alpha4"] ; HTTP client and server http://http-kit.org/
     [ring/ring-codec "1.0.1"] ; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: Timbre needs to come before Sente due to conflicts in shared dependency: com.taoensso/encore
     [com.taoensso/timbre "4.10.0"] ; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
@@ -27,10 +27,10 @@
     [com.taoensso/sente "1.11.0"] ; WebSocket server https://github.com/ptaoussanis/sente
     [raven-clj "1.5.0"] ; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     [liberator "0.15.1"] ; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
-    [amazonica "0.3.108"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
+    [amazonica "0.3.111"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     [clj-jwt "0.1.1"] ; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [com.apa512/rethinkdb "0.15.26"] ; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
-    [cheshire "5.7.1"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
+    [cheshire "5.8.0"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
     [clj-time "0.14.0"] ; Date and time lib https://github.com/clj-time/clj-time
     [com.climate/squeedo "0.2.1"] ; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     [org.slf4j/slf4j-nop "1.8.0-alpha2"] ; Squeedo dependency
@@ -44,8 +44,8 @@
     ;; QA environment and dependencies
     :qa {
       :dependencies [
-        [philoskim/debux "0.3.9"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
-        [midje "1.9.0-alpha8"] ; Example-based testing https://github.com/marick/Midje
+        [philoskim/debux "0.3.12"] ; `dbg` macro around -> or let https://github.com/philoskim/debux
+        [midje "1.9.0-alpha10"] ; Example-based testing https://github.com/marick/Midje
       ]
       :plugins [
         [lein-midje "3.2.1"] ; Example-based testing https://github.com/marick/lein-midje
@@ -64,7 +64,7 @@
         [lein-spell "0.1.0"] ; Catch spelling mistakes in docs and docstrings https://github.com/cldwalker/lein-spell
         [lein-deps-tree "0.1.2"] ; Print a tree of project dependencies https://github.com/the-kenny/lein-deps-tree
         [venantius/yagni "0.1.4"] ; Dead code finder https://github.com/venantius/yagni
-        [com.jakemccrary/lein-test-refresh "0.20.0"] ; Autotest https://github.com/jakemcc/lein-test-refresh
+        [com.jakemccrary/lein-test-refresh "0.21.1"] ; Autotest https://github.com/jakemcc/lein-test-refresh
       ]  
     }]
 

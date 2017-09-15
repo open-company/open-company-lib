@@ -46,7 +46,7 @@
   "Return true if the password is valid, false if not."
   [password]
   (and (string? password)
-       (>= (count password) 5)))
+       (>= (count password) 8)))
 
 (defn conn?
   "Check if a var is a valid RethinkDB connection map/atom."
@@ -88,12 +88,12 @@
   :user-id UniqueID
   :avatar-url (schema/maybe schema/Str)})
 
-(def SlackMirror {
+(def SlackChannel {
   :slack-org-id NonBlankStr
   :channel-name NonBlankStr
   :channel-id NonBlankStr})
 
-(def SlackThread (merge SlackMirror {
+(def SlackThread (merge SlackChannel {
                     :thread NonBlankStr
                     (schema/optional-key :bot-token) NonBlankStr}))
 

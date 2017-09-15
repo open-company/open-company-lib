@@ -2,7 +2,6 @@
   "CRUD functions on resources stored in RethinkDB."
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
-            [if-let.core :refer (if-let*)]
             [defun.core :refer (defun defun-)]
             [clj-time.format :as format]
             [clj-time.core :as time]
@@ -95,7 +94,7 @@
       (r/run conn)))
 
 (defn read-resources
-  "Given a table name, and an optional index name and value, and an optional set of fields, retrieve
+  "Given a table name, and an optional index name and value, an optional set of fields, and an optional limit, retrieve
   the resources from the database."
   ([conn table-name]
   {:pre [(conn? conn)
@@ -141,6 +140,23 @@
           (r/get-all index-values {:index index-name})
           (r/pluck fields)
           (r/run conn)
+          (drain-cursor)))))
+
+  ([conn table-name index-name index-value fields limit]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (sequential? fields)
+         (every? #(or (keyword? %) (string? %)) fields)
+         (number? limit)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])]
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/limit limit)
+          (r/pluck fields)
+          (r/run conn)
           (drain-cursor))))))
 
 (defn read-resources-and-relations
@@ -172,7 +188,7 @@
     }
   ]
 
-  The second arity (13) is largely the same functionality as the first, but with more control over the selection and
+  The second arity (14) is largely the same functionality as the first, but with more control over the selection and
   order of the returned resources in the form of:
 
   - an `order-by` field for the order of the returned resources
@@ -180,6 +196,16 @@
   - an initial value of the order-by field to `start` the limited set from
   - a `direction`, one of either `:before` or `:after` the `start` value
   - `limit`, a numeric limit to the number returned
+
+  The third arity (17) is largely the same functionality as the second, but with an additonal filter value and function
+  in the form of:
+
+  - a `filter-by-field` field for filtering the returned resources
+  - a `filter-by-fn` RethinkDB function for filtering the returned resources
+  - a `filter-by-value`
+
+  NB: This last 17 arity (pretty ridiculous!) version of the function leaks the RethinkDB driver to the client
+  of this namespace since the `filter-by-fn` musst be a RethinkDB driver function. This isn't ideal.
   "
   ([conn table-name index-name index-value
    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
@@ -239,7 +265,48 @@
                                (r/pluck relation-fields)
                                (r/coerce-to :array))}))
           (r/run conn)
+          (drain-cursor)))))
+
+  ([conn table-name index-name index-value
+    order-by order start direction limit
+    filter-by-field filter-by-fn filter-by-value
+    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (s-or-k? order-by)
+         (#{:desc :asc} order)
+         (not (nil? start))
+         (#{:before :after} direction)
+         (number? limit)
+         (s-or-k? filter-by-field)
+         (s-or-k? relation-name)
+         (s-or-k? relation-table-name)
+         (s-or-k? relation-field-name)
+         (s-or-k? relation-index-name)
+         (sequential? relation-fields)
+         (every? #(or (keyword? %) (string? %)) relation-fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])
+        order-fn (if (= order :desc) r/desc r/asc)
+        filter-fn (if (= direction :before) r/gt r/lt)]
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/filter (r/fn [row]
+            (filter-by-fn filter-by-value (r/get-field row filter-by-field))))
+          (r/filter (r/fn [row]
+                      (filter-fn start (r/get-field row order-by))))
+          (r/order-by (order-fn order-by))
+          (r/limit limit)
+          (r/merge (r/fn [resource]
+            {relation-name (-> (r/table relation-table-name)
+                               (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                               (r/pluck relation-fields)
+                               (r/coerce-to :array))}))
+          (r/run conn)
           (drain-cursor))))))
+
 
 
 (defn read-resources-by-primary-keys
@@ -405,46 +472,41 @@
 ;; ----- Set operations -----
 
 (defn- update-set
-  [conn table-name primary-key-value field element set-function]
-  {:pre [(conn? conn)]}
-  (if-let* [resource (read-resource conn table-name primary-key-value)
-            field-key (keyword field)
-            initial-value (field-key resource)
-            initial-set (if (sequential? initial-value) (set initial-value) #{})
-            updated-set (set-function initial-set element)
-            not-same? (not= initial-set updated-set) ; short-circuit this if nothing to do
-            updated-resource (-> resource
-                              (assoc field-key (vec updated-set))
-                              (assoc :updated-at (current-timestamp)))]
-    (let [update (with-timeout default-timeout
-                   (-> (r/table table-name)
-                       (r/get primary-key-value)
-                       (r/update {field-key updated-set})
-                       (r/run conn)))]
-      (if (or (= 1 (:replaced update)) (= 1 (:unchanged update)))
-        updated-resource
-        (throw (RuntimeException. (str "RethinkDB update failure: " update)))))))
+  "
+  For the resource specified by the primary key, add the element to the set of elements with the specified field
+  name. Return the updated resource if a change is made, and an exception on DB error.
+  "
+  [conn table-name primary-key-value field element set-operation]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? field)]}
+  (let [field-key (keyword field)
+        ts (current-timestamp)
+        update (with-timeout default-timeout
+                  (-> (r/table table-name)
+                      (r/get primary-key-value)
+                      (r/update (r/fn [document]
+                        {:updated-at ts field-key (-> (r/get-field document field-key)(set-operation element))}))
+                      (r/run conn)))]
+    (if (or (= 1 (:replaced update)) (= 1 (:unchanged update)))
+      (read-resource conn table-name primary-key-value)
+      (throw (RuntimeException. (str "RethinkDB update failure: " update))))))
 
-;; TODO - maybe desirable to use RethinkDB's set operations: (r/set-insert element)
-;; Not yet implemented in clj-rethinkdb
 (defn add-to-set
   "
   For the resource specified by the primary key, add the element to the set of elements with the specified field
-  name. Return the updated resource if a change is made, nil if not, and an exception on DB error.
+  name. Return the updated resource if a change is made, and an exception on DB error.
   "
   [conn table-name primary-key-value field element]
-  (update-set conn table-name primary-key-value field element conj))
+  (update-set conn table-name primary-key-value field element r/set-insert))
 
-
-;; TODO - maybe desirable to use RethinkDB's set operations: (r/set-difference element)
-;; Not yet implemented in clj-rethinkdb
 (defn remove-from-set
   "
   For the resource specified by the primary key, remove the element to the set of elements with the specified
   field name. Return the updated resource if a change is made, nil if not, and an exception on DB error.
   "
   [conn table-name primary-key-value field element]
-  (update-set conn table-name primary-key-value field element disj))
+  (update-set conn table-name primary-key-value field [element] r/set-difference))
 
 ;; ----- REPL usage -----
 

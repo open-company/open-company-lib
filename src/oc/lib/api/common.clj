@@ -1,7 +1,7 @@
 (ns oc.lib.api.common
   (:require [clojure.string :as s]
             [defun.core :refer (defun)]
-            [taoensso.timbre :refer (debug info warn error fatal spy)]
+            [taoensso.timbre :as timbre]
             [cheshire.core :as json]
             [liberator.representation :refer (ring-response)]
             [liberator.core :refer (by-method)]
@@ -14,6 +14,27 @@
 
 (def json-mime-type "application/json")
 (def text-mime-type "text/plain")
+
+(def help-email "hello@carrot.io")
+(def error-msg (str "We've been notified of this error. Please contact " help-email " for additional help."))
+
+;; ----- Ring Middleware -----
+
+(defn wrap-500
+  "
+  Ring middleware to ensure that in the case of a 500 error response or an exception, we don't leak error
+  details in the body of the response.
+  "
+  [handler]
+  (fn [request]
+    (try
+      (let [response (handler request)]
+        (if (= 500 (:status response))
+          (assoc response :body error-msg)
+          response))
+      (catch Throwable t
+        (timbre/error t)
+        {:status 500 :body error-msg}))))
 
 ;; ----- Responses -----
 
@@ -124,13 +145,13 @@
   ([ctx allow-nil?]
   (try
     (if-let [data (-> (get-in ctx [:request :body]) slurp (json/parse-string true))]
-      ; handle case of a string which is valid JSON, but still malformed for us (since it's not a map)
-      (do (when-not (map? data) (throw (Exception.)))
+      ; handle case of a string which is valid JSON, but still malformed for us (since it's not a map or seq)
+      (do (when-not (or (map? data) (seq? data)) (throw (Exception.)))
         [good-json {:data data}]))
     (catch Exception e
       (if allow-nil?
         [good-json {:data {}}]
-        (do (warn "Request body not processable as JSON: " e)
+        (do (timbre/warn "Request body not processable as JSON: " e)
           [malformed]))))))
 
 (defn known-content-type?
@@ -206,6 +227,8 @@
   :available-charsets [UTF8]
   :handle-not-found (fn [_] (missing-response))
   :handle-not-implemented (fn [_] (missing-response))
+  :handle-exception (fn [{ex :exception}] (timbre/error ex)
+                                          (error-response error-msg 500))
   :allowed-methods [:options :get :put :patch :delete]
   :respond-with-entity? (by-method {
     :options false

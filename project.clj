@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.12.19"
+(defproject open-company/lib "0.13.0"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -13,7 +13,7 @@
 
   ;; All profile dependencies
   :dependencies [
-    [org.clojure/clojure "1.9.0-alpha20" :scope "provided"] ; Lisp on the JVM http://clojure.org/documentation
+    [org.clojure/clojure "1.9.0-beta1" :scope "provided"] ; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/core.async "0.3.443"] ; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.match "0.3.0-alpha5"] ; Erlang-esque pattern matching https://github.com/clojure/core.match
     [defun "0.3.0-RC1"] ; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
@@ -21,13 +21,12 @@
     [com.stuartsierra/component "0.3.2"] ; Component Lifecycle https://github.com/stuartsierra/component
     [http-kit "2.3.0-alpha4"] ; HTTP client and server http://http-kit.org/
     [ring/ring-codec "1.0.1"] ; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
-    ;; NB: Timbre needs to come before Sente due to conflicts in shared dependency: com.taoensso/encore
     [com.taoensso/timbre "4.10.0"] ; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
-    ;; NB: Sente needs to come after Timbre due to conflicts in shared dependency: com.taoensso/encore
     [com.taoensso/sente "1.11.0"] ; WebSocket server https://github.com/ptaoussanis/sente
+    [com.taoensso/encore "2.92.0"] ; Force this version of encore, a dependency of Timbre and Sente
     [raven-clj "1.5.0"] ; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     [liberator "0.15.1"] ; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
-    [amazonica "0.3.111"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
+    [amazonica "0.3.112"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     [clj-jwt "0.1.1"] ; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [com.apa512/rethinkdb "0.15.26"] ; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
     [cheshire "5.8.0"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
@@ -60,7 +59,7 @@
         [lein-bikeshed "0.4.1"] ; Check for code smells https://github.com/dakrone/lein-bikeshed
         [lein-checkall "0.1.1"] ; Runs bikeshed, kibit and eastwood https://github.com/itang/lein-checkall
         [lein-pprint "1.1.2"] ; pretty-print the lein project map https://github.com/technomancy/leiningen/tree/master/lein-pprint
-        [lein-ancient "0.6.10"] ; Check for outdated dependencies https://github.com/xsc/lein-ancient
+        [lein-ancient "0.6.12"] ; Check for outdated dependencies https://github.com/xsc/lein-ancient
         [lein-spell "0.1.0"] ; Catch spelling mistakes in docs and docstrings https://github.com/cldwalker/lein-spell
         [lein-deps-tree "0.1.2"] ; Print a tree of project dependencies https://github.com/the-kenny/lein-deps-tree
         [venantius/yagni "0.1.4"] ; Dead code finder https://github.com/venantius/yagni

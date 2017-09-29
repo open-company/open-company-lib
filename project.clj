@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.13.1"
+(defproject open-company/lib "0.13.2"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -29,6 +29,7 @@
     [amazonica "0.3.112"] ; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     [clj-jwt "0.1.1"] ; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [com.apa512/rethinkdb "0.15.26"] ; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
+    [com.taoensso/faraday "1.10.0-alpha1"] ; DynamoDB client https://github.com/ptaoussanis/faraday
     [cheshire "5.8.0"] ; JSON encoding / decoding https://github.com/dakrone/cheshire
     [clj-time "0.14.0"] ; Date and time lib https://github.com/clj-time/clj-time
     [com.climate/squeedo "0.2.1"] ; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo

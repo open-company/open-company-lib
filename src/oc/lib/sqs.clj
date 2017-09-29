@@ -41,8 +41,15 @@
       (sqs/stop-consumer consumer))
     (dissoc component :retriever)))
 
-(defn sqs-listener [sqs-creds sqs-queue message-handler]
-  (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)}))
+(defn sqs-listener 
+  ([{:keys [sqs-creds sqs-queue message-handler]}]
+  {:pre [(map? sqs-creds)
+         (string? sqs-queue)
+         (fn? message-handler)]}
+  (sqs-listener sqs-creds sqs-queue message-handler))
+
+  ([sqs-creds sqs-queue message-handler]
+  (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)})))
 
 (defn __no-op__ 
   "Ignore: needed for Eastwood linting."

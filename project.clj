@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.14.0"
+(defproject open-company/lib "0.14.1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -42,12 +42,14 @@
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [commons-logging "1.2"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
-    [com.taoensso/sente "1.11.0"]
+    ;; NB: timbre is pulled in manually
+    [com.taoensso/sente "1.11.0" :exclusions [com.taoensso/timbre]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
     [com.taoensso/encore "2.92.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
-    [raven-clj "1.5.0"]
+    ;; NB: commons-codec pulled in manually
+    [raven-clj "1.5.0" :exclusions [commons-codec]]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.15.1"] 
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
@@ -90,9 +92,11 @@
     :qa {
       :dependencies [
         ;; Example-based testing https://github.com/marick/Midje
-        ;; NB: joda-time is pulled in by clj-time
         ;; NB: org.clojure/tools.macro is pulled in manually
-        [midje "1.9.0-alpha10" :exclusions [joda-time org.clojure/tools.macro]] 
+        ;; NB: clj-time is pulled in manually
+        ;; NB: joda-time is pulled in by clj-time
+        ;; NB: commons-codec pulled in manually
+        [midje "1.9.0-alpha10" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje

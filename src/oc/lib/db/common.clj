@@ -3,8 +3,6 @@
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
             [defun.core :refer (defun defun-)]
-            [clj-time.format :as format]
-            [clj-time.core :as time]
             [rethinkdb.query :as r]
             [oc.lib.schema :as lib-schema]
             [oc.lib.time :as oc-time]))

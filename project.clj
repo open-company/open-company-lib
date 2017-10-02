@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.14.1"
+(defproject open-company/lib "0.14.2"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -37,13 +37,13 @@
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.0.1" :exclusions [commons-codec]]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
-    [com.taoensso/timbre "4.10.0"]
+    [com.taoensso/timbre "4.10.0" :exclusions [com.taoensso/encore]]
     ;; Java logging lib https://commons.apache.org/proper/commons-logging/
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [commons-logging "1.2"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
-    [com.taoensso/sente "1.11.0" :exclusions [com.taoensso/timbre]]
+    [com.taoensso/sente "1.11.0" :exclusions [com.taoensso/timbre com.taoensso/encore]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
     [com.taoensso/encore "2.92.0"]
@@ -64,10 +64,6 @@
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
     [com.apa512/rethinkdb "0.15.26"]
-    ;; DynamoDB client https://github.com/ptaoussanis/faraday
-    ;; NB: com.amazonaws/aws-java-sdk-dynamodb is pulled in by amazonica
-    ;; NB: joda-time is pulled in by clj-time
-    [com.taoensso/faraday "1.10.0-alpha1" :exclusions [com.amazonaws/aws-java-sdk-dynamodb joda-time]]
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
     [cheshire "5.8.0"] 
     ;; Date and time lib https://github.com/clj-time/clj-time

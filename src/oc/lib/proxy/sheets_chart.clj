@@ -107,8 +107,8 @@
           geo-chart-regex #"GeoChart"
           is-geo-chart (re-find (re-matcher geo-chart-regex body))
           script-strings (s/join (map #(get-script-tag % is-geo-chart) scripts))
-          link-strings (s/join (map #(get-link-tag %) style-links))
-          style-strings (s/join (map #(get-style-tag %) style-tags))
+          link-strings (s/join (map get-link-tag style-links))
+          style-strings (s/join (map get-style-tag style-tags))
           output-html (str "<html><head>"
                             "<script type=\"text/javascript\" src=\"" (env :open-company-web-cdn) (if (env :open-company-proxy-deploy-key) (str "/" (env :open-company-proxy-deploy-key))) "/lib/GoogleSheets/GoogleSheets.js\"></script>"
                             (when is-geo-chart

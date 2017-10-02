@@ -63,6 +63,12 @@
     ;; Network loaded script, provided as a straight pass through
     (str "<script type=\"text/javascript\" src=\"/_/sheets-proxy-pass-through" (:src (:attrs s)) "\"></script>")))
 
+(defn- get-link-tag [s]
+  (str "<link type=\"text/css\" rel=\"stylesheet\" href=\"/_/sheets-proxy-pass-through" (:href (:attrs s)) "\"></link>"))
+
+(defn- get-style-tag [s]
+  (str "<script type=\"text/css\">" (s/join (:content s)) "\"</script>"))
+
 (defn- proxy-sheets
   "
   Proxy requests to Google Sheets (needed for CORs). Rewrite the responses in a form ready for embedding as
@@ -96,14 +102,20 @@
   (proxy-sheets sheet-path params (fn [status body]
     (let [parsed-html (h/as-hickory (h/parse body)) ; parse the HTML of the response
           scripts (hs/select (hs/tag :script) parsed-html) ; extract the script tags
+          style-links (hs/select (hs/and (hs/tag :link) (hs/attr "href" string?)) parsed-html) ; extract the link tags
+          style-tags (hs/select (hs/and (hs/tag :style) (hs/attr "type" "text/css")) parsed-html) ; extract the inline styles
           geo-chart-regex #"GeoChart"
           is-geo-chart (re-find (re-matcher geo-chart-regex body))
           script-strings (s/join (map #(get-script-tag % is-geo-chart) scripts))
+          link-strings (s/join (map #(get-link-tag %) style-links))
+          style-strings (s/join (map #(get-style-tag %) style-tags))
           output-html (str "<html><head>"
                             "<script type=\"text/javascript\" src=\"" (env :open-company-web-cdn) (if (env :open-company-proxy-deploy-key) (str "/" (env :open-company-proxy-deploy-key))) "/lib/GoogleSheets/GoogleSheets.js\"></script>"
                             (when is-geo-chart
                               (str "<script async defer src=\"https://maps.googleapis.com/maps/api/js?key=" (env :open-company-web-gmap-key) "\" type=\"text/javascript\"></script>"))
                             "<link rel=\"stylesheet\" href=\"" (env :open-company-web-cdn) (if (env :open-company-web-cdn) "/") (env :open-company-proxy-deploy-key) "/lib/GoogleSheets/GoogleSheets.css\" />"
+                            link-strings
+                            style-strings
                             "</head>"
                             "<body class=\"loading\">"
                             script-strings

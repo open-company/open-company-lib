@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.14.3"
+(defproject open-company/lib "0.14.4"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -41,6 +41,9 @@
     ;; Java logging lib https://commons.apache.org/proper/commons-logging/
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [commons-logging "1.2"]
+    ;; Java codec library https://commons.apache.org/proper/commons-codec/
+    ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
+    [commons-codec "1.10"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
     [com.taoensso/sente "1.11.0" :exclusions [com.taoensso/timbre com.taoensso/encore]]
@@ -55,8 +58,9 @@
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     ;; NB: joda-time is pulled in by clj-time
     ;; NB: commons-logging is pulled in manually
+    ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
-    [amazonica "0.3.112" :exclusions [joda-time commons-logging com.fasterxml.jackson.core/jackson-databind]]
+    [amazonica "0.3.112" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.1"]

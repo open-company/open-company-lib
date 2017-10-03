@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.14.4"
+(defproject open-company/lib "0.14.5"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -71,7 +71,9 @@
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
     [cheshire "5.8.0"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
-    [clj-time "0.14.0"] 
+    [clj-time "0.14.0"]
+    ;; A clj-time inspired date library for clojurescript. https://github.com/andrewmcveigh/cljs-time
+    [com.andrewmcveigh/cljs-time "0.5.1"]
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     ;; NB: com.amazonaws/jmespath-java is pulled in by Amazonica
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
@@ -79,7 +81,7 @@
     ;; Squeedo dependency
     [org.slf4j/slf4j-nop "1.8.0-alpha2"]
     ;; Data validation https://github.com/Prismatic/schema
-    [prismatic/schema "1.1.6"]
+    [prismatic/schema "1.1.7"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
     [environ "1.1.0"]
     ;; HTML as data https://github.com/davidsantiago/hickory

@@ -14,7 +14,7 @@
   ;; All profile dependencies
   :dependencies [
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.9.0-beta1" :scope "provided"]
+    [org.clojure/clojure "1.9.0-beta2" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.3.443"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match

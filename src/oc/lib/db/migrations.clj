@@ -147,7 +147,7 @@
   [conn table-name props]
   {:pre [(sequential? props)
          (every? db-common/s-or-k? props)]}
-  (-> (r/table "entries")
+  (-> (r/table table-name)
       (r/replace (r/fn [resource]
         (r/without resource props)))
       (r/run conn)))

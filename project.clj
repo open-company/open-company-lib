@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.14.5"
+(defproject open-company/lib "0.14.6"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -60,7 +60,7 @@
     ;; NB: commons-logging is pulled in manually
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
-    [amazonica "0.3.112" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
+    [amazonica "0.3.113" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.1"]

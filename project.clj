@@ -43,7 +43,7 @@
     [commons-logging "1.2"]
     ;; Java codec library https://commons.apache.org/proper/commons-codec/
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [commons-codec "1.10"]
+    [commons-codec "1.11"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
     [com.taoensso/sente "1.11.0" :exclusions [com.taoensso/timbre com.taoensso/encore]]
@@ -63,7 +63,7 @@
     [amazonica "0.3.113" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.9.1"]
+    [com.fasterxml.jackson.core/jackson-databind "2.9.2"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -79,7 +79,7 @@
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
     [com.climate/squeedo "0.2.1" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
-    [org.slf4j/slf4j-nop "1.8.0-alpha2"]
+    [org.slf4j/slf4j-nop "1.8.0-beta0"]
     ;; Data validation https://github.com/Prismatic/schema
     [prismatic/schema "1.1.7"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
@@ -104,7 +104,7 @@
         ;; Example-based testing https://github.com/marick/lein-midje
         [lein-midje "3.2.1"]
         ;; Linter https://github.com/jonase/eastwood
-        [jonase/eastwood "0.2.4"]
+        [jonase/eastwood "0.2.6-beta2"]
         ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        
         [lein-kibit "0.1.6-beta2" :exclusions [org.clojure/clojure]]
       ]
@@ -115,13 +115,13 @@
       :plugins [
         ;; Check for code smells https://github.com/dakrone/lein-bikeshed
         ;; NB: org.clojure/tools.cli is pulled in by lein-kibit
-        [lein-bikeshed "0.4.1" :exclusions [org.clojure/tools.cli]] 
+        [lein-bikeshed "0.5.0" :exclusions [org.clojure/tools.cli]] 
         ;; Runs bikeshed, kibit and eastwood https://github.com/itang/lein-checkall
         [lein-checkall "0.1.1"]
         ;; pretty-print the lein project map https://github.com/technomancy/leiningen/tree/master/lein-pprint
         [lein-pprint "1.1.2"]
         ;; Check for outdated dependencies https://github.com/xsc/lein-ancient
-        [lein-ancient "0.6.12"]
+        [lein-ancient "0.6.14"]
         ;; Catch spelling mistakes in docs and docstrings https://github.com/cldwalker/lein-spell
         [lein-spell "0.1.0"]
         ;; Dead code finder https://github.com/venantius/yagni

@@ -3,19 +3,15 @@
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
             [defun.core :refer (defun defun-)]
-            [clj-time.format :as format]
-            [clj-time.core :as time]
             [rethinkdb.query :as r]
-            [oc.lib.schema :as lib-schema]))
+            [oc.lib.schema :as lib-schema]
+            [oc.lib.time :as oc-time]))
 
 ;; ----- ISO 8601 timestamp -----
 
-(def timestamp-format (format/formatters :date-time))
+(def timestamp-format oc-time/timestamp-format)
 
-(defn current-timestamp
-  "ISO 8601 string timestamp for the current time."
-  []
-  (format/unparse timestamp-format (time/now)))
+(def current-timestamp oc-time/current-timestamp)
 
 ;; ----- Utility functions -----
 

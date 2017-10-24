@@ -5,6 +5,7 @@
             [clj-time.core :as t]
             [clj-time.coerce :as coerce]
             [rethinkdb.query :as r]
+            [oc.lib.db.common :as db-common]
             [oc.lib.slugify :as slug]))
 
 ;; ----- Utility functions for migrations -----
@@ -141,6 +142,16 @@
   [conn table-name]
   (r/run (r/table-drop table-name) conn))
 
+(defn remove-properties
+  "Remove the specified properties (sequence of strings or keywords)  from all docs in the specified table."
+  [conn table-name props]
+  {:pre [(sequential? props)
+         (every? db-common/s-or-k? props)]}
+  (-> (r/table table-name)
+      (r/replace (r/fn [resource]
+        (r/without resource props)))
+      (r/run conn)))
+
 ;; ----- Main entry-point functions for creating and running migrations -----
 
 (defn migrate 
@@ -190,7 +201,7 @@
   (require '[rethinkdb.query :as r])
   (require '[oc.lib.db.migrations :as m] :reload)
 
-  (def conn [:host "127.0.0.1" :port 28015 :db "open_company_dev"])
+  (def conn [:host "127.0.0.1" :port 28015 :db "open_company_storage_dev"])
 
   (m/create "test-it")
 

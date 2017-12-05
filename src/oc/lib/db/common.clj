@@ -348,6 +348,41 @@
   (updated-at-order
     (read-resources conn table-name index-name index-value fields))))
 
+(defn grouped-resources-by-most-common
+  "
+  Given a table name, an index name and value, a grouping field, return an sequence of the grouping field,
+  and a count of how many were in the group. Sequence is ordered, most common to least. Optionally specify
+  a limit on how many to return.
+
+  Response:
+
+  [['😜' 3] ['👌' 2] ['💥' 1]]
+  "
+  ([conn table-name index-name index-value group-field]
+  (grouped-resources-by-most-common conn table-name index-name index-value group-field nil))
+  
+  ([conn table-name index-name index-value group-field limit]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (or (nil? limit) (integer? limit))]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])
+        resource-counts (with-timeout default-timeout
+                          (-> (r/table table-name)
+                              (r/get-all index-values {:index index-name})
+                              (r/with-fields [group-field])
+                              (r/group group-field)
+                              (r/map (r/fn [value] 1))
+                              (r/reduce (r/fn [l r] (r/add l r)))
+                              (r/run conn)
+                              (drain-cursor)))
+        sorted-resources (reverse (sort #(compare (resource-counts %1)
+                                                  (resource-counts %2))
+                                    (keys resource-counts)))
+        limited-resources (if limit (take limit sorted-resources) sorted-resources)]
+    (vec (map #(vec [% (resource-counts %)]) limited-resources)))))
+
 (defn months-with-resource
   "
   Given a table name, an index name and value, and an ISO8601 date field, return an ordered sequence of all the months 

@@ -25,6 +25,7 @@
 
 (defn- slack-api [method params]
   (timbre/info "Making slack request:" method)
+  (timbre/info "Params:" params)
   (let [url (str "https://slack.com/api/" (name method))
         {:keys [status headers body error] :as resp} @(http/get url {:query-params params :as :text})]
     (if error
@@ -68,6 +69,15 @@
                                 :text text
                                 :channel channel
                                 :unfurl_links false}))
+
+(defn post-attachments
+  "Post attachments as the bot."
+  [bot-token channel attachments]
+  {:pre [(sequential? attachments)
+         (every? map? attachments)]}
+  (slack-api :chat.postMessage {:token bot-token
+                                :attachments (json/encode attachments)
+                                :channel channel}))
 
 (defn echo-message
   "

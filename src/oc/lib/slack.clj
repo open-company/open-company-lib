@@ -25,7 +25,6 @@
 
 (defn- slack-api [method params]
   (timbre/info "Making slack request:" method)
-  (timbre/info "Params:" params)
   (let [url (str "https://slack.com/api/" (name method))
         {:keys [status headers body error] :as resp} @(http/get url {:query-params params :as :text})]
     (if error

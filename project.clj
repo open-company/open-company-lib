@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.14.8"
+(defproject open-company/lib "0.14.10"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -14,7 +14,7 @@
   ;; All profile dependencies
   :dependencies [
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.9.0-RC2" :scope "provided"]
+    [org.clojure/clojure "1.9.0" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.3.465"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
@@ -46,10 +46,10 @@
     [commons-codec "1.11"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
-    [com.taoensso/sente "1.11.0" :exclusions [com.taoensso/timbre com.taoensso/encore]]
+    [com.taoensso/sente "1.12.0" :exclusions [com.taoensso/timbre com.taoensso/encore]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.92.0"]
+    [com.taoensso/encore "2.93.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.5.1" :exclusions [commons-codec]]
@@ -63,7 +63,7 @@
     [amazonica "0.3.117" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.9.2"]
+    [com.fasterxml.jackson.core/jackson-databind "2.9.3"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -77,7 +77,7 @@
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     ;; NB: com.amazonaws/jmespath-java is pulled in by Amazonica
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
-    [com.climate/squeedo "1.0.0-beta1" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
+    [com.climate/squeedo "1.0.0-beta2" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
     [org.slf4j/slf4j-nop "1.8.0-beta0"]
     ;; Data validation https://github.com/Prismatic/schema
@@ -98,7 +98,7 @@
         ;; NB: clj-time is pulled in manually
         ;; NB: joda-time is pulled in by clj-time
         ;; NB: commons-codec pulled in manually
-        [midje "1.9.0" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
+        [midje "1.9.2-alpha2" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje
@@ -121,13 +121,13 @@
         ;; pretty-print the lein project map https://github.com/technomancy/leiningen/tree/master/lein-pprint
         [lein-pprint "1.2.0"]
         ;; Check for outdated dependencies https://github.com/xsc/lein-ancient
-        [lein-ancient "0.6.14"]
+        [lein-ancient "0.6.15"]
         ;; Catch spelling mistakes in docs and docstrings https://github.com/cldwalker/lein-spell
         [lein-spell "0.1.0"]
         ;; Dead code finder https://github.com/venantius/yagni
         [venantius/yagni "0.1.4" :exclusions [org.clojure/clojure]]
         ;; Autotest https://github.com/jakemcc/lein-test-refresh
-        [com.jakemccrary/lein-test-refresh "0.21.1"]
+        [com.jakemccrary/lein-test-refresh "0.22.0"]
       ]  
     }]
 

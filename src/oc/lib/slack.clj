@@ -69,6 +69,15 @@
                                 :channel channel
                                 :unfurl_links false}))
 
+(defn post-attachments
+  "Post attachments as the bot."
+  [bot-token channel attachments]
+  {:pre [(sequential? attachments)
+         (every? map? attachments)]}
+  (slack-api :chat.postMessage {:token bot-token
+                                :attachments (json/encode attachments)
+                                :channel channel}))
+
 (defn echo-message
   "
   Post a message to a Slack channel -or- a thread of a channel, impersonating the user that authored the message.

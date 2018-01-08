@@ -1,7 +1,7 @@
 (ns oc.lib.jwt
   (:require [clojure.string :as s]
             [if-let.core :refer (if-let* when-let*)]
-            [defun.core :refer (defun-)]
+            [defun.core :refer (defun defun-)]
             [taoensso.timbre :as timbre]
             [schema.core :as schema]
             [clj-jwt.core :as jwt]
@@ -34,18 +34,72 @@
          lib-schema/slack-users))
 
 (schema/defn ^:always-validate admin-of :- (schema/maybe [lib-schema/UniqueID])
-  "Given the user-id of the user, return a sequence of team-ids for the teams the user is an admin of."
+  "
+  Given the user-id of the user, return a sequence of team-ids for the teams the user is an admin of.
+
+  Requires a conn to the auth DB.
+  "
   [conn user-id :- lib-schema/UniqueID]
   {:pre [(db-common/conn? conn)]}
   (let [teams (db-common/read-resources conn :teams :admins user-id)]              
     (vec (map :team-id teams))))
 
-(defun- name-for 
+(defun name-for
+  "Make a single `name` field from `first-name` and/or `last-name`."
   ([user] (name-for (:first-name user) (:last-name user)))
   ([first-name :guard s/blank? last-name :guard s/blank?] "")
   ([first-name last-name :guard s/blank?] first-name)
   ([first-name :guard s/blank? last-name] last-name)
   ([first-name last-name] (str first-name " " last-name)))
+
+(defun- bot-for
+  "
+  Given a Slack org resource, return the bot properties suitable for use in a JWToken, or nil if there's no bot
+  for the Slack org.
+
+  Or, given a map of Slack orgs to their bots, and a sequence of Slack orgs, return a sequence of bots.
+  "
+  ;; Single Slack org case
+  ([slack-org]
+  (when (and (:bot-user-id slack-org) (:bot-token slack-org))
+    ;; Extract and rename the keys for JWToken use
+    (select-keys
+      (clojure.set/rename-keys slack-org {:bot-user-id :id :bot-token :token})
+      [:slack-org-id :id :token])))
+
+  ;; Empty case, no more Slack orgs
+  ([_bots _slack-orgs :guard empty? results :guard empty?] nil)
+  ([_bots _slack-orgs :guard empty? results] (remove nil? results))
+
+  ;; Many Slack orgs case, recursively get the bot for each org one by one
+  ([bots slack-orgs results]
+  (bot-for bots (rest slack-orgs) (conj results (get bots (first slack-orgs))))))
+
+(defun bots-for
+  "
+  Given a user, return a map of configured bots for each of the user's teams, keyed by team-id.
+
+  Requires a conn to the auth DB.
+  "
+  ([conn user :guard #(empty? (:teams %))] [])
+
+  ([conn user]
+  (let [team-ids (:teams user)
+        teams (db-common/read-resources-by-primary-keys conn :teams team-ids [:team-id :name :slack-orgs]) ; teams the user is a member of
+        teams-with-slack (remove #(empty? (:slack-orgs %)) teams) ; teams with a Slack org
+        slack-org-ids (distinct (flatten (map :slack-orgs teams-with-slack))) ; distinct Slack orgs
+        slack-orgs (if (empty? slack-org-ids)
+                      []
+                      ;; bot lookup
+                      (db-common/read-resources-by-primary-keys conn :slack_orgs slack-org-ids
+                        [:slack-org-id :name :bot-user-id :bot-token]))
+        bots (remove nil? (map bot-for slack-orgs)) ; remove slack orgs with no bots
+        slack-org-to-bot (zipmap (map :slack-org-id bots) bots) ; map of slack org to its bot
+        team-to-slack-orgs (zipmap (map :team-id teams-with-slack)
+                                   (map :slack-orgs teams-with-slack)) ; map of team to its Slack org(s)
+        team-to-bots (zipmap (keys team-to-slack-orgs)
+                             (map #(bot-for slack-org-to-bot % []) (vals team-to-slack-orgs)))] ; map of team to bot(s)
+    (into {} (remove (comp empty? second) team-to-bots))))) ; remove any team with no bots
 
 (defn expired?
   "Return true/false if the JWToken is expired."

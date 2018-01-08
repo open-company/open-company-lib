@@ -1,17 +1,20 @@
 (ns oc.lib.jwt
-  (:require [if-let.core :refer (if-let* when-let*)]
+  (:require [clojure.string :as s]
+            [if-let.core :refer (if-let* when-let*)]
+            [defun.core :refer (defun-)]
             [taoensso.timbre :as timbre]
             [schema.core :as schema]
             [clj-jwt.core :as jwt]
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
+            [oc.lib.db.common :as db-common]
             [oc.lib.schema :as lib-schema]))
 
 (def media-type "application/jwt")
 
 (def SlackBots {lib-schema/UniqueID [{:id schema/Str :token schema/Str :slack-org-id schema/Str}]})
 
-(def auth-sources #{:email :slack})
+(def auth-sources #{:email :slack :digest})
 
 (def Claims
   (merge {:user-id lib-schema/UniqueID
@@ -29,6 +32,20 @@
           :refresh-url lib-schema/NonBlankStr
           :expire schema/Num}
          lib-schema/slack-users))
+
+(schema/defn ^:always-validate admin-of :- (schema/maybe [lib-schema/UniqueID])
+  "Given the user-id of the user, return a sequence of team-ids for the teams the user is an admin of."
+  [conn user-id :- lib-schema/UniqueID]
+  {:pre [(db-common/conn? conn)]}
+  (let [teams (db-common/read-resources conn :teams :admins user-id)]              
+    (vec (map :team-id teams))))
+
+(defun- name-for 
+  ([user] (name-for (:first-name user) (:last-name user)))
+  ([first-name :guard s/blank? last-name :guard s/blank?] "")
+  ([first-name last-name :guard s/blank?] first-name)
+  ([first-name :guard s/blank? last-name] last-name)
+  ([first-name last-name] (str first-name " " last-name)))
 
 (defn expired?
   "Return true/false if the JWToken is expired."

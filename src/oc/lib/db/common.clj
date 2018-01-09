@@ -115,7 +115,7 @@
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
-         (or (s-or-k? index-value) (and (sequential? index-value) (every? s-or-k? index-value)))]}
+         (or (s-or-k? index-value) (sequential? index-value))]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
     (with-timeout default-timeout
        (-> (r/table table-name)
@@ -127,7 +127,7 @@
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
-         (or (s-or-k? index-value) (and (sequential? index-value) (every? s-or-k? index-value)))
+         (or (s-or-k? index-value) (sequential? index-value))
          (sequential? fields)
          (every? s-or-k? fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
@@ -142,7 +142,7 @@
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
-         (or (s-or-k? index-value) (and (sequential? index-value) (every? s-or-k? index-value)))
+         (or (s-or-k? index-value) (sequential? index-value))
          (sequential? fields)
          (every? s-or-k? fields)
          (number? limit)]}

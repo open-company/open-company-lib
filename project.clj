@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.14.10"
+(defproject open-company/lib "0.14.14"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -16,7 +16,7 @@
     ;; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/clojure "1.9.0" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "0.3.465"]
+    [org.clojure/core.async "0.4.474"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "0.3.0-alpha5"]
     ;; Clojure reader https://github.com/clojure/tools.reader

@@ -104,7 +104,7 @@
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (sequential? fields)
-         (every? #(or (keyword? %) (string? %)) fields)]}
+         (every? s-or-k? fields)]}
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/with-fields fields)
@@ -115,7 +115,7 @@
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
-         (or (string? index-value) (sequential? index-value))]}
+         (or (s-or-k? index-value) (sequential? index-value))]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
     (with-timeout default-timeout
        (-> (r/table table-name)
@@ -127,9 +127,9 @@
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
-         (or (string? index-value) (sequential? index-value))
+         (or (s-or-k? index-value) (sequential? index-value))
          (sequential? fields)
-         (every? #(or (keyword? %) (string? %)) fields)]}
+         (every? s-or-k? fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
     (with-timeout default-timeout
       (-> (r/table table-name)
@@ -142,9 +142,9 @@
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
-         (or (string? index-value) (sequential? index-value))
+         (or (s-or-k? index-value) (sequential? index-value))
          (sequential? fields)
-         (every? #(or (keyword? %) (string? %)) fields)
+         (every? s-or-k? fields)
          (number? limit)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
     (with-timeout default-timeout
@@ -214,7 +214,7 @@
          (s-or-k? relation-field-name)
          (s-or-k? relation-index-name)
          (sequential? relation-fields)
-         (every? #(or (keyword? %) (string? %)) relation-fields)]}
+         (every? s-or-k? relation-fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
     (with-timeout default-timeout
       (-> (r/table table-name)
@@ -244,7 +244,7 @@
          (s-or-k? relation-field-name)
          (s-or-k? relation-index-name)
          (sequential? relation-fields)
-         (every? #(or (keyword? %) (string? %)) relation-fields)]}
+         (every? s-or-k? relation-fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])
         order-fn (if (= order :desc) r/desc r/asc)
         filter-fn (if (= direction :before) r/gt r/lt)]
@@ -282,7 +282,7 @@
          (s-or-k? relation-field-name)
          (s-or-k? relation-index-name)
          (sequential? relation-fields)
-         (every? #(or (keyword? %) (string? %)) relation-fields)]}
+         (every? s-or-k? relation-fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])
         order-fn (if (= order :desc) r/desc r/asc)
         filter-fn (if (= direction :before) r/gt r/lt)]
@@ -325,7 +325,7 @@
          (sequential? primary-keys)
          (every? string? primary-keys)
          (sequential? fields)
-         (every? #(or (keyword? %) (string? %)) fields)]}
+         (every? s-or-k? fields)]}
   (with-timeout default-timeout
     (-> (r/table table-name)
         (r/get-all primary-keys)

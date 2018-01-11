@@ -22,7 +22,7 @@
                               ;; more distinct authors than we are going to mention
                               more-authors?
                               (str (clojure.string/join ", " author-names) " and others")
-                                                        
+
                               ;; more than 1 author so last mention needs an "and", not a comma
                               multiple-authors?
                               (str (clojure.string/join ", " (butlast author-names))

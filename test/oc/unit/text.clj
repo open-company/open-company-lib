@@ -4,7 +4,7 @@
 
 (def item "foo")
 
-(def authors [{:name "Sean"} {:name "Sean"} {:name "Nathan"} {:name "Nathan"} {:name "Sean"} 
+(def authors [{:name "Sean"} {:name "Sean"} {:name "Nathan"} {:name "Nathan"} {:name "Sean"}
               {:name "Stuart"} {:name "Stuart"} {:name "Iacopo"} {:name "Iacopo"} {:name "Ryan"}])
 
 (facts "about making attributions"

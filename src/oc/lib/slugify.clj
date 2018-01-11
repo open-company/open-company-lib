@@ -1,4 +1,5 @@
 (ns oc.lib.slugify
+  "Functions for creating URL safe slugs from text strings."
   (:require [clojure.string :as s])
   (:import [java.text Normalizer Normalizer$Form]))
 

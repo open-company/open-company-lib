@@ -12,7 +12,10 @@
 
 (def media-type "application/jwt")
 
-(def SlackBots {lib-schema/UniqueID [{:id schema/Str :token schema/Str :slack-org-id schema/Str}]})
+(def SlackBots {lib-schema/UniqueID [{:id schema/Str
+                                      :token schema/Str
+                                      :slack-org-id schema/Str
+                                      :slack-domain schema/Str}]})
 
 (def auth-sources #{:email :slack :digest})
 
@@ -65,7 +68,7 @@
     ;; Extract and rename the keys for JWToken use
     (select-keys
       (clojure.set/rename-keys slack-org {:bot-user-id :id :bot-token :token})
-      [:slack-org-id :id :token])))
+      [:slack-org-id :id :token :slack-domain])))
 
   ;; Empty case, no more Slack orgs
   ([_bots _slack-orgs :guard empty? results :guard empty?] nil)
@@ -92,7 +95,7 @@
                       []
                       ;; bot lookup
                       (db-common/read-resources-by-primary-keys conn :slack_orgs slack-org-ids
-                        [:slack-org-id :name :bot-user-id :bot-token]))
+                        [:slack-org-id :name :bot-user-id :bot-token :slack-domain]))
         bots (remove nil? (map bot-for slack-orgs)) ; remove slack orgs with no bots
         slack-org-to-bot (zipmap (map :slack-org-id bots) bots) ; map of slack org to its bot
         team-to-slack-orgs (zipmap (map :team-id teams-with-slack)

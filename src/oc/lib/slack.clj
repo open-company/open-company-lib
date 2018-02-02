@@ -19,11 +19,11 @@
 
 (defn- with-reply
   "Given the text of a message, append a link to a threaded discussion to the message."
-  [text channel timestamp]
+  [text subdomain channel timestamp]
   (let [ts (clojure.string/replace timestamp #"\." "")]
-    (str text "\n\n<https://opencompanyhq.slack.com/conversation/" channel "/p" ts "|Reply>")))
+    (str text "\n\n<https://" subdomain ".slack.com/conversation/" channel "/p" ts "|Reply>")))
 
-(defn- slack-api [method params]
+(defn slack-api [method params]
   (timbre/info "Making slack request:" method)
   (let [url (str "https://slack.com/api/" (name method))
         {:keys [status headers body error] :as resp} @(http/get url {:query-params params :as :text})]
@@ -33,13 +33,15 @@
                  :params params
                  :status status
                  :body body}))
-      (-> body json/decode keywordize-keys))))
+      (do 
+        (timbre/trace "Slack response:" body)
+        (-> body json/decode keywordize-keys)))))
 
 (defn- link-message-to-thread
   "Update the message in Slack to include a link to a threaded discussion."
-  ([token channel timestamp text]
+  ([token subdomain channel timestamp text]
   (slack-api :chat.update {:token token
-                           :text (-> text with-marker (with-reply channel timestamp))
+                           :text (-> text with-marker (with-reply subdomain channel timestamp))
                            :ts timestamp
                            :channel channel
                            :parse "none"
@@ -84,7 +86,7 @@
   
   If no thread is specified, a new thread is created.
   "
-  ([user-token channel text]
+  ([user-token subdomain channel text]
   (let [result (slack-api :chat.postMessage {:token user-token
                                              :text (with-marker text)
                                              :channel channel
@@ -93,10 +95,10 @@
         timestamp (:ts result)]
     ;; If the initial message was successfully posted, edit it to include a link to a thread
     (if (and (:ok result) timestamp)
-      (link-message-to-thread user-token channel timestamp text)
+      (link-message-to-thread user-token subdomain channel timestamp text)
       result)))
   
-  ([user-token channel timestamp text]
+  ([user-token _subdomain channel timestamp text]
   (slack-api :chat.postMessage {:token user-token
                                 :text (with-marker text)
                                 :channel channel
@@ -111,7 +113,7 @@
 
   If no thread is specified, a new thread is created.
   "
-  ([bot-token channel text]
+  ([bot-token subdomain channel text]
   (let [result (slack-api :chat.postMessage {:token bot-token
                                              :text (with-marker text)
                                              :channel channel
@@ -119,10 +121,10 @@
         timestamp (:ts result)]
     ;; If the initial message was successfully posted, edit it to include a link to a thread
     (if (and (:ok result) timestamp)
-      (link-message-to-thread bot-token channel timestamp text)
+      (link-message-to-thread bot-token subdomain channel timestamp text)
       result)))
 
-  ([bot-token channel timestamp text]
+  ([bot-token _subdomain channel timestamp text]
   (slack-api :chat.postMessage {:token bot-token
                                 :text (with-marker text)
                                 :channel channel

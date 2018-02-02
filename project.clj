@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.14.16"
+(defproject open-company/lib "0.15.0"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -79,7 +79,7 @@
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
     [com.climate/squeedo "1.0.0-beta2" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
-    [org.slf4j/slf4j-nop "1.8.0-beta0"]
+    [org.slf4j/slf4j-nop "1.8.0-beta1"]
     ;; Data validation https://github.com/Prismatic/schema
     [prismatic/schema "1.1.7"]
     ;; Environment settings from different sources https://github.com/weavejester/environ

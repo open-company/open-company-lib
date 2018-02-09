@@ -4,8 +4,7 @@
             [org.httpkit.client :as http]
             [cheshire.core :as json]
             [defun.core :refer (defun)]
-            [taoensso.timbre :as timbre]
-            [oc.lib.schema :as lib-schema]))
+            [taoensso.timbre :as timbre]))
 
 ;; https://www.cs.tut.fi/~jkorpela/chars/spaces.html
 (def marker-char (char 8203)) ; U+200B a Unicode zero width space, used to mark comment messages originating with OC
@@ -82,6 +81,13 @@
                                 :attachments (json/encode attachments)
                                 :channel channel}))
 
+(defn- slack-timestamp?
+  "
+  Slack timestamps look like: 1518175926.000301
+  "
+  [value]
+  (re-matches #"\d*\.\d*" value))
+
 (defun echo-message
   "
   Post a message to a Slack channel -or- a thread of a channel, impersonating the user that authored the message.
@@ -89,7 +95,7 @@
   A thread is specified by its timestamp. If no thread is specified, a new thread is created, so a subdomain
   is required to create the link to the new thread.
   "
-  ([user-token channel timestamp :guard #(lib-schema/valid? lib-schema/ISO8601 %) text]
+  ([user-token channel timestamp :guard #(slack-timestamp? %) text]
   (slack-api :chat.postMessage {:token user-token
                                 :text (with-marker text)
                                 :channel channel
@@ -117,7 +123,7 @@
   A thread is specified by its timestamp. If no thread is specified, a new thread is created, so a subdomain
   is required to create the link to the new thread.
   "
-  ([bot-token channel timestamp :guard #(lib-schema/valid? lib-schema/ISO8601 %) text]
+  ([bot-token channel timestamp :guard #(slack-timestamp? %) text]
   (slack-api :chat.postMessage {:token bot-token
                                 :text (with-marker text)
                                 :channel channel

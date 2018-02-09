@@ -22,7 +22,7 @@
   "Given the text of a message, append a link to a threaded discussion to the message."
   [text subdomain channel timestamp]
   (let [ts (clojure.string/replace timestamp #"\." "")]
-    (str text "\n\n<https://" subdomain ".slack.com/conversation/" channel "/p" ts "|Reply>")))
+    (str text "\n\n</conversation/" channel "/p" ts "|Reply>")))
 
 (defn slack-api [method params]
   (timbre/info "Making slack request:" method)

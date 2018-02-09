@@ -18,12 +18,6 @@
   [text]
   (str marker-char text))
 
-(defn- with-reply
-  "Given the text of a message, append a link to a threaded discussion to the message."
-  [text subdomain channel timestamp]
-  (let [ts (clojure.string/replace timestamp #"\." "")]
-    (str text "\n\n</conversation/" channel "/p" ts "|Reply>")))
-
 (defn slack-api [method params]
   (timbre/info "Making slack request:" method)
   (let [url (str "https://slack.com/api/" (name method))
@@ -37,17 +31,6 @@
       (do 
         (timbre/trace "Slack response:" body)
         (-> body json/decode keywordize-keys)))))
-
-(defn- link-message-to-thread
-  "Update the message in Slack to include a link to a threaded discussion."
-  ([token subdomain channel timestamp text]
-  (slack-api :chat.update {:token token
-                           :text (-> text with-marker (with-reply subdomain channel timestamp))
-                           :ts timestamp
-                           :channel channel
-                           :parse "none"
-                           :unfurl_links false
-                           :as-user true})))
 
 (defn get-team-info [token]
   (:team (slack-api :team.info {:token token})))
@@ -88,31 +71,40 @@
   [value]
   (re-matches #"\d*\.\d*" value))
 
+(defn- post-data
+  [token channel text]
+  {:token token
+   :text (with-marker text)
+   :channel channel
+   :unfurl_links false})
+
+(defn- echo-data
+  [token channel text]
+  (assoc (post-data token channel text) :as_user true))
+
 (defun echo-message
   "
   Post a message to a Slack channel -or- a thread of a channel, impersonating the user that authored the message.
   
-  A thread is specified by its timestamp. If no thread is specified, a new thread is created, so a subdomain
-  is required to create the link to the new thread.
-  "
-  ([user-token channel timestamp :guard #(slack-timestamp? %) text]
-  (slack-api :chat.postMessage {:token user-token
-                                :text (with-marker text)
-                                :channel channel
-                                :thread_ts timestamp
-                                :unfurl_links false
-                                :as_user true}))
+  A thread is specified by its timestamp.
 
-  ([user-token channel subdomain text]
-  (let [result (slack-api :chat.postMessage {:token user-token
-                                             :text (with-marker text)
-                                             :channel channel
-                                             :unfurl_links false
-                                             :as_user true})
+  Optionally can include 2 text messages, the 2nd will be a reply to the first, creating a new thread.
+  "
+  ;; Echo to a thread
+  ([user-token channel timestamp :guard #(slack-timestamp? %) text]
+  (slack-api :chat.postMessage (assoc (echo-data user-token channel text) :thread_ts timestamp)))
+
+  ;; Echo to a channel
+  ([user-token channel text]
+  (slack-api :chat.postMessage (echo-data user-token channel text)))
+
+  ;; Echo to a channel, and reply to it, creating a thread
+  ([user-token channel initial-text reply-text]
+  (let [result (slack-api :chat.postMessage (echo-data user-token channel initial-text))
         timestamp (:ts result)]
     ;; If the initial message was successfully posted, edit it to include a link to a thread
     (if (and (:ok result) timestamp)
-      (link-message-to-thread user-token subdomain channel timestamp text)
+      (echo-message user-token channel timestamp reply-text)
       result))))
 
 (defun proxy-message
@@ -120,25 +112,25 @@
   Post a message to a Slack channel -or- a thread of a channel, using the bot and mentioning the user that
   authored the message.
 
-  A thread is specified by its timestamp. If no thread is specified, a new thread is created, so a subdomain
-  is required to create the link to the new thread.
-  "
-  ([bot-token channel timestamp :guard #(slack-timestamp? %) text]
-  (slack-api :chat.postMessage {:token bot-token
-                                :text (with-marker text)
-                                :channel channel
-                                :thread_ts timestamp
-                                :unfurl_links false}))
+  A thread is specified by its timestamp.
 
-  ([bot-token channel subdomain text]
-  (let [result (slack-api :chat.postMessage {:token bot-token
-                                             :text (with-marker text)
-                                             :channel channel
-                                             :unfurl_links false})
+  Optionally can include 2 text messages, the 2nd will be a reply to the first, creating a new thread.
+  "
+  ;; Post to a thread
+  ([bot-token channel timestamp :guard #(slack-timestamp? %) text]
+  (slack-api :chat.postMessage (assoc (post-data bot-token channel text) :thread_ts timestamp)))
+
+  ;; Post to a channel
+  ([bot-token channel text]
+  (slack-api :chat.postMessage (post-data bot-token channel text)))
+
+  ;; Post to a channel, and reply to it, creating a thread
+  ([bot-token channel subdomain initial-text reply-text]
+  (let [result (slack-api :chat.postMessage (post-data bot-token channel initial-text))
         timestamp (:ts result)]
     ;; If the initial message was successfully posted, edit it to include a link to a thread
     (if (and (:ok result) timestamp)
-      (link-message-to-thread bot-token subdomain channel timestamp text)
+      (post-message bot-token channel timestamp reply-text)
       result))))
 
 (comment

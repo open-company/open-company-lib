@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.15.0"
+(defproject open-company/lib "0.15.1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -32,7 +32,7 @@
     [lockedon/if-let "0.1.0"]
     ;; Component Lifecycle https://github.com/stuartsierra/component
     [com.stuartsierra/component "0.3.2"]
-    [http-kit "2.3.0-alpha4"] ; HTTP client and server http://http-kit.org/
+    [http-kit "2.3.0-alpha5"] ; HTTP client and server http://http-kit.org/
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.1.0" :exclusions [commons-codec]]
@@ -49,7 +49,7 @@
     [com.taoensso/sente "1.12.0" :exclusions [com.taoensso/timbre com.taoensso/encore]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.93.0"]
+    [com.taoensso/encore "2.94.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.5.1" :exclusions [commons-codec]]

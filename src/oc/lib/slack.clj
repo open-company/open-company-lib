@@ -97,7 +97,7 @@
                                 :unfurl_links false
                                 :as_user true}))
 
-  ([user-token subdomain channel text]
+  ([user-token channel subdomain text]
   (let [result (slack-api :chat.postMessage {:token user-token
                                              :text (with-marker text)
                                              :channel channel
@@ -124,7 +124,7 @@
                                 :thread_ts timestamp
                                 :unfurl_links false}))
 
-  ([bot-token subdomain channel text]
+  ([bot-token channel subdomain text]
   (let [result (slack-api :chat.postMessage {:token bot-token
                                              :text (with-marker text)
                                              :channel channel

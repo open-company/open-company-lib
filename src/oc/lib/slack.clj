@@ -130,7 +130,7 @@
         timestamp (:ts result)]
     ;; If the initial message was successfully posted, edit it to include a link to a thread
     (if (and (:ok result) timestamp)
-      (post-message bot-token channel timestamp reply-text)
+      (proxy-message bot-token channel timestamp reply-text)
       result))))
 
 (comment

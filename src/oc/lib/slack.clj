@@ -125,7 +125,7 @@
   (slack-api :chat.postMessage (post-data bot-token channel text)))
 
   ;; Post to a channel, and reply to it, creating a thread
-  ([bot-token channel subdomain initial-text reply-text]
+  ([bot-token channel initial-text reply-text]
   (let [result (slack-api :chat.postMessage (post-data bot-token channel initial-text))
         timestamp (:ts result)]
     ;; If the initial message was successfully posted, edit it to include a link to a thread

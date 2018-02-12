@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.14.15"
+(defproject open-company/lib "0.16.0"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -21,7 +21,7 @@
     [org.clojure/core.match "0.3.0-alpha5"]
     ;; Clojure reader https://github.com/clojure/tools.reader
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [org.clojure/tools.reader "1.1.1"]
+    [org.clojure/tools.reader "1.2.1"]
     ;; Tools for writing macros https://github.com/clojure/tools.macro
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [org.clojure/tools.macro "0.1.5"]
@@ -32,7 +32,7 @@
     [lockedon/if-let "0.1.0"]
     ;; Component Lifecycle https://github.com/stuartsierra/component
     [com.stuartsierra/component "0.3.2"]
-    [http-kit "2.3.0-alpha4"] ; HTTP client and server http://http-kit.org/
+    [http-kit "2.3.0-alpha5"] ; HTTP client and server http://http-kit.org/
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.1.0" :exclusions [commons-codec]]
@@ -49,7 +49,7 @@
     [com.taoensso/sente "1.12.0" :exclusions [com.taoensso/timbre com.taoensso/encore]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.93.0"]
+    [com.taoensso/encore "2.94.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.5.1" :exclusions [commons-codec]]
@@ -60,10 +60,10 @@
     ;; NB: commons-logging is pulled in manually
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
-    [amazonica "0.3.117" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
+    [amazonica "0.3.119" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.9.3"]
+    [com.fasterxml.jackson.core/jackson-databind "2.9.4"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -79,7 +79,7 @@
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
     [com.climate/squeedo "1.0.0-beta2" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
-    [org.slf4j/slf4j-nop "1.8.0-beta0"]
+    [org.slf4j/slf4j-nop "1.8.0-beta1"]
     ;; Data validation https://github.com/Prismatic/schema
     [prismatic/schema "1.1.7"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
@@ -115,7 +115,7 @@
       :plugins [
         ;; Check for code smells https://github.com/dakrone/lein-bikeshed
         ;; NB: org.clojure/tools.cli is pulled in by lein-kibit
-        [lein-bikeshed "0.5.0" :exclusions [org.clojure/tools.cli]] 
+        [lein-bikeshed "0.5.1" :exclusions [org.clojure/tools.cli]] 
         ;; Runs bikeshed, kibit and eastwood https://github.com/itang/lein-checkall
         [lein-checkall "0.1.1"]
         ;; pretty-print the lein project map https://github.com/technomancy/leiningen/tree/master/lein-pprint

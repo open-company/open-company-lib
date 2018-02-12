@@ -30,7 +30,8 @@
           (schema/optional-key :slack-token) schema/Str
           (schema/optional-key :slack-bots) SlackBots
           :refresh-url lib-schema/NonBlankStr
-          :expire schema/Num}
+          :expire schema/Num
+          schema/Keyword schema/Any} ; and whatever else is in the JWT map to make it open for future extensions
          lib-schema/slack-users))
 
 (schema/defn ^:always-validate admin-of :- (schema/maybe [lib-schema/UniqueID])

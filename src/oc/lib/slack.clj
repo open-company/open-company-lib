@@ -91,7 +91,7 @@
   Optionally can include 2 text messages, the 2nd will be a reply to the first, creating a new thread.
   "
   ;; Echo to a thread
-  ([user-token channel timestamp :guard #(slack-timestamp? %) text]
+  ([user-token channel timestamp :guard slack-timestamp? text]
   (slack-api :chat.postMessage (assoc (echo-data user-token channel text) :thread_ts timestamp)))
 
   ;; Echo to a channel
@@ -117,7 +117,7 @@
   Optionally can include 2 text messages, the 2nd will be a reply to the first, creating a new thread.
   "
   ;; Post to a thread
-  ([bot-token channel timestamp :guard #(slack-timestamp? %) text]
+  ([bot-token channel timestamp :guard slack-timestamp? text]
   (slack-api :chat.postMessage (assoc (post-data bot-token channel text) :thread_ts timestamp)))
 
   ;; Post to a channel

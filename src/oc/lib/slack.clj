@@ -51,7 +51,7 @@
   "Post a message as the bot."
   [bot-token channel text]
   (slack-api :chat.postMessage {:token bot-token
-                                :text text
+                                :text (with-marker text)
                                 :channel channel
                                 :unfurl_links false}))
 

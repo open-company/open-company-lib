@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.0"
+(defproject open-company/lib "0.16.2"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -21,7 +21,7 @@
     [org.clojure/core.match "0.3.0-alpha5"]
     ;; Clojure reader https://github.com/clojure/tools.reader
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [org.clojure/tools.reader "1.2.1"]
+    [org.clojure/tools.reader "1.2.2"]
     ;; Tools for writing macros https://github.com/clojure/tools.macro
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [org.clojure/tools.macro "0.1.5"]

@@ -51,7 +51,7 @@
   "Post a message as the bot."
   [bot-token channel text]
   (slack-api :chat.postMessage {:token bot-token
-                                :text text
+                                :text (with-marker text)
                                 :channel channel
                                 :unfurl_links false}))
 
@@ -102,10 +102,12 @@
   ([user-token channel initial-text reply-text]
   (let [result (slack-api :chat.postMessage (echo-data user-token channel initial-text))
         timestamp (:ts result)]
-    ;; If the initial message was successfully posted, edit it to include a link to a thread
-    (if (and (:ok result) timestamp)
-      (echo-message user-token channel timestamp reply-text)
-      result))))
+    
+    ;; If the initial message was successfully posted, reply to it with the 2nd part of the message
+    (when (and (:ok result) timestamp)
+      (echo-message user-token channel timestamp reply-text))
+    
+    result)))
 
 (defun proxy-message
   "
@@ -128,10 +130,12 @@
   ([bot-token channel initial-text reply-text]
   (let [result (slack-api :chat.postMessage (post-data bot-token channel initial-text))
         timestamp (:ts result)]
-    ;; If the initial message was successfully posted, edit it to include a link to a thread
-    (if (and (:ok result) timestamp)
-      (proxy-message bot-token channel timestamp reply-text)
-      result))))
+    
+    ;; If the initial message was successfully posted, reply to it with the 2nd part of the message
+    (when (and (:ok result) timestamp)
+      (proxy-message bot-token channel timestamp reply-text))
+    
+    result)))
 
 (comment
 
@@ -158,10 +162,12 @@
   ;; Echo a comment as a user
   (def user-token "<user-token>")
   (def user-channels (slack/get-channels user-token))
-  (slack/echo-message user-token (-> user-channels first :id) "Comment as user.")
+  (slack/echo-message user-token (-> user-channels first :id) "Comment as user." "This is my first comment.")
+  (slack/echo-message user-token (-> user-channels first :id) "This is my second comment.")
 
   ;; Proxy a comment for a user
   (def bot-channels (slack/get-channels bot-token))
-  (slack/proxy-message user-token (-> user-channels first :id) "Albert Camus said: Comment by a user.")
+  (slack/proxy-message bot-token (-> user-channels first :id) "Albert Camus said:" "This is my first comment.")
+  (slack/proxy-message bot-token (-> user-channels first :id) "Albert Camus said: This is my second comment.")
 
   )

@@ -38,7 +38,7 @@
   ([watch-id client-id]
      (let [item-watchers (or (get @watchers watch-id) #{})]
        (swap! watchers assoc watch-id (disj item-watchers client-id))
-       (when (not (contains? (get @watchers watch-id) client-id))
+       (when-not (contains? (get @watchers watch-id) client-id)
          (swap! watchers dissoc client-id)))))
 
 (defn watchers-for [watch-id]

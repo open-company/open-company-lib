@@ -8,7 +8,7 @@
   The sending to registered listeners is the resposibility of the user of this watcher and is
   done by consuming the core.async `sender-chan` from this namespace.
   "
-  (:require [clojure.core.async :as async :refer [<!! >!!]]
+  (:require [clojure.core.async :as async :refer [<! >!!]]
             [defun.core :refer (defun-)]
             [taoensso.timbre :as timbre]))
 
@@ -24,12 +24,22 @@
 (def watchers (atom {}))
 
 (defn add-watcher [watch-id client-id]
-  (let [item-watchers (or (get @watchers watch-id) #{})]
-    (swap! watchers assoc watch-id (conj item-watchers client-id))))
+  (let [item-watchers (or (get @watchers watch-id) #{})
+        watcher-ids (or (get @watchers client-id) #{})]
+    (swap! watchers assoc client-id (conj watcher-ids watch-id)
+                          watch-id (conj item-watchers client-id))))
 
-(defn remove-watcher [watch-id client-id]
-  (let [item-watchers (or (get @watchers watch-id) #{})]
-    (swap! watchers assoc watch-id (disj item-watchers client-id))))
+(defn remove-watcher
+  ([client-id]
+     (let [watcher-ids (or (get @watchers client-id) #{})]
+       (doseq [watch-id watcher-ids]
+         (remove-watcher watch-id client-id))))
+
+  ([watch-id client-id]
+     (let [item-watchers (or (get @watchers watch-id) #{})]
+       (swap! watchers assoc watch-id (disj item-watchers client-id))
+       (when-not (contains? (get @watchers watch-id) client-id)
+         (swap! watchers dissoc client-id)))))
 
 (defn watchers-for [watch-id]
   (vec (get @watchers watch-id)))
@@ -56,8 +66,14 @@
   ;; Unregister interest by the specified client in the specified item by removing the client ID
   (let [watch-id (:watch-id message)
         client-id (:client-id message)]
-    (timbre/info "Stop watch request for:" watch-id "by:" client-id)
-    (remove-watcher watch-id client-id)))
+    (if watch-id
+      (do
+        (timbre/info "Stop watch request for:" watch-id "by:" client-id)
+        (remove-watcher watch-id client-id))
+      (do
+        (timbre/info "Stop watch request by:" client-id)
+        (remove-watcher client-id))
+    )))
 
   ([message :guard :send]
   ;; For every client that's registered interest in the specified item, send them the specified event
@@ -79,7 +95,7 @@
   (reset! watcher-go true)
   (async/go (while @watcher-go
     (timbre/debug "Watcher waiting...")
-    (let [message (<!! watcher-chan)]
+    (let [message (<! watcher-chan)]
       (timbre/debug "Processing message on watcher channel...")
       (if (:stop message)
         (do (reset! watcher-go false) (timbre/info "Watcher stopped."))

@@ -21,7 +21,7 @@
     [org.clojure/core.match "0.3.0-alpha5"]
     ;; Clojure reader https://github.com/clojure/tools.reader
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [org.clojure/tools.reader "1.2.2"]
+    [org.clojure/tools.reader "1.3.0-alpha3"]
     ;; Tools for writing macros https://github.com/clojure/tools.macro
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [org.clojure/tools.macro "0.1.5"]
@@ -29,10 +29,10 @@
     ;; NB: org.clojure/tools.macro is pulled in manually
     [defun "0.3.0-RC1" :exclusions [org.clojure/tools.macro]] 
     ;; More than one binding for if/when macros https://github.com/LockedOn/if-let
-    [lockedon/if-let "0.1.0"]
+    [lockedon/if-let "0.3.0"]
     ;; Component Lifecycle https://github.com/stuartsierra/component
     [com.stuartsierra/component "0.3.2"]
-    [http-kit "2.3.0-alpha5"] ; HTTP client and server http://http-kit.org/
+    [http-kit "2.3.0-beta2"] ; HTTP client and server http://http-kit.org/
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.1.0" :exclusions [commons-codec]]
@@ -60,7 +60,7 @@
     ;; NB: commons-logging is pulled in manually
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
-    [amazonica "0.3.119" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
+    [amazonica "0.3.121" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.4"]
@@ -77,7 +77,7 @@
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     ;; NB: com.amazonaws/jmespath-java is pulled in by Amazonica
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
-    [com.climate/squeedo "1.0.0-beta2" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
+    [com.climate/squeedo "1.0.0" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
     [org.slf4j/slf4j-nop "1.8.0-beta1"]
     ;; Data validation https://github.com/Prismatic/schema
@@ -98,7 +98,7 @@
         ;; NB: clj-time is pulled in manually
         ;; NB: joda-time is pulled in by clj-time
         ;; NB: commons-codec pulled in manually
-        [midje "1.9.2-alpha2" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
+        [midje "1.9.2-alpha3" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje

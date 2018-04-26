@@ -121,7 +121,7 @@
   [payload passphrase]
   (let [expiring-payload (expire payload)]
     (when (not (:super-user expiring-payload)) ;; trust the super user
-      (schema/validate Claims expiring-payload) ; ensure we only generate valid JWTokens
+      (schema/validate Claims expiring-payload)) ; ensure we only generate valid JWTokens
     (-> expiring-payload
         jwt/jwt
         (jwt/sign :HS256 passphrase)

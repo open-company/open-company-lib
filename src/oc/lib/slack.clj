@@ -66,9 +66,10 @@
 
 (defn unfurl-post-url
   "Add data to the url when a Carrot url is posted in slack."
-  [user-token channel url url-text]
+  [user-token channel ts url url-text]
   (slack-api :chat.unfurl {:token user-token
                            :channel channel
+                           :message_ts ts
                            :unfurls (json/encode {url {:text url-text}})}))
 
 (defn- slack-timestamp?

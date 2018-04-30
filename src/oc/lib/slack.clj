@@ -69,7 +69,7 @@
   [user-token channel ts url url-text]
   (slack-api :chat.unfurl {:token user-token
                            :channel channel
-                           :message_ts ts
+                           :ts ts
                            :unfurls (json/encode {url {:text url-text}})}))
 
 (defn- slack-timestamp?

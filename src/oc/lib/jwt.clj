@@ -120,7 +120,7 @@
   "Create a JSON Web Token from a payload."
   [payload passphrase]
   (let [expiring-payload (expire payload)]
-    (when (not (:super-user expiring-payload)) ;; trust the super user
+    (when-not (:super-user expiring-payload) ;; trust the super user
       (schema/validate Claims expiring-payload)) ; ensure we only generate valid JWTokens
     (-> expiring-payload
         jwt/jwt

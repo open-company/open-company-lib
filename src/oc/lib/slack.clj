@@ -64,6 +64,14 @@
                                 :attachments (json/encode attachments)
                                 :channel channel}))
 
+(defn unfurl-post-url
+  "Add data to the url when a Carrot url is posted in slack."
+  [user-token channel ts url-data]
+  (slack-api :chat.unfurl {:token user-token
+                           :channel channel
+                           :ts ts
+                           :unfurls url-data}))
+
 (defn- slack-timestamp?
   "
   Slack timestamps look like: 1518175926.000301

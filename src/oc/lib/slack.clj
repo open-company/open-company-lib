@@ -61,6 +61,7 @@
   {:pre [(sequential? attachments)
          (every? map? attachments)]}
   (slack-api :chat.postMessage {:token bot-token
+                                :text (with-marker "")
                                 :attachments (json/encode attachments)
                                 :channel channel}))
 

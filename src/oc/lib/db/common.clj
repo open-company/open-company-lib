@@ -196,9 +196,7 @@
   The third arity (17) is largely the same functionality as the second, but with an additonal filter value and function
   in the form of:
 
-  - a `filter-by-field` field for filtering the returned resources
   - a `filter-by-fn` RethinkDB function for filtering the returned resources
-  - a `filter-by-value`
 
   NB: This last 17 arity (pretty ridiculous!) version of the function leaks the RethinkDB driver to the client
   of this namespace since the `filter-by-fn` musst be a RethinkDB driver function. This isn't ideal.
@@ -265,8 +263,9 @@
 
   ([conn table-name index-name index-value
     order-by order start direction limit
-    filter-by-field filter-by-fn filter-by-value
-    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+    filter-by-fn
+    relation-name relation-table-name
+    relation-field-name relation-index-name relation-fields]
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
@@ -276,7 +275,6 @@
          (not (nil? start))
          (#{:before :after} direction)
          (number? limit)
-         (s-or-k? filter-by-field)
          (s-or-k? relation-name)
          (s-or-k? relation-table-name)
          (s-or-k? relation-field-name)
@@ -289,8 +287,7 @@
     (with-timeout default-timeout
       (-> (r/table table-name)
           (r/get-all index-values {:index index-name})
-          (r/filter (r/fn [row]
-            (filter-by-fn filter-by-value (r/get-field row filter-by-field))))
+          (r/filter filter-by-fn {:default (r/error)})
           (r/filter (r/fn [row]
                       (filter-fn start (r/get-field row order-by))))
           (r/order-by (order-fn order-by))

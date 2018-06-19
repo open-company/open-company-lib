@@ -249,7 +249,7 @@
 
   ([conn table-name index-name index-value
     order-by order start direction limit
-    relation-name relation-table-name relation-field-name relation-index-name relation-fields {:keys [count] :or {count false} :as optional-args}]
+    relation-name relation-table-name relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
@@ -288,7 +288,7 @@
     order-by order start direction limit
     filter-map
     relation-name relation-table-name
-    relation-field-name relation-index-name relation-fields {:keys [count] :or {count false} :as optional-args}]
+    relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)

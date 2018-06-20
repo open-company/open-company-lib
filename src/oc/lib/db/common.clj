@@ -157,8 +157,8 @@
 
 ;; TODO: support more than :contains and :eq
 (defn iterate-filters
-  [filter-map row]
   "Given a list of filters, map the list into rethinkdb functions."
+  [filter-map row]
   (for [filter filter-map]
     (cond
 

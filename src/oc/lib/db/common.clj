@@ -238,11 +238,12 @@
     (with-timeout default-timeout
       (as-> (r/table table-name) query
           (r/get-all query index-values {:index index-name})
-          (r/merge query (r/fn [resource]
+          (if-not count (r/merge query (r/fn [resource]
             {relation-name (-> (r/table relation-table-name)
                                (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
                                (r/pluck relation-fields)
                                (r/coerce-to :array))}))
+                  query)
           (if count (r/count query) query)
           (r/run query conn)
           (drain-cursor query)))))
@@ -273,13 +274,14 @@
           (r/get-all query index-values {:index index-name})
           (r/filter query (r/fn [row]
                       (filter-fn start (r/get-field row order-by))))
-          (r/order-by query (order-fn order-by))
-          (r/limit query limit)
-          (r/merge query (r/fn [resource]
+          (if-not count (r/order-by query (order-fn order-by)) query)
+          (if-not count (r/limit query limit) query)
+          (if-not count (r/merge query (r/fn [resource]
             {relation-name (-> (r/table relation-table-name)
                                (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
                                (r/pluck relation-fields)
                                (r/coerce-to :array))}))
+                  query)
           (if count (r/count query) query)
           (r/run query conn)
           (drain-cursor query)))))
@@ -311,21 +313,21 @@
         filter-by-fn (build-filter-fn filter-map)]
     (with-timeout default-timeout
       (as-> (r/table table-name) query
-          (r/get-all query index-values {:index index-name})
-          (r/filter query filter-by-fn)
-          (r/filter query (r/fn [row]
-                      (filter-fn start (r/get-field row order-by))))
-          (r/order-by query (order-fn order-by))
-          (r/limit query limit)
-          (r/merge query (r/fn [resource]
-            {relation-name (-> (r/table relation-table-name)
-                               (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
-                               (r/pluck relation-fields)
-                               (r/coerce-to :array))}))
-          (if count (r/count query) query)
-          (r/run query conn)
-          (drain-cursor query))))))
-
+            (r/get-all query index-values {:index index-name})
+            (r/filter query filter-by-fn)
+            (r/filter query (r/fn [row]
+                                  (filter-fn start (r/get-field row order-by))))
+            (if count (r/count query) query)
+            (if-not count (r/order-by query (order-fn order-by)) query)
+            (if-not count (r/limit query limit) query)
+            (if-not count (r/merge query (r/fn [resource]
+              {relation-name (-> (r/table relation-table-name)
+                                 (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                                 (r/pluck relation-fields)
+                                 (r/coerce-to :array))}))
+                    query)
+            (r/run query conn)
+            (drain-cursor query))))))
 
 (defn read-resources-by-primary-keys
   "Given a table name, a sequence of primary keys, and an optional set of fields, retrieve the

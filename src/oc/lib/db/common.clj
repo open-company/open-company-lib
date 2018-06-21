@@ -173,7 +173,7 @@
   (r/fn [row]
         (if (> (count filter-map) 1)
           (apply r/and (iterate-filters filter-map row))
-          (iterate-filters filter-map row))))
+          (first (iterate-filters filter-map row)))))
 
 (defn read-resources-and-relations
   "In the first arity (9): Given a table name, an index name and value, and what amounts to a document key, foreign table,

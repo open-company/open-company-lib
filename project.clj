@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.9"
+(defproject open-company/lib "0.16.10"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -32,10 +32,10 @@
     [lockedon/if-let "0.3.0"]
     ;; Component Lifecycle https://github.com/stuartsierra/component
     [com.stuartsierra/component "0.3.2"]
-    [http-kit "2.3.0-beta2"] ; HTTP client and server http://http-kit.org/
+    [http-kit "2.3.0"] ; HTTP client and server http://http-kit.org/
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: commons-codec gets picked up from amazonica
-    [ring/ring-codec "1.1.0" :exclusions [commons-codec]]
+    [ring/ring-codec "1.1.1" :exclusions [commons-codec]]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
     [com.taoensso/timbre "4.10.0" :exclusions [com.taoensso/encore]]
     ;; Java logging lib https://commons.apache.org/proper/commons-logging/
@@ -49,7 +49,7 @@
     [com.taoensso/sente "1.12.0" :exclusions [com.taoensso/timbre com.taoensso/encore]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.94.0"]
+    [com.taoensso/encore "2.96.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.5.1" :exclusions [commons-codec]]
@@ -60,10 +60,10 @@
     ;; NB: commons-logging is pulled in manually
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
-    [amazonica "0.3.121" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
+    [amazonica "0.3.128" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.9.4"]
+    [com.fasterxml.jackson.core/jackson-databind "2.9.6"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -71,17 +71,17 @@
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
     [cheshire "5.8.0"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
-    [clj-time "0.14.2"]
+    [clj-time "0.14.4"]
     ;; A clj-time inspired date library for clojurescript. https://github.com/andrewmcveigh/cljs-time
     [com.andrewmcveigh/cljs-time "0.5.2"]
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     ;; NB: com.amazonaws/jmespath-java is pulled in by Amazonica
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
-    [com.climate/squeedo "1.0.0" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
+    [com.climate/squeedo "1.0.1" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
-    [org.slf4j/slf4j-nop "1.8.0-beta1"]
+    [org.slf4j/slf4j-nop "1.8.0-beta2"]
     ;; Data validation https://github.com/Prismatic/schema
-    [prismatic/schema "1.1.7"]
+    [prismatic/schema "1.1.9"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
     [environ "1.1.0"]
     ;; HTML as data https://github.com/davidsantiago/hickory
@@ -106,7 +106,7 @@
         ;; Example-based testing https://github.com/marick/lein-midje
         [lein-midje "3.2.1"]
         ;; Linter https://github.com/jonase/eastwood
-        [jonase/eastwood "0.2.6-beta2"]
+        [jonase/eastwood "0.2.6"]
         ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        
         [lein-kibit "0.1.6" :exclusions [org.clojure/clojure]]
       ]

@@ -23,7 +23,7 @@
   [conn]
   (r/run (r/table-list) conn))
 
-(defn- migration-file-name [migrations-dir migration-name]
+(defn migration-file-name [migrations-dir migration-name]
   (str (s/join java.io.File/separator [migrations-dir migration-name]) ".edn"))
 
 (defn- store-migration
@@ -33,7 +33,7 @@
                               (r/insert {:name migration-name})
                               (r/run conn))))))
 
-(defn- run-migration
+(defn run-migration
   "Run the migration specified by the migration name."
   [conn migrations-dir migration-name]
   (println "\nRunning migration:" migration-name)

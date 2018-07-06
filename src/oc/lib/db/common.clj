@@ -155,6 +155,26 @@
           (r/run conn)
           (drain-cursor))))))
 
+;; TODO: support more than :contains and :eq
+(defn iterate-filters
+  "Given a list of filters, map the list into rethinkdb functions."
+  [filter-map row]
+  (for [filter filter-map]
+    (cond
+
+      (= :contains (:fn filter))
+      (r/contains (:value filter) (r/get-field row (:field filter)))
+
+      (= :eq (:fn filter))
+      (r/eq (:value filter) (r/get-field row (:field filter))))))
+
+(defn build-filter-fn
+  [filter-map]
+  (r/fn [row]
+        (if (> (count filter-map) 1)
+          (apply r/and (iterate-filters filter-map row))
+          (first (iterate-filters filter-map row)))))
+
 (defn read-resources-and-relations
   "In the first arity (9): Given a table name, an index name and value, and what amounts to a document key, foreign table,
   foreign key, foreign key index and the fields of the foreign table that are interesting, return all the resources
@@ -193,18 +213,17 @@
   - a `direction`, one of either `:before` or `:after` the `start` value
   - `limit`, a numeric limit to the number returned
 
-  The third arity (17) is largely the same functionality as the second, but with an additonal filter value and function
+  The third arity (15) is largely the same functionality as the second, but with an additonal filter map
   in the form of:
 
-  - a `filter-by-field` field for filtering the returned resources
-  - a `filter-by-fn` RethinkDB function for filtering the returned resources
-  - a `filter-by-value`
+  - a `filter-map` A sequence of filters used to filter results.
+    example: [{:fn :contains :value ['blah'] :filed :blah}
+              {:fn :eq :value true :field-name}]
 
-  NB: This last 17 arity (pretty ridiculous!) version of the function leaks the RethinkDB driver to the client
-  of this namespace since the `filter-by-fn` musst be a RethinkDB driver function. This isn't ideal.
+  TODO: Switch to a query map for index, relationship, filtering, and ordering.
   "
   ([conn table-name index-name index-value
-   relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+   relation-name relation-table-name relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
@@ -217,19 +236,21 @@
          (every? s-or-k? relation-fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])]
     (with-timeout default-timeout
-      (-> (r/table table-name)
-          (r/get-all index-values {:index index-name})
-          (r/merge (r/fn [resource]
+      (as-> (r/table table-name) query
+          (r/get-all query index-values {:index index-name})
+          (if-not count (r/merge query (r/fn [resource]
             {relation-name (-> (r/table relation-table-name)
                                (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
                                (r/pluck relation-fields)
                                (r/coerce-to :array))}))
-          (r/run conn)
-          (drain-cursor)))))
+                  query)
+          (if count (r/count query) query)
+          (r/run query conn)
+          (drain-cursor query)))))
 
   ([conn table-name index-name index-value
     order-by order start direction limit
-    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+    relation-name relation-table-name relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
@@ -249,24 +270,27 @@
         order-fn (if (= order :desc) r/desc r/asc)
         filter-fn (if (= direction :before) r/gt r/lt)]
     (with-timeout default-timeout
-      (-> (r/table table-name)
-          (r/get-all index-values {:index index-name})
-          (r/filter (r/fn [row]
+      (as-> (r/table table-name) query
+          (r/get-all query index-values {:index index-name})
+          (r/filter query (r/fn [row]
                       (filter-fn start (r/get-field row order-by))))
-          (r/order-by (order-fn order-by))
-          (r/limit limit)
-          (r/merge (r/fn [resource]
+          (if-not count (r/order-by query (order-fn order-by)) query)
+          (if-not count (r/limit query limit) query)
+          (if-not count (r/merge query (r/fn [resource]
             {relation-name (-> (r/table relation-table-name)
                                (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
                                (r/pluck relation-fields)
                                (r/coerce-to :array))}))
-          (r/run conn)
-          (drain-cursor)))))
+                  query)
+          (if count (r/count query) query)
+          (r/run query conn)
+          (drain-cursor query)))))
 
   ([conn table-name index-name index-value
     order-by order start direction limit
-    filter-by-field filter-by-fn filter-by-value
-    relation-name relation-table-name relation-field-name relation-index-name relation-fields]
+    filter-map
+    relation-name relation-table-name
+    relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
   {:pre [(conn? conn)
          (s-or-k? table-name)
          (s-or-k? index-name)
@@ -276,7 +300,7 @@
          (not (nil? start))
          (#{:before :after} direction)
          (number? limit)
-         (s-or-k? filter-by-field)
+         (sequential? filter-map)
          (s-or-k? relation-name)
          (s-or-k? relation-table-name)
          (s-or-k? relation-field-name)
@@ -285,25 +309,25 @@
          (every? s-or-k? relation-fields)]}
   (let [index-values (if (sequential? index-value) index-value [index-value])
         order-fn (if (= order :desc) r/desc r/asc)
-        filter-fn (if (= direction :before) r/gt r/lt)]
+        filter-fn (if (= direction :before) r/gt r/lt)
+        filter-by-fn (build-filter-fn filter-map)]
     (with-timeout default-timeout
-      (-> (r/table table-name)
-          (r/get-all index-values {:index index-name})
-          (r/filter (r/fn [row]
-            (filter-by-fn filter-by-value (r/get-field row filter-by-field))))
-          (r/filter (r/fn [row]
-                      (filter-fn start (r/get-field row order-by))))
-          (r/order-by (order-fn order-by))
-          (r/limit limit)
-          (r/merge (r/fn [resource]
-            {relation-name (-> (r/table relation-table-name)
-                               (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
-                               (r/pluck relation-fields)
-                               (r/coerce-to :array))}))
-          (r/run conn)
-          (drain-cursor))))))
-
-
+      (as-> (r/table table-name) query
+            (r/get-all query index-values {:index index-name})
+            (r/filter query filter-by-fn)
+            (r/filter query (r/fn [row]
+                                  (filter-fn start (r/get-field row order-by))))
+            (if count (r/count query) query)
+            (if-not count (r/order-by query (order-fn order-by)) query)
+            (if-not count (r/limit query limit) query)
+            (if-not count (r/merge query (r/fn [resource]
+              {relation-name (-> (r/table relation-table-name)
+                                 (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                                 (r/pluck relation-fields)
+                                 (r/coerce-to :array))}))
+                    query)
+            (r/run query conn)
+            (drain-cursor query))))))
 
 (defn read-resources-by-primary-keys
   "Given a table name, a sequence of primary keys, and an optional set of fields, retrieve the

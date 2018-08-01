@@ -113,3 +113,13 @@
   {(schema/optional-key :slack-users) {schema/Keyword {:slack-org-id NonBlankStr
                                                        :id NonBlankStr
                                                        :token NonBlankStr}}})
+
+(def google-users
+  "`:google-users` map with entries for each Google account."
+  {(schema/optional-key :google-users) {:id NonBlankStr
+                                        :token {:access-token NonBlankStr
+                                                :token-type NonBlankStr
+                                                :query-param schema/Any
+                                                :params {:expires_in schema/Any
+                                                         :id_token NonBlankStr
+                                                         :scope NonBlankStr}}}})

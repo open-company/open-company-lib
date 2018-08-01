@@ -14,7 +14,15 @@
 
 (def SlackBots {lib-schema/UniqueID [{:id schema/Str :token schema/Str :slack-org-id schema/Str}]})
 
-(def auth-sources #{:email :slack :digest})
+(def GoogleToken
+  {:access-token schema/Str
+   :token-type schema/Str
+   :query-param schema/Any
+   :params {:expires_in schema/Any
+            :id_token schema/Str
+            :scope schema/Any}})
+
+(def auth-sources #{:email :slack :digest :google})
 
 (def Claims
   (merge {:user-id lib-schema/UniqueID

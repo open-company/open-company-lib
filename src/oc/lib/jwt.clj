@@ -37,6 +37,8 @@
           (schema/optional-key :slack-id) schema/Str
           (schema/optional-key :slack-token) schema/Str
           (schema/optional-key :slack-bots) SlackBots
+          (schema/optional-key :google-id) schema/Str
+          (schema/optional-key :google-token) schema/Any
           :refresh-url lib-schema/NonBlankStr
           :expire schema/Num
           schema/Keyword schema/Any} ; and whatever else is in the JWT map to make it open for future extensions

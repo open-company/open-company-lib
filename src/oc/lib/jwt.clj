@@ -22,8 +22,6 @@
             :id_token schema/Str
             :scope schema/Any}})
 
-(def auth-sources #{:email :slack :digest :google})
-
 (def Claims
   (merge {:user-id lib-schema/UniqueID
           :teams [lib-schema/UniqueID]
@@ -33,7 +31,7 @@
           :last-name schema/Str
           :avatar-url (schema/maybe schema/Str)
           :email lib-schema/NonBlankStr
-          :auth-source (schema/pred #(auth-sources (keyword %)))
+          :auth-source schema/Any
           (schema/optional-key :slack-id) schema/Str
           (schema/optional-key :slack-token) schema/Str
           (schema/optional-key :slack-bots) SlackBots

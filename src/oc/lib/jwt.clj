@@ -27,6 +27,7 @@
           :email lib-schema/NonBlankStr
           :auth-source (schema/pred #(auth-sources (keyword %)))
           (schema/optional-key :slack-id) schema/Str
+          (schema/optional-key :slack-display-name) schema/Str
           (schema/optional-key :slack-token) schema/Str
           (schema/optional-key :slack-bots) SlackBots
           :refresh-url lib-schema/NonBlankStr

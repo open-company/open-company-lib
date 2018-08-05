@@ -113,4 +113,4 @@
   {(schema/optional-key :slack-users) {schema/Keyword {:slack-org-id NonBlankStr
                                                        :id NonBlankStr
                                                        :token NonBlankStr
-                                                       (schema/optional-key :display_name) NonBlankStr}}})
+                                                       (schema/optional-key :display-name) NonBlankStr}}})

@@ -112,4 +112,6 @@
   "`:slack-users` map with entries for each Slack team, keyed by Slack team ID, e.g. `:T1N0ASD`"
   {(schema/optional-key :slack-users) {schema/Keyword {:slack-org-id NonBlankStr
                                                        :id NonBlankStr
-                                                       :token NonBlankStr}}})
+                                                       :token NonBlankStr
+                                                       (schema/optional-key :display-name) NonBlankStr
+                                                       schema/Keyword schema/Any}}}) ; and whatever else is in here

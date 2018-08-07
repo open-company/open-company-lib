@@ -33,6 +33,7 @@
           :email lib-schema/NonBlankStr
           :auth-source schema/Any
           (schema/optional-key :slack-id) schema/Str
+          (schema/optional-key :slack-display-name) schema/Str
           (schema/optional-key :slack-token) schema/Str
           (schema/optional-key :slack-bots) SlackBots
           (schema/optional-key :google-id) schema/Str

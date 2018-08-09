@@ -14,7 +14,13 @@
 
 (def SlackBots {lib-schema/UniqueID [{:id schema/Str :token schema/Str :slack-org-id schema/Str}]})
 
-(def auth-sources #{:email :slack :digest})
+(def GoogleToken
+  {:access-token schema/Str
+   :token-type schema/Str
+   :query-param schema/Any
+   :params {:expires_in schema/Any
+            :id_token schema/Str
+            :scope schema/Any}})
 
 (def Claims
   (merge {:user-id lib-schema/UniqueID
@@ -25,11 +31,13 @@
           :last-name schema/Str
           :avatar-url (schema/maybe schema/Str)
           :email lib-schema/NonBlankStr
-          :auth-source (schema/pred #(auth-sources (keyword %)))
+          :auth-source schema/Any
           (schema/optional-key :slack-id) schema/Str
           (schema/optional-key :slack-display-name) schema/Str
           (schema/optional-key :slack-token) schema/Str
           (schema/optional-key :slack-bots) SlackBots
+          (schema/optional-key :google-id) schema/Str
+          (schema/optional-key :google-token) schema/Any
           :refresh-url lib-schema/NonBlankStr
           :expire schema/Num
           schema/Keyword schema/Any} ; and whatever else is in the JWT map to make it open for future extensions

@@ -114,4 +114,14 @@
                                                        :id NonBlankStr
                                                        :token NonBlankStr
                                                        (schema/optional-key :display-name) NonBlankStr
-                                                       schema/Keyword schema/Any}}}) ; and whatever else is in here
+                                                       schema/Keyword schema/Any}}}) ;; and whatever else is in here)
+
+(def google-users
+  "`:google-users` map with entries for each Google account."
+  {(schema/optional-key :google-users) {:id NonBlankStr
+                                        :token {:access-token NonBlankStr
+                                                :token-type NonBlankStr
+                                                :query-param schema/Any
+                                                :params {:expires_in schema/Any
+                                                         :id_token NonBlankStr
+                                                         :scope NonBlankStr}}}})

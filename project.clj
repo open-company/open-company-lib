@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.13"
+(defproject open-company/lib "0.16.14-alpha1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -46,10 +46,10 @@
     [commons-codec "1.11"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
-    [com.taoensso/sente "1.13.0" :exclusions [com.taoensso/timbre com.taoensso/encore]]
+    [com.taoensso/sente "1.13.1" :exclusions [com.taoensso/timbre com.taoensso/encore]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.96.0"]
+    [com.taoensso/encore "2.97.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.6.0-alpha" :exclusions [commons-codec]]
@@ -60,7 +60,7 @@
     ;; NB: commons-logging is pulled in manually
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
-    [amazonica "0.3.130" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
+    [amazonica "0.3.132" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.6"]
@@ -100,7 +100,7 @@
         ;; NB: clj-time is pulled in manually
         ;; NB: joda-time is pulled in by clj-time
         ;; NB: commons-codec pulled in manually
-        [midje "1.9.2" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
+        [midje "1.9.3-alpha1" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje

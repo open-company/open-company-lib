@@ -117,6 +117,14 @@
       (r/run conn))
     (wait-for-index conn table-name index-name))))
 
+(defn remove-index
+  "Remove a RethinkDB table index for the specified field if it exists."
+  [conn table-name index-name]
+  (when (some #(= index-name %) (index-list conn table-name))
+    (-> (r/table table-name)
+      (r/index-drop index-name)
+      (r/run conn))))
+
 (defn create-table
   "Create a RethinkDB table with the specified primary key if it doesn't exist."
   [conn db-name table-name primary-key]
@@ -211,7 +219,13 @@
     (m/table-list c))
 
   (with-open [c (apply r/connect conn)]
-    (m/create-table c "foo" "bar"))
+    (m/create-table c "open_company_storage_dev" "foo" "bar"))
+
+  (with-open [c (apply r/connect conn)]
+    (m/create-index c "foo" "blat"))
+
+  (with-open [c (apply r/connect conn)]
+    (m/remove-index c "foo" "blat"))
 
   (with-open [c (apply r/connect conn)]
     (m/delete-table c "foo"))

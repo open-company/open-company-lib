@@ -165,6 +165,9 @@
       (= :contains (:fn filter))
       (r/contains (:value filter) (r/get-field row (:field filter)))
 
+      (= :ne (:fn filter))
+      (r/ne (:value filter) (r/get-field row (:field filter)))
+
       (= :eq (:fn filter))
       (r/eq (:value filter) (r/get-field row (:field filter))))))
 

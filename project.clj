@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.15alpha"
+(defproject open-company/lib "0.16.15"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -14,7 +14,7 @@
   ;; All profile dependencies
   :dependencies [
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.10.0-alpha6" :scope "provided"]
+    [org.clojure/clojure "1.10.0-alpha8" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.4.474"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
@@ -49,7 +49,7 @@
     [com.taoensso/sente "1.13.1" :exclusions [com.taoensso/timbre com.taoensso/encore]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.97.0"]
+    [com.taoensso/encore "2.99.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.6.0-alpha" :exclusions [commons-codec]]
@@ -63,13 +63,13 @@
     [amazonica "0.3.132" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.9.6"]
+    [com.fasterxml.jackson.core/jackson-databind "2.9.7"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
     [com.apa512/rethinkdb "0.15.26"]
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
-    [cheshire "5.8.0"] 
+    [cheshire "5.8.1"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
     [clj-time "0.14.4"]
     ;; A clj-time inspired date library for clojurescript. https://github.com/andrewmcveigh/cljs-time
@@ -77,7 +77,7 @@
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     ;; NB: com.amazonaws/jmespath-java is pulled in by Amazonica
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
-    [com.climate/squeedo "1.0.1" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
+    [com.climate/squeedo "1.0.2" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
     [org.slf4j/slf4j-nop "1.8.0-beta2"]
     ;; Data validation https://github.com/Prismatic/schema
@@ -126,8 +126,8 @@
         [lein-ancient "0.6.15"]
         ;; Catch spelling mistakes in docs and docstrings https://github.com/cldwalker/lein-spell
         [lein-spell "0.1.0"]
-        ;; Dead code finder https://github.com/venantius/yagni
-        [venantius/yagni "0.1.4" :exclusions [org.clojure/clojure]]
+        ;; Dead code finder (use carefully, false positives) https://github.com/venantius/yagni
+        [venantius/yagni "0.1.6" :exclusions [org.clojure/clojure]]
         ;; Autotest https://github.com/jakemcc/lein-test-refresh
         [com.jakemccrary/lein-test-refresh "0.23.0"]
       ]  

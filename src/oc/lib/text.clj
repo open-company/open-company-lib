@@ -36,8 +36,9 @@
     (str item-count " " item-name (when (> item-count 1) "s") " by " author-attribution)))
 
 
-(defn strip-xss-tags [data]
+(defn strip-xss-tags
   "
    Current xss tags are script, style, and input.
   "
+  [data]
   (s/replace data #"<\/?([script|style|input])([^<>]*)>" ""))

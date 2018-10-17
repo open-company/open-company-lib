@@ -41,4 +41,4 @@
    Current xss tags are script, style, and input.
   "
   [data]
-  (s/replace data #"<\/?([script|style|input])([^<>]*)>" ""))
+  (when data (s/replace data #"<\/?([script|style|input])([^<>]*)>" "")))

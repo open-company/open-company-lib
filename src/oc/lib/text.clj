@@ -1,5 +1,6 @@
 (ns oc.lib.text
-  "Functions related to processing text.")
+  "Functions related to processing text."
+  (:require [clojure.string :as s]))
 
 (defn attribution
   "
@@ -33,3 +34,11 @@
                               :else
                               (first author-names))]
     (str item-count " " item-name (when (> item-count 1) "s") " by " author-attribution)))
+
+
+(defn strip-xss-tags
+  "
+   Current xss tags are script, style, and input.
+  "
+  [data]
+  (when data (s/replace data #"<\/?([script|style|input])([^<>]*)>" "")))

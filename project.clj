@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.17"
+(defproject open-company/lib "0.16.18"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -14,14 +14,14 @@
   ;; All profile dependencies
   :dependencies [
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.10.0-alpha8" :scope "provided"]
+    [org.clojure/clojure "1.10.0-RC1" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.4.474"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "0.3.0-alpha5"]
     ;; Clojure reader https://github.com/clojure/tools.reader
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [org.clojure/tools.reader "1.3.0"]
+    [org.clojure/tools.reader "1.3.1"]
     ;; Tools for writing macros https://github.com/clojure/tools.macro
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [org.clojure/tools.macro "0.1.5"]
@@ -49,10 +49,10 @@
     [com.taoensso/sente "1.13.1" :exclusions [com.taoensso/timbre com.taoensso/encore]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.99.0"]
+    [com.taoensso/encore "2.100.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
-    [raven-clj "1.6.0-alpha" :exclusions [commons-codec]]
+    [raven-clj "1.6.0-alpha2" :exclusions [commons-codec]]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.15.2"] 
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
@@ -71,7 +71,7 @@
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
     [cheshire "5.8.1"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
-    [clj-time "0.14.4"]
+    [clj-time "0.15.0"]
     ;; A clj-time inspired date library for clojurescript. https://github.com/andrewmcveigh/cljs-time
     [com.andrewmcveigh/cljs-time "0.5.2"]
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
@@ -100,13 +100,13 @@
         ;; NB: clj-time is pulled in manually
         ;; NB: joda-time is pulled in by clj-time
         ;; NB: commons-codec pulled in manually
-        [midje "1.9.3-alpha1" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
+        [midje "1.9.4" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje
         [lein-midje "3.2.1"]
         ;; Linter https://github.com/jonase/eastwood
-        [jonase/eastwood "0.2.9"]
+        [jonase/eastwood "0.3.1"]
         ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        
         [lein-kibit "0.1.6" :exclusions [org.clojure/clojure]]
       ]

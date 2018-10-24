@@ -45,7 +45,7 @@
 
 ;; ----- DB Access Timeouts ----
 
-(def default-timeout 5000) ; 5 sec
+(def default-timeout 50000) ; 50 sec
 
 (defmacro with-timeout
   "A basic macro to wrap things in a timeout.

@@ -21,6 +21,7 @@
   (attribution 1 10 item authors) => "10 foos by Sean and others")
 
 (def pr-test-case "<script and something here>Hello</script><style>Style</style><input and=\"soon\"><span but-this=\"\">Will be in</span>")
+(def i-test-case "<script and something here>Hello</script><STYLE>Style</STYLE><input and=\"soon\"><span but-this=\"\">Will be in</span>")
 
 (def br-tag-1 "<br/>")
 (def br-tag-2 "<br/>")
@@ -75,4 +76,7 @@
     style-tag                 "I got it.")
   
   (fact "PR test case passes"
-    (strip-xss-tags pr-test-case) => "HelloStyleWill be in"))
+    (strip-xss-tags pr-test-case) => "HelloStyle<span but-this=\"\">Will be in</span>")
+
+  (fact "Case insensitive tests"
+    (strip-xss-tags i-test-case) => "HelloStyle<span but-this=\"\">Will be in</span>"))

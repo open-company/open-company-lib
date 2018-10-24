@@ -20,22 +20,31 @@
   (attribution 5 10 item authors) => "10 foos by Sean, Nathan, Stuart, Iacopo and Ryan"
   (attribution 1 10 item authors) => "10 foos by Sean and others")
 
-(def pr-test-case "<script and something here>Hello</script><style>Style</style><input and=\"soon\"><span but-this=\"\">Will be in</span>")
-(def i-test-case "<script and something here>Hello</script><STYLE>Style</STYLE><input and=\"soon\"><span but-this=\"\">Will be in</span>")
+(def pr-i-test-case "<ScRiPt and something here>hello</script> <StYlE>style</STYLE> <iNpUt and=\"soon\"><sPaN but-this=\"\">will be in</span>")
+(def pr-test-case (clojure.string/lower-case pr-i-test-case))
 
 (def br-tag-1 "<br/>")
 (def br-tag-2 "<br/>")
 (def anchor-tag "<a href=\"http://combat.org/\">world</a>")
 (def span-tag "<span foo=\"bar\">in a span</span")
+
 (def script-tag "<script>alert('gotcha!')</script>")
 (def input-tag-1 "<input name='gotcha' type='email'/>")
 (def input-tag-2 "<input name='gotcha' type='email'>output</input>")
 (def style-tag "<style>I got it.</style>")
 
 (def p-with-anchor (str "<p>Hello " anchor-tag "</p>"))
-(def div-with-anchor (str "<div>Hello " anchor-tag "</div>"))
 (def p-with-span (str "<p>Hello " span-tag "</p>"))
+(def div-with-anchor (str "<div>Hello " anchor-tag "</div>"))
 (def div-with-span (str "<div>Hello " span-tag "</div>"))
+
+(def p-with-script (str "<p>Hello " script-tag "</p>"))
+(def p-with-input (str "<p>Hello " input-tag-1 "</p>"))
+(def p-with-style (str "<p>Hello " style-tag "</p>"))
+(def div-with-script (str "<div>Hello " script-tag "</div>"))
+(def div-with-input (str "<div>Hello " input-tag-1 "</div>"))
+(def div-with-style (str "<div>Hello " style-tag "</div>"))
+
 
 (facts "about stripping tags"
   
@@ -73,10 +82,14 @@
     script-tag                "alert('gotcha!')"
     input-tag-1               ""
     input-tag-2               "output"
-    style-tag                 "I got it.")
+    style-tag                 "I got it."
+    p-with-script             "<p>Hello alert('gotcha!')</p>"
+    p-with-input              "<p>Hello </p>"
+    p-with-style              "<p>Hello I got it.</p>"
+    div-with-script           "<div>Hello alert('gotcha!')</div>"
+    div-with-input            "<div>Hello </div>"
+    div-with-style            "<div>Hello I got it.</div>")
   
   (fact "PR test case passes"
-    (strip-xss-tags pr-test-case) => "HelloStyle<span but-this=\"\">Will be in</span>")
-
-  (fact "Case insensitive tests"
-    (strip-xss-tags i-test-case) => "HelloStyle<span but-this=\"\">Will be in</span>"))
+    (strip-xss-tags pr-test-case) => "hello style <span but-this=\"\">will be in</span>"
+    (strip-xss-tags pr-i-test-case) => "hello style <sPaN but-this=\"\">will be in</span>"))

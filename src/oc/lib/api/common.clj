@@ -256,4 +256,6 @@
   "Add ^:replace meta to the value to avoid Liberator deep merge/concat
   it's value."
   [v]
-  (with-meta v {:replace true}))
+  (if (instance? clojure.lang.IMeta v)
+    (with-meta v {:replace true})
+    v))

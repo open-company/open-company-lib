@@ -251,3 +251,9 @@
 
 (defn open-company-authenticated-resource [passphrase]
   (merge open-company-resource (authenticated-resource passphrase)))
+
+(defn rep
+  "Add ^:replace meta to the value to avoid Liberator deep merge/concat
+  it's value."
+  [v]
+  (with-meta v {:replace true}))

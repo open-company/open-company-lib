@@ -23,23 +23,41 @@
 
 (def watchers (atom {}))
 
-(defn add-watcher [watch-id client-id]
-  (let [item-watchers (or (get @watchers watch-id) #{})
-        watcher-ids (or (get @watchers client-id) #{})]
-    (swap! watchers assoc client-id (conj watcher-ids watch-id)
-                          watch-id (conj item-watchers client-id))))
+(defn add-watcher
+  "Add a client, make sure the read/write is atomic to avoid race conditions"
+  [watch-id client-id]
+  (swap! watchers
+   (fn [w]
+    (let [item-watchers (or (get w watch-id) #{})
+          watcher-ids (or (get w client-id) #{})]
+      (assoc w client-id (conj watcher-ids watch-id)
+               watch-id (conj item-watchers client-id))))))
 
 (defn remove-watcher
+  "Remove watchers for client,
+   first signature remove all watchers for a client and remove the client-id itself when done,
+   second signature remove a specific watcher only for a client,
+   make sure the read/write is atomic to avoid race conditions"
   ([client-id]
-     (let [watcher-ids (or (get @watchers client-id) #{})]
-       (doseq [watch-id watcher-ids]
-         (remove-watcher watch-id client-id))))
+    (swap! watchers
+     (fn [w]
+      (let [by-client (or (get w client-id) #{})
+            with-watch-id (reduce #(let [item-watchers (or (get w %2) #{})
+                                         next-watch-id (disj item-watchers client-id)]
+                                    (assoc %1 %2 next-watch-id))
+                           w by-client)]
+        (dissoc with-watch-id client-id)))))
 
   ([watch-id client-id]
-     (let [item-watchers (or (get @watchers watch-id) #{})]
-       (swap! watchers assoc watch-id (disj item-watchers client-id))
-       (when-not (contains? (get @watchers watch-id) client-id)
-         (swap! watchers dissoc client-id)))))
+    (swap! watchers
+     (fn [w]
+      (let [item-watchers (or (get w watch-id) #{})
+            next-watch-id (disj item-watchers client-id)
+            with-watch-id (assoc w watch-id next-watch-id)
+            dissoc-client-id (empty? next-watch-id)]
+        (if dissoc-client-id
+          (dissoc with-watch-id client-id)
+          with-watch-id))))))
 
 (defn watchers-for [watch-id]
   (vec (get @watchers watch-id)))

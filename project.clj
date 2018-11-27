@@ -179,7 +179,10 @@
 
   :eastwood {
     ;; Disable some linters that are enabled by default
-    :exclude-linters [:constant-test :wrong-arity]
+    ;; contant-test - just seems mostly ill-advised, logical constants are useful in something like a `->cond` 
+    ;; wrong-arity - unfortunate, but it's failing on 3/arity of sqs/send-message
+    ;; implicit-dependencies - uhh, just seems dumb
+    :exclude-linters [:constant-test :wrong-arity :implicit-dependencies]
     ;; Enable some linters that are disabled by default
     :add-linters [:unused-namespaces :unused-private-vars]
     ;; Custom Eastwood config

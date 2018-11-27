@@ -71,6 +71,9 @@
     "γλώσσαthis-μουέδωσανis-ελληνικήalso-მივჰხვდეaმასჩემსაالزجاجوهذالايؤلمني.slug मैकाँचखासकताฉันกินกระจกได้לאמזיק"
     "æ-ǽ-ǣ-this-♜-♛-☃-✄-✈-is-→-☞-➩-⇏-⇉-also-•-✪-▼-❊-✔-a-∑-∏-∛-≃-≈-⅋-⋶-slug")
 
+  (fact "a slug with no characters left after sanitization is relplaced with a UUID"
+    (oc.lib.schema/unique-id? (slugify "Ημερολόγιο")) => true)
+
   (fact "slugs that are too long are truncated"
     (let [long-slug (apply str (range 0 500))]
       ; default max

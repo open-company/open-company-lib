@@ -57,13 +57,15 @@
 
 (defn post-attachments
   "Post attachments as the bot."
-  [bot-token channel attachments]
-  {:pre [(sequential? attachments)
-         (every? map? attachments)]}
-  (slack-api :chat.postMessage {:token bot-token
-                                :text (with-marker "")
-                                :attachments (json/encode attachments)
-                                :channel channel}))
+  ([bot-token channel attachments]
+     (post-attachments bot-token channel attachments ""))
+  ([bot-token channel attachments text]
+     {:pre [(sequential? attachments)
+            (every? map? attachments)]}
+     (slack-api :chat.postMessage {:token bot-token
+                                   :text (with-marker text)
+                                   :attachments (json/encode attachments)
+                                   :channel channel})))
 
 (defn unfurl-post-url
   "Add data to the url when a Carrot url is posted in slack."

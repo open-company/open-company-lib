@@ -1,6 +1,7 @@
 (ns oc.lib.slugify
   "Functions for creating URL safe slugs from text strings."
-  (:require [clojure.string :as s])
+  (:require [clojure.string :as s]
+            [oc.lib.db.common :as db-common])
   (:import [java.text Normalizer Normalizer$Form]))
 
 (def max-slug-length 128)
@@ -47,7 +48,7 @@
                   (truncate max-length)
                   normalize-dashes)]
       ;; if the slug was sanitized to nothing, use a UUID
-      (if (s/blank? slug) (oc.lib.db.common/unique-id) slug))))
+      (if (s/blank? slug) (db-common/unique-id) slug))))
 
 (defn valid-slug?
   "Return `true` if the specified slug is potentially a valid slug (follows the rules), otherwise return `false`."

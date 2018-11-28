@@ -36,16 +36,18 @@
 (defn slugify
   ([resource-name] (slugify resource-name max-slug-length))
   ([resource-name max-length]
-    (-> resource-name
-      s/trim
-      replace-whitespace
-      normalize-characters
-      replace-punctuation
-      remove-non-alpha-numeric
-      s/lower-case
-      normalize-dashes
-      (truncate max-length)
-      normalize-dashes)))
+    (let [slug (-> resource-name
+                  s/trim
+                  replace-whitespace
+                  normalize-characters
+                  replace-punctuation
+                  remove-non-alpha-numeric
+                  s/lower-case
+                  normalize-dashes
+                  (truncate max-length)
+                  normalize-dashes)]
+      ;; if the slug was sanitized to nothing, use a UUID
+      (if (s/blank? slug) (oc.lib.db.common/unique-id) slug))))
 
 (defn valid-slug?
   "Return `true` if the specified slug is potentially a valid slug (follows the rules), otherwise return `false`."

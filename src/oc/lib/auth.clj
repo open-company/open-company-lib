@@ -6,7 +6,7 @@
             [clojure.walk :refer (keywordize-keys)]
             [oc.lib.jwt :as jwt]))
 
-(defn- user-data [user-map]
+(defn- user-data-map [user-map]
   (let [initial-map {:user user-map}
         has-user-id (contains? user-map :user-id)
         with-user-id (merge initial-map
@@ -21,7 +21,7 @@
 
 (defn- magic-token
   [user-map passphrase service-name]
-  (jwt/generate (merge (user-data user-map)
+  (jwt/generate (merge (user-data-map user-map)
                  {:super-user true
                   :name service-name
                   :auth-source :services})
@@ -39,9 +39,9 @@
     (when (= 201 (:status token-request))
       (:body token-request))))
 
-(defn user-data [user auth-server-url passphrase]
+(defn user-data [user auth-server-url passphrase service-name]
   (let [user-request
         @(http/get (str auth-server-url "/users/" (:user-id user))
-                   (get-options (magic-token user passphrase)))]
+                   (get-options (magic-token user passphrase service-name)))]
     (when (= 200 (:status user-request))
       (dissoc (keywordize-keys (json/parse-string (:body user-request))) :links))))

@@ -68,19 +68,19 @@
                         (contains? % :auth-server-url)
                         (contains? % :passphrase))
     user-data :guard map?
-    team-ids
+    org-slug
     board-id
     post-id]
    (let [jwt (auth/user-token user-data (:auth-server-url config)
               (:passphrase config) (:service-name config))]
-    (post-data-for config jwt team-ids board-id post-id)))
+    (post-data-for config jwt org-slug board-id post-id)))
 
-  ([config :guard map? jwtoken :guard string? team-ids board-id post-id]
+  ([config :guard map? jwtoken :guard string? org-slug board-id post-id]
     (if-let [body (get-data (str (:storage-server-url config)) jwtoken)]
     (do
       (timbre/debug "Storage slash data:" (-> body :collection :items))
       (let [orgs (-> body :collection :items)
-            org (first (filter #(team-ids (:team-id %)) orgs))]
+            org (first (filter #(= org-slug (:slug %)) orgs))]
         (if org
           (let [org-data (get-data (str (:storage-server-url config)
                                         "/orgs/"
@@ -99,7 +99,7 @@
                 (assoc :board-slug (:slug board))
                 (assoc :board-name (:name board))))
           (do
-            (timbre/warn "Unable to retrieve board data for:" team-ids "in:" body)
+            (timbre/warn "Unable to retrieve board data for:" org-slug "in:" body)
             default-on-error))))
     (do
       (timbre/warn "Unable to retrieve org data.")

@@ -13,11 +13,6 @@
   [token]
   {:headers {"Authorization" (str "Bearer " token)}})
 
-(defn- storage-request-org-url
-  [storage-server-url org]
-  ;; /orgs/:org-slug
-  (str storage-server-url "/orgs/" org))
-
 (defn- get-data
   [request-url token]
   (let [response (http/get request-url (get-post-options token))

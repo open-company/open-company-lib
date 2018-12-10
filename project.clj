@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.26alpha"
+(defproject open-company/lib "0.16.28alpha"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -60,7 +60,11 @@
     ;; NB: commons-logging is pulled in manually
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
-    [amazonica "0.3.134" :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind]]
+    ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
+    [amazonica "0.3.134"
+     :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
+    ;; DynamoDB sdk
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.461"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.7"]

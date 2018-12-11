@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.28alpha4"
+(defproject open-company/lib "0.16.29alpha1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -92,6 +92,8 @@
     [hickory "0.7.1" :exclusions [org.clojure/clojurescript]]
     ;; Clojure wrapper for jsoup HTML parser https://github.com/mfornos/clojure-soup
     [clj-soup/clojure-soup "0.1.3"]
+    ;; HTTP client https://github.com/dakrone/clj-http
+    [clj-http "3.9.1"]
   ]
 
   :profiles {

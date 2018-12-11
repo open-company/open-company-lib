@@ -50,6 +50,9 @@
       ;; if the slug was sanitized to nothing, use a UUID
       (if (s/blank? slug) (db-common/unique-id) slug))))
 
+;; In some places we are exployiting the fact that UUID are actually valid slugs
+;; to make them interchangable. See oc.storage.resources.board/get-board for example.
+
 (defn valid-slug?
   "Return `true` if the specified slug is potentially a valid slug (follows the rules), otherwise return `false`."
   [slug]

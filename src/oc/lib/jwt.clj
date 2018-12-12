@@ -132,11 +132,12 @@
       jwt/to-str))
 
 (defn generate-id-token [claims passphrase]
-  (encode {:secure_uuid (:secure-uuid claims)
-           :org_id (:org-uuid claims)
-           :user_id (:user-id claims)
-           :avatar_url (:avatar-url claims)
-           :team_id (:team-id claims)}
+  (encode {:id-token true
+           :secure-uuid (:secure-uuid claims)
+           :org-id (:org-uuid claims)
+           :user-id (:user-id claims)
+           :avatar-url (:avatar-url claims)
+           :team-id (:team-id claims)}
           passphrase))
 
 (defn generate

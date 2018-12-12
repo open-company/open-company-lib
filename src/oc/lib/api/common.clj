@@ -187,10 +187,19 @@
    If no Authorization headers are supplied return nil."
   [headers passphrase]
   (when-let [token (get-token headers)]
-    (if (jwt/valid? token passphrase)
-      {:jwtoken token
-       :user (:claims (jwt/decode token))}
-      {:jwtoken false})))
+    (cond
+
+     (jwt/valid? token passphrase)
+     {:jwtoken token
+      :user (:claims (jwt/decode token))}
+
+     ;; identity token
+     (and (jwt/check-token token passphrase)
+          (:id-token (:claims (jwt/decode token))))
+     {:id-token token}
+
+     :default
+     {:jwtoken false})))
 
 (defn allow-anonymous
   "Allow unless there is a JWToken provided and it's invalid."

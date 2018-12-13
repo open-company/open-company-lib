@@ -227,8 +227,8 @@
   [ctx]
   (if (= (-> ctx :request :request-method) :options)
     true ; allows allow options
-    (boolean (or (or (nil? (:jwtoken ctx))
-                     (:id-token ctx)) ;; id token is also anonymous
+    (boolean (or (nil? (:jwtoken ctx))
+                 (:id-token ctx) ;; id token is also anonymous
                  (:jwtoken ctx)))))
 
 (defn allow-authenticated

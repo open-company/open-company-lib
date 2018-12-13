@@ -196,7 +196,7 @@
      ;; identity token
      (and (jwt/check-token token passphrase)
           (:id-token (:claims (jwt/decode token))))
-     {:jwtoken false :id-token token}
+     {:jwtoken false :id-token (jwt/decode-id-token token passphrase)}
 
      :default
      {:jwtoken false})))

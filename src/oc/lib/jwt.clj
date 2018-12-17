@@ -125,16 +125,31 @@
                       t/hours t/from-now .getMillis)]
     (assoc payload :expire expire-by)))
 
+(defn encode [payload passphrase]
+  (-> payload
+      jwt/jwt
+      (jwt/sign :HS256 passphrase)
+      jwt/to-str))
+
+(defn generate-id-token [claims passphrase]
+  (encode {:id-token true
+           :secure-uuid (:secure-uuid claims)
+           :org-id (:org-uuid claims)
+           :name (:name claims)
+           :first-name (:first-name claims)
+           :last-name (:last-name claims)
+           :user-id (:user-id claims)
+           :avatar-url (:avatar-url claims)
+           :team-id (:team-id claims)}
+          passphrase))
+
 (defn generate
   "Create a JSON Web Token from a payload."
   [payload passphrase]
   (let [expiring-payload (expire payload)]
     (when-not (:super-user expiring-payload) ;; trust the super user
       (schema/validate Claims expiring-payload)) ; ensure we only generate valid JWTokens
-    (-> expiring-payload
-        jwt/jwt
-        (jwt/sign :HS256 passphrase)
-        jwt/to-str)))
+    (encode expiring-payload passphrase)))
 
 (defn check-token
   "Verify a JSON Web Token with the passphrase that was (presumably) used to generate it."
@@ -164,6 +179,10 @@
       false)
     (catch Exception e
       false)))
+
+(defn decode-id-token [token passphrase]
+  (when (check-token token passphrase)
+    (decode token)))
 
 ;; Sign/unsign terminology coming from `buddy-sign` project
 ;; which this namespace should eventually be switched to

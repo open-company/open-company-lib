@@ -188,15 +188,14 @@
   [headers passphrase]
   (when-let [token (get-token headers)]
     (cond
+     ;; identity token
+     (and (:id-token (:claims (jwt/decode token)))
+          (jwt/check-token token passphrase))
+     {:jwtoken false :id-token (jwt/decode-id-token token passphrase)}
 
      (jwt/valid? token passphrase)
      {:jwtoken token
       :user (:claims (jwt/decode token))}
-
-     ;; identity token
-     (and (jwt/check-token token passphrase)
-          (:id-token (:claims (jwt/decode token))))
-     {:jwtoken false :id-token (jwt/decode-id-token token passphrase)}
 
      :default
      {:jwtoken false})))

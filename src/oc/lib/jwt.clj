@@ -135,6 +135,9 @@
   (encode {:id-token true
            :secure-uuid (:secure-uuid claims)
            :org-id (:org-uuid claims)
+           :name (:name claims)
+           :first-name (:first-name claims)
+           :last-name (:last-name claims)
            :user-id (:user-id claims)
            :avatar-url (:avatar-url claims)
            :team-id (:team-id claims)}

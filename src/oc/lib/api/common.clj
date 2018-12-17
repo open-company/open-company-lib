@@ -187,17 +187,48 @@
    If no Authorization headers are supplied return nil."
   [headers passphrase]
   (when-let [token (get-token headers)]
-    (if (jwt/valid? token passphrase)
-      {:jwtoken token
-       :user (:claims (jwt/decode token))}
-      {:jwtoken false})))
+    (cond
+     ;; identity token
+     (and (:id-token (:claims (jwt/decode token)))
+          (jwt/check-token token passphrase))
+     {:jwtoken false :id-token (jwt/decode-id-token token passphrase)}
+
+     (jwt/valid? token passphrase)
+     {:jwtoken token
+      :user (:claims (jwt/decode token))}
+
+     :default
+     {:jwtoken false})))
+
+(defn allow-id-token
+  "Allow options request. Allow jwtoken. Allow id token. Allow anonymous."
+  [ctx]
+  (cond
+
+   (= (-> ctx :request :request-method) :options)
+   true
+
+   (:jwtoken ctx)
+   true
+
+   (:id-token ctx)
+   true
+
+   (nil? (:jwtoken ctx))
+   true
+
+   :default
+   false))
+
 
 (defn allow-anonymous
   "Allow unless there is a JWToken provided and it's invalid."
   [ctx]
   (if (= (-> ctx :request :request-method) :options)
     true ; allows allow options
-    (boolean (or (nil? (:jwtoken ctx)) (:jwtoken ctx)))))
+    (boolean (or (nil? (:jwtoken ctx))
+                 (:id-token ctx) ;; id token is also anonymous
+                 (:jwtoken ctx)))))
 
 (defn allow-authenticated
   "Allow only if a valid JWToken is provided."
@@ -214,6 +245,11 @@
   :authorized? allow-anonymous
   :handle-unauthorized (fn [_] (unauthorized-response))
   :handle-forbidden  (fn [ctx] (if (:jwtoken ctx) (forbidden-response) (unauthorized-response)))})
+
+;; Same as anonymous-resource but also allows an identity token.
+(defn id-token-resource [passphrase]
+  (merge (anonymous-resource passphrase)
+         {:authorized? allow-id-token}))
 
 ;; verify validity and presence of required JWToken
 (defn authenticated-resource [passphrase] {
@@ -248,6 +284,10 @@
 
 (defn open-company-anonymous-resource [passphrase]
   (merge open-company-resource (anonymous-resource passphrase)))
+
+(defn open-company-id-token-resource [passphrase]
+  (merge (open-company-anonymous-resource passphrase)
+         (id-token-resource passphrase)))
 
 (defn open-company-authenticated-resource [passphrase]
   (merge open-company-resource (authenticated-resource passphrase)))

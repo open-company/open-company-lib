@@ -140,7 +140,7 @@
            :last-name (:last-name claims)
            :user-id (:user-id claims)
            :avatar-url (:avatar-url claims)
-           :team-id (:team-id claims)}
+           :teams [(:team-id claims)]}
           passphrase))
 
 (defn generate

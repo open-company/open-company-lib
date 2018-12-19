@@ -188,10 +188,11 @@
   "
   [token passphrase]
   (when (check-token token passphrase)
-    (let [decoded-token (decode token)]
-      (if (contains? decoded-token :teams)
+    (let [decoded-token (decode token)
+          claims (:claims decoded-token)]
+      (if (contains? claims :teams)
         decoded-token
-        (assoc decoded-token :teams [(:team-id decoded-token)])))))
+        (assoc-in decoded-token [:claims :teams] [(:team-id claims)])))))
 
 ;; Sign/unsign terminology coming from `buddy-sign` project
 ;; which this namespace should eventually be switched to

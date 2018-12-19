@@ -180,9 +180,18 @@
     (catch Exception e
       false)))
 
-(defn decode-id-token [token passphrase]
+(defn decode-id-token
+  "
+  Decode the id-token.
+  The first version of the id-token had :team-id key instead of :teams and it was released on production for digest only.
+  To avoid breaking those links let's move :team-id into :teams (as list) when the id-token is being decoded.
+  "
+  [token passphrase]
   (when (check-token token passphrase)
-    (decode token)))
+    (let [decoded-token (decode token)]
+      (if (contains? decoded-token :teams)
+        decoded-token
+        (assoc decoded-token :teams [(:team-id decoded-token)])))))
 
 ;; Sign/unsign terminology coming from `buddy-sign` project
 ;; which this namespace should eventually be switched to

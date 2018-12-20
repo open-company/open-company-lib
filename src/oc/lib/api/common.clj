@@ -191,7 +191,9 @@
      ;; identity token
      (and (:id-token (:claims (jwt/decode token)))
           (jwt/check-token token passphrase))
-     {:jwtoken false :id-token (jwt/decode-id-token token passphrase)}
+     {:jwtoken false
+      :user (:claims (jwt/decode token))
+      :id-token token}
 
      (jwt/valid? token passphrase)
      {:jwtoken token
@@ -199,6 +201,17 @@
 
      :default
      {:jwtoken false})))
+
+
+(defn allow-anonymous
+  "Allow unless there is a JWToken provided and it's invalid."
+  [ctx]
+  (if (= (-> ctx :request :request-method) :options)
+    true ; allows allow options
+    (boolean (or (nil? (:jwtoken ctx))
+                 (:jwtoken ctx)
+                 (nil? (:id-token ctx))
+                 (:id-token ctx)))))
 
 (defn allow-id-token
   "Allow options request. Allow jwtoken. Allow id token. Allow anonymous."
@@ -209,26 +222,13 @@
    true
 
    (:jwtoken ctx)
-   true
+   (authenticated? ctx)
 
    (:id-token ctx)
-   true
-
-   (nil? (:jwtoken ctx))
-   true
+   (and (:id-token ctx) (:user ctx))
 
    :default
    false))
-
-
-(defn allow-anonymous
-  "Allow unless there is a JWToken provided and it's invalid."
-  [ctx]
-  (if (= (-> ctx :request :request-method) :options)
-    true ; allows allow options
-    (boolean (or (nil? (:jwtoken ctx))
-                 (:id-token ctx) ;; id token is also anonymous
-                 (:jwtoken ctx)))))
 
 (defn allow-authenticated
   "Allow only if a valid JWToken is provided."
@@ -246,18 +246,20 @@
   :handle-unauthorized (fn [_] (unauthorized-response))
   :handle-forbidden  (fn [ctx] (if (:jwtoken ctx) (forbidden-response) (unauthorized-response)))})
 
-;; Same as anonymous-resource but also allows an identity token.
-(defn id-token-resource [passphrase]
-  (merge (anonymous-resource passphrase)
-         {:authorized? allow-id-token}))
-
-;; verify validity and presence of required JWToken
-(defn authenticated-resource [passphrase] {
+(defn base-authenticated-resource [passphrase]{
   :initialize-context (fn [ctx] (read-token (get-in ctx [:request :headers]) passphrase))
-  :authorized? (fn [ctx] (authenticated? ctx))
   :handle-not-found (fn [_] (missing-response))
   :handle-unauthorized (fn [_] (unauthorized-response))
   :handle-forbidden (fn [_] (forbidden-response))})
+
+(defn id-token-resource [passphrase]
+  (merge (base-authenticated-resource passphrase)
+   {:authorized? allow-id-token}))
+
+;; verify validity and presence of required JWToken
+(defn jwt-resource [passphrase]
+  (merge (base-authenticated-resource passphrase)
+   {:authorized? allow-authenticated}))
 
 (def open-company-resource {
   :available-charsets [UTF8]
@@ -286,11 +288,10 @@
   (merge open-company-resource (anonymous-resource passphrase)))
 
 (defn open-company-id-token-resource [passphrase]
-  (merge (open-company-anonymous-resource passphrase)
-         (id-token-resource passphrase)))
+  (merge open-company-resource (id-token-resource passphrase)))
 
 (defn open-company-authenticated-resource [passphrase]
-  (merge open-company-resource (authenticated-resource passphrase)))
+  (merge open-company-resource (jwt-resource passphrase)))
 
 (defn rep
   "Add ^:replace meta to the value to avoid Liberator deep merge/concat

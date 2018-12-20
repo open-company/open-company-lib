@@ -192,7 +192,7 @@
      (and (:id-token (:claims (jwt/decode token)))
           (jwt/check-token token passphrase))
      {:jwtoken false
-      :user (:claims (jwt/decode token))
+      :user (:claims (jwt/decode-id-token token passphrase))
       :id-token token}
 
      (jwt/valid? token passphrase)

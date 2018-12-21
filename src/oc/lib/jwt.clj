@@ -140,7 +140,7 @@
            :last-name (:last-name claims)
            :user-id (:user-id claims)
            :avatar-url (:avatar-url claims)
-           :team-id (:team-id claims)}
+           :teams [(:team-id claims)]}
           passphrase))
 
 (defn generate
@@ -180,9 +180,19 @@
     (catch Exception e
       false)))
 
-(defn decode-id-token [token passphrase]
+(defn decode-id-token
+  "
+  Decode the id-token.
+  The first version of the id-token had :team-id key instead of :teams and it was released on production for digest only.
+  To avoid breaking those links let's move :team-id into :teams (as list) when the id-token is being decoded.
+  "
+  [token passphrase]
   (when (check-token token passphrase)
-    (decode token)))
+    (let [decoded-token (decode token)
+          claims (:claims decoded-token)]
+      (if (contains? claims :teams)
+        decoded-token
+        (assoc-in decoded-token [:claims :teams] [(:team-id claims)])))))
 
 ;; Sign/unsign terminology coming from `buddy-sign` project
 ;; which this namespace should eventually be switched to

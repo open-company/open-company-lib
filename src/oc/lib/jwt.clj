@@ -155,11 +155,9 @@
   "Verify a JSON Web Token with the passphrase that was (presumably) used to generate it."
   [token passphrase]
   (try
-    (do
-      (-> token
+    (-> token
         jwt/str->jwt
         (jwt/verify passphrase))
-      true)
     (catch Exception e
       false)))
 

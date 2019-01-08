@@ -8,7 +8,11 @@
   (:require [com.stuartsierra.component :as component]
             [com.climate.squeedo.sqs-consumer :as sqs]
             [clojure.core.async :as async]
-            [taoensso.timbre :as timbre]))
+            [clojure.java.io :as io]
+            [amazonica.aws.s3 :as s3]
+            [cheshire.core :as json]
+            [taoensso.timbre :as timbre])
+   (:import [java.util.zip GZIPInputStream]))
 
 (defn ack
   "Acknowledge the completion of message handling."
@@ -50,6 +54,34 @@
 
   ([sqs-creds sqs-queue message-handler]
   (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)})))
+
+(defn read-message-body
+  "
+  Try to parse as json, otherwise use read-string. If message is from S3, read data object.
+  "
+  [msg]
+  (let [parsed-msg (try
+                     (json/parse-string msg true)
+                     (catch Exception e
+                       (read-string msg)))]
+    (cond
+     (seq (:Records parsed-msg)) ;; from S3
+     ;; read each record
+     (map (fn [record]
+            (let [bucket (get-in record [:s3 :bucket :name])
+                  object-key (get-in record [:s3 :object :key])
+                  s3-parsed (clojure.string/join
+                              "\n"
+                              (->
+                               (s3/get-object bucket object-key)
+                               :object-content
+                               (java.util.zip.GZIPInputStream.)
+                               io/reader
+                               line-seq))]
+              (read-string s3-parsed))) (:Records parsed-msg))
+
+     :default
+     [parsed-msg])))
 
 (defn __no-op__ 
   "Ignore: needed for Eastwood linting."

@@ -55,6 +55,20 @@
   ([sqs-creds sqs-queue message-handler]
   (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)})))
 
+(defn- read-from-s3
+  [record]
+  (let [bucket (get-in record [:s3 :bucket :name])
+        object-key (get-in record [:s3 :object :key])
+        s3-parsed (clojure.string/join
+                   "\n"
+                   (->
+                    (s3/get-object bucket object-key)
+                    :object-content
+                    (java.util.zip.GZIPInputStream.)
+                    io/reader
+                    line-seq))]
+    (read-string s3-parsed)))
+
 (defn read-message-body
   "
   Try to parse as json, otherwise use read-string. If message is from S3, read data object.
@@ -64,21 +78,17 @@
                      (json/parse-string msg true)
                      (catch Exception e
                        (read-string msg)))]
+
     (cond
-     (seq (:Records parsed-msg)) ;; from S3
+
+     (seq (:Records parsed-msg)) ;; from S3 to SQS
      ;; read each record
-     (map (fn [record]
-            (let [bucket (get-in record [:s3 :bucket :name])
-                  object-key (get-in record [:s3 :object :key])
-                  s3-parsed (clojure.string/join
-                              "\n"
-                              (->
-                               (s3/get-object bucket object-key)
-                               :object-content
-                               (java.util.zip.GZIPInputStream.)
-                               io/reader
-                               line-seq))]
-              (read-string s3-parsed))) (:Records parsed-msg))
+     (map #(read-from-s3 %) (:Records parsed-msg))
+
+     ;; from S3 to SNS
+     (and (string? (:Message parsed-msg))
+          (seq (:Records (json/parse-string (:Message parsed-msg) true))))
+     (map #(read-from-s3 %) (:Records (json/parse-string (:Message parsed-msg) true)))
 
      :default
      [parsed-msg])))

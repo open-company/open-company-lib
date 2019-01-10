@@ -83,12 +83,12 @@
 
      (seq (:Records parsed-msg)) ;; from S3 to SQS
      ;; read each record
-     (map #(read-from-s3 %) (:Records parsed-msg))
+     (map read-from-s3 (:Records parsed-msg))
 
      ;; from S3 to SNS
      (and (string? (:Message parsed-msg))
           (seq (:Records (json/parse-string (:Message parsed-msg) true))))
-     (map #(read-from-s3 %) (:Records (json/parse-string (:Message parsed-msg) true)))
+     (map read-from-s3 (:Records (json/parse-string (:Message parsed-msg) true)))
 
      :default
      [parsed-msg])))

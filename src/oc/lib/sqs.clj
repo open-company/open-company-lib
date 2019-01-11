@@ -67,7 +67,10 @@
                     (java.util.zip.GZIPInputStream.)
                     io/reader
                     line-seq))]
-    (read-string s3-parsed)))
+    (try
+      (read-string s3-parsed)
+      (catch Exception e
+        (json/parse-string s3-parsed true)))))
 
 (defn read-message-body
   "
@@ -78,7 +81,6 @@
                      (json/parse-string msg true)
                      (catch Exception e
                        (read-string msg)))]
-
     (cond
 
      (seq (:Records parsed-msg)) ;; from S3 to SQS

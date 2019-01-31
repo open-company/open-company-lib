@@ -1,6 +1,7 @@
 (ns oc.lib.text
   "Functions related to processing text."
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s]
+            [cuerdas.core :as str]))
 
 (defn attribution
   "
@@ -42,3 +43,9 @@
   "
   [data]
   (when data (s/replace data #"(?i)<\/?((script|style|input){1})(\s?[^<>]*)>" "")))
+
+(defn- clean-body-text [text]
+  (-> text
+    (s/replace #"&nbsp;" " ")
+    (str/strip-tags)
+    (str/strip-newlines)))

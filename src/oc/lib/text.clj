@@ -1,7 +1,8 @@
 (ns oc.lib.text
   "Functions related to processing text."
   (:require [clojure.string :as s]
-            [cuerdas.core :as str]))
+            [cuerdas.core :as str]
+            [jsoup.soup :as soup]))
 
 (defn attribution
   "
@@ -44,8 +45,23 @@
   [data]
   (when data (s/replace data #"(?i)<\/?((script|style|input){1})(\s?[^<>]*)>" "")))
 
-(defn- clean-body-text [text]
-  (-> text
+(defn- clean-body-text [body]
+  (-> body
     (s/replace #"&nbsp;" " ")
     (str/strip-tags)
     (str/strip-newlines)))
+
+(def body-words 20)
+
+(defn truncated-body [body]
+  (let [clean-body (if-not (clojure.string/blank? body)
+                     (clean-body-text (.text (soup/parse body)))
+                     "")
+        splitted-body (clojure.string/split clean-body #" ")
+        truncated-body (filter not-empty
+                        (take body-words ;; 20 words is the average sentence
+                         splitted-body))
+        reduced-body (str (clojure.string/join " " truncated-body)
+                      (when (= (count truncated-body) body-words)
+                        "..."))]
+    reduced-body))

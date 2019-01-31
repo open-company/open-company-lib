@@ -94,6 +94,8 @@
     [clj-soup/clojure-soup "0.1.3"]
     ;; HTTP client https://github.com/dakrone/clj-http
     [clj-http "3.9.1"]
+    ;; String manipulation library https://github.com/funcool/cuerdas
+    [funcool/cuerdas "2.1.0"]
   ]
 
   :profiles {

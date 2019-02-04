@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.34-alpha1"
+(defproject open-company/lib "0.16.36-alpha"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -94,6 +94,8 @@
     [clj-soup/clojure-soup "0.1.3"]
     ;; HTTP client https://github.com/dakrone/clj-http
     [clj-http "3.9.1"]
+    ;; String manipulation library https://github.com/funcool/cuerdas
+    [funcool/cuerdas "2.1.0"]
   ]
 
   :profiles {

@@ -43,6 +43,43 @@
     (seq result)
     result))
 
+(defn- iterate-filters
+  "Given a list of filters, map the list into RethinkDB functions."
+  [filter-map row]
+  (for [filter filter-map]
+    (cond
+
+      (= :contains (:fn filter))
+      (r/contains (:value filter) (r/get-field row (:field filter)))
+
+      (= :ne (:fn filter))
+      (r/ne (:value filter) (r/get-field row (:field filter)))
+
+      (= :eq (:fn filter))
+      (r/eq (:value filter) (r/get-field row (:field filter)))
+
+      ;; NB: For the following four, we reverse the expectation of what is the left-hand and right-hand 
+      ;; side of the comparison, so we provide the opposite filter from what has been asked for
+
+      (= :le (:fn filter))
+      (r/ge (:value filter) (r/get-field row (:field filter)))
+
+      (= :lt (:fn filter))
+      (r/gt (:value filter) (r/get-field row (:field filter)))
+
+      (= :ge (:fn filter))
+      (r/le (:value filter) (r/get-field row (:field filter)))
+
+      (= :gt (:fn filter))
+      (r/lt (:value filter) (r/get-field row (:field filter))))))
+
+(defn build-filter-fn
+  [filter-map]
+  (r/fn [row]
+        (if (> (count filter-map) 1)
+          (apply r/and (iterate-filters filter-map row))
+          (first (iterate-filters filter-map row)))))
+
 ;; ----- DB Access Timeouts ----
 
 (def default-timeout 50000) ; 50 sec
@@ -80,8 +117,10 @@
     (throw (RuntimeException. (str "RethinkDB insert failure: " insert))))))
 
 (defn read-resource
-  "Given a table name and a primary key value, retrieve the resource from the database,
-  or return nil if it doesn't exist."
+  "
+  Given a table name and a primary key value, retrieve the resource from the database,
+  or return nil if it doesn't exist.
+  "
   [conn table-name primary-key-value]
   {:pre [(conn? conn)
          (s-or-k? table-name)]}
@@ -90,8 +129,10 @@
       (r/run conn)))
 
 (defn read-resources
-  "Given a table name, and an optional index name and value, an optional set of fields, and an optional limit, retrieve
-  the resources from the database."
+  "
+  Given a table name, and an optional index name and value, an optional set of fields, and an optional limit, retrieve
+  the resources from the database.
+  "
   ([conn table-name]
   {:pre [(conn? conn)
          (s-or-k? table-name)]}
@@ -155,31 +196,45 @@
           (r/run conn)
           (drain-cursor))))))
 
-;; TODO: support more than :contains and :eq
-(defn iterate-filters
-  "Given a list of filters, map the list into rethinkdb functions."
-  [filter-map row]
-  (for [filter filter-map]
-    (cond
+(defn filter-resources
+  "
+  Given a table name, and a filter map in the form of:
 
-      (= :contains (:fn filter))
-      (r/contains (:value filter) (r/get-field row (:field filter)))
+  - a `filter-map` A sequence of filters used to filter results.
+    example: [{:fn :ne :value 'blah' :field 'foo'}
+              {:fn :eq :value true :field 'bar'}]
 
-      (= :ne (:fn filter))
-      (r/ne (:value filter) (r/get-field row (:field filter)))
+  Return the resources which pass the provided filter(s).
 
-      (= :eq (:fn filter))
-      (r/eq (:value filter) (r/get-field row (:field filter))))))
+  Valid filters are: :eq, :ne, :gt, :ge, :lt, :le
 
-(defn build-filter-fn
-  [filter-map]
-  (r/fn [row]
-        (if (> (count filter-map) 1)
-          (apply r/and (iterate-filters filter-map row))
-          (first (iterate-filters filter-map row)))))
+  All filters are AND'ed together if more than one is provided.
+  "
+  ([conn table-name filter-map]
+  {:pre [(conn? conn)
+     (s-or-k? table-name)
+     (sequential? filter-map)]}
+  (with-timeout default-timeout
+    (-> (r/table table-name)
+        (r/filter (build-filter-fn filter-map))
+        (r/run conn)
+        (drain-cursor))))
+
+  ([conn table-name filter-map fields]
+  {:pre [(conn? conn)
+     (s-or-k? table-name)
+     (sequential? filter-map)
+     (sequential? fields)]}
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/filter (build-filter-fn filter-map))
+          (r/pluck fields)
+          (r/run conn)
+          (drain-cursor)))))
 
 (defn read-resources-and-relations
-  "In the first arity (9): Given a table name, an index name and value, and what amounts to a document key, foreign table,
+  "
+  In the first arity (9): Given a table name, an index name and value, and what amounts to a document key, foreign table,
   foreign key, foreign key index and the fields of the foreign table that are interesting, return all the resources
   that match the index, and any related resources in the other table in an array in each resource.
 
@@ -220,11 +275,14 @@
   in the form of:
 
   - a `filter-map` A sequence of filters used to filter results.
-    example: [{:fn :contains :value ['blah'] :filed :blah}
-              {:fn :eq :value true :field-name}]
+    example: [{:fn :ne :value 'blah' :field 'foo'}
+              {:fn :eq :value true :field 'bar'}]
 
-  TODO: Switch to a query map for index, relationship, filtering, and ordering.
+  Valid filters are: :eq, :ne, :gt, :ge, :lt, :le
+
+  All filters are AND'ed together if more than one is provided.
   "
+  ;; TODO: Switch to a query map for index, relationship, filtering, and ordering.
   ([conn table-name index-name index-value
    relation-name relation-table-name relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
   {:pre [(conn? conn)

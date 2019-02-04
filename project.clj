@@ -31,8 +31,8 @@
     ;; More than one binding for if/when macros https://github.com/LockedOn/if-let
     [lockedon/if-let "0.3.0"]
     ;; Component Lifecycle https://github.com/stuartsierra/component
-    [com.stuartsierra/component "0.3.2"]
-    [http-kit "2.3.0"] ; HTTP client and server http://http-kit.org/
+    [com.stuartsierra/component "0.4.0"]
+    [http-kit "2.4.0-alpha2"] ; HTTP client and server http://http-kit.org/
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.1.1" :exclusions [commons-codec]]
@@ -46,10 +46,10 @@
     [commons-codec "1.11"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
-    [com.taoensso/sente "1.13.1" :exclusions [com.taoensso/timbre com.taoensso/encore]]
+    [com.taoensso/sente "1.14.0-RC2" :exclusions [com.taoensso/timbre com.taoensso/encore]]
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.102.0"]
+    [com.taoensso/encore "2.105.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.6.0-alpha2" :exclusions [commons-codec]]
@@ -61,13 +61,13 @@
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
-    [amazonica "0.3.134"
+    [amazonica "0.3.139"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
-    ;; DynamoDB sdk
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.461"]
+    ;; DynamoDB SDK
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.490"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.9.7"]
+    [com.fasterxml.jackson.core/jackson-databind "2.9.8"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -85,7 +85,7 @@
     ;; Squeedo dependency
     [org.slf4j/slf4j-nop "1.8.0-beta2"]
     ;; Data validation https://github.com/Prismatic/schema
-    [prismatic/schema "1.1.9"]
+    [prismatic/schema "1.1.10"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
     [environ "1.1.0"]
     ;; HTML as data https://github.com/davidsantiago/hickory
@@ -108,13 +108,13 @@
         ;; NB: clj-time is pulled in manually
         ;; NB: joda-time is pulled in by clj-time
         ;; NB: commons-codec pulled in manually
-        [midje "1.9.4" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
+        [midje "1.9.6" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje
         [lein-midje "3.2.1"]
         ;; Linter https://github.com/jonase/eastwood
-        [jonase/eastwood "0.3.4"]
+        [jonase/eastwood "0.3.5"]
         ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        
         [lein-kibit "0.1.6" :exclusions [org.clojure/clojure]]
       ]

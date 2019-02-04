@@ -16,5 +16,7 @@ pom.xml.asc
 /.nrepl-port
 /.nrepl-history
 
+.eastwood
+
 .ruby-gemset
 .ruby-version

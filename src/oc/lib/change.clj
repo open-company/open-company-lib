@@ -15,7 +15,6 @@
 
 (defn- get-data
   [request-url token]
-  (timbre/debug request-url)
   (let [response (http/get request-url (get-post-options token))
         status (:status response)
         success? (= status 200)]

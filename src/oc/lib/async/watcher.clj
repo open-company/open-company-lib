@@ -19,6 +19,14 @@
 
 (defonce watcher-go (atom nil))
 
+; ;; ----- Origin check ---
+
+(defn valid-origin-header? [ring-req]
+  (let [origin (-> ring-req :headers (get "origin"))]
+    (or (= origin "http://localhost:3559")
+        (= origin "https://staging.carrot.io")
+        (= origin "https://carrot.io"))))
+
 ; ;; ----- Storage atom and functions -----
 
 (def watchers (atom {}))

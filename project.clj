@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.37"
+(defproject open-company/lib "0.16.39alpha-1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -32,7 +32,10 @@
     [lockedon/if-let "0.3.0"]
     ;; Component Lifecycle https://github.com/stuartsierra/component
     [com.stuartsierra/component "0.4.0"]
-    [http-kit "2.4.0-alpha3"] ; HTTP client and server http://http-kit.org/
+    ;; ------------ NB: DO NOT UPGRADE TO 2.4.0-alpha3 ---------------------------------------------
+    ;; --- it breaks WS connections returning an net::ERR_INVALID_HTTP_RESPONSE on connect      ----
+    [http-kit "2.3.0"] ; HTTP client and server http://http-kit.org/
+    ;; ---------------------------------------------------------------------------------------------
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.1.1" :exclusions [commons-codec]]
@@ -46,7 +49,11 @@
     [commons-codec "1.12"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
-    [com.taoensso/sente "1.14.0-RC2" :exclusions [com.taoensso/timbre com.taoensso/encore]]
+    ;; --------------------- DO NOT UPDATE TO Sente 1.14.0-RC2 -----------------------------------
+    ;; ---- do not update Sente to the latest since it has breaking changes to fix CSRF which ----
+    ;; ---- we don't use since we rely on origin check, the CSRF is fake.                     ----
+    [com.taoensso/sente "1.13.1" :exclusions [com.taoensso/timbre com.taoensso/encore]]
+    ;; -------------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
     [com.taoensso/encore "2.106.0"]

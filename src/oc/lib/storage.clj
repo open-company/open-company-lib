@@ -56,12 +56,16 @@
 
 (defun post-data-for
   "
-  Retrieve the post data with different kind of inputs.
+  Retrieve the data for the specified post from the Storage service.
+
+  Arity/5 but the 2nd argument can be either a map of the user data that will be used for
+  a JWToken, or can be a JWToken.
+
   Config:
-  - passphrase (optional needed to retrieve the JWT, not needed if JWT is passed)
-  - auth-server-url (optional needed to retrieve the JWT, not needed if JWT is passed)
-  - service-name
   - storage-server-url
+  - passphrase (not needed if JWT is passed)
+  - auth-server-url (not needed if JWT is passed)
+  - service-name (always optional)
   "
   ([config :guard #(and (map? %)
                         (contains? % :storage-server-url)

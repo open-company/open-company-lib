@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.39alpha-3"
+(defproject open-company/lib "0.16.39-alpha4"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -14,7 +14,7 @@
   ;; All profile dependencies
   :dependencies [
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.10.0" :scope "provided"]
+    [org.clojure/clojure "1.10.1-beta1" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.4.490"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
@@ -32,10 +32,11 @@
     [lockedon/if-let "0.3.0"]
     ;; Component Lifecycle https://github.com/stuartsierra/component
     [com.stuartsierra/component "0.4.0"]
-    ;; ------------ NB: DO NOT UPGRADE TO 2.4.0-alpha3 ---------------------------------------------
-    ;; --- it breaks WS connections returning an net::ERR_INVALID_HTTP_RESPONSE on connect      ----
+    ;; ----------------------------------------------------------------------------------------
+    ;; --- NB: DO NOT UPGRADE TO 2.4.0-alpha3
     [http-kit "2.3.0"] ; HTTP client and server http://http-kit.org/
-    ;; ---------------------------------------------------------------------------------------------
+    ;; --- it breaks WS connections returning an net::ERR_INVALID_HTTP_RESPONSE on connect ----
+    ;; ----------------------------------------------------------------------------------------
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.1.1" :exclusions [commons-codec]]
@@ -49,29 +50,30 @@
     [commons-codec "1.12"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
-    ;; --------------------- DO NOT UPDATE TO Sente 1.14.0-RC2 -----------------------------------
-    ;; ---- do not update Sente to the latest since it has breaking changes to fix CSRF which ----
-    ;; ---- we don't use since we rely on origin check, the CSRF is fake.                     ----
+    ;; ----------------------------------------------------------------------------------------
+    ;; --- NB: DO NOT UPDATE TO Sente 1.14.0-RC2
     [com.taoensso/sente "1.13.1" :exclusions [com.taoensso/timbre com.taoensso/encore]]
-    ;; -------------------------------------------------------------------------------------------
+    ;; --- it has breaking changes to fix CSRF which we don't use since we rely on origin check,
+    ;; --- our CSRF is static.
+    ;; ----------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.106.0"]
+    [com.taoensso/encore "2.107.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
-    [raven-clj "1.6.0-alpha2" :exclusions [commons-codec]]
+    [raven-clj "1.6.0-alpha3" :exclusions [commons-codec]]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
-    [liberator "0.15.2"] 
+    [liberator "0.15.3"] 
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     ;; NB: joda-time is pulled in by clj-time
     ;; NB: commons-logging is pulled in manually
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
-    [amazonica "0.3.139"
+    [amazonica "0.3.141"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.502"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.524"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.8"]
@@ -88,7 +90,7 @@
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     ;; NB: com.amazonaws/jmespath-java is pulled in by Amazonica
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
-    [com.climate/squeedo "1.0.2" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
+    [com.climate/squeedo "1.1.1" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
     [org.slf4j/slf4j-nop "1.8.0-beta4"]
     ;; Data validation https://github.com/Prismatic/schema
@@ -132,7 +134,7 @@
       :plugins [
         ;; Check for code smells https://github.com/dakrone/lein-bikeshed
         ;; NB: org.clojure/tools.cli is pulled in by lein-kibit
-        [lein-bikeshed "0.5.1" :exclusions [org.clojure/tools.cli]] 
+        [lein-bikeshed "0.5.2" :exclusions [org.clojure/tools.cli]] 
         ;; Runs bikeshed, kibit and eastwood https://github.com/itang/lein-checkall
         [lein-checkall "0.1.1"]
         ;; pretty-print the lein project map https://github.com/technomancy/leiningen/tree/master/lein-pprint
@@ -144,7 +146,7 @@
         ;; Dead code finder (use carefully, false positives) https://github.com/venantius/yagni
         [venantius/yagni "0.1.7" :exclusions [org.clojure/clojure]]
         ;; Autotest https://github.com/jakemcc/lein-test-refresh
-        [com.jakemccrary/lein-test-refresh "0.23.0"]
+        [com.jakemccrary/lein-test-refresh "0.24.0"]
       ]  
     }]
 

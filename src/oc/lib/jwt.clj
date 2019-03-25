@@ -54,13 +54,10 @@
   (let [teams (db-common/read-resources conn :teams :admins user-id)]              
     (vec (map :team-id teams))))
 
-(defun name-for
-  "Make a single `name` field from `first-name` and/or `last-name`."
-  ([user] (name-for (:first-name user) (:last-name user)))
-  ([first-name :guard s/blank? last-name :guard s/blank?] "")
-  ([first-name last-name :guard s/blank?] first-name)
-  ([first-name :guard s/blank? last-name] last-name)
-  ([first-name last-name] (str first-name " " last-name)))
+(defn name-for
+  "Fn moved to lib-schema ns. Here for backwards compatability."
+  ([user] (lib-schema/name-for user))
+  ([first last] (lib-schema/name-for first last)))
 
 (defun- bot-for
   "

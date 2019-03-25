@@ -67,6 +67,17 @@
                                    :attachments (json/encode attachments)
                                    :channel channel})))
 
+(defn post-blocks
+  "Post blocks as the bot."
+  ([bot-token channel blocks]
+     (post-blocks bot-token channel blocks ""))
+  ([bot-token channel blocks text]
+     {:pre [(sequential? blocks)]}
+     (slack-api :chat.postMessage {:token bot-token
+                                   :blocks (json/encode blocks)
+                                   :text (with-marker text)
+                                   :channel channel})))
+
 (defn unfurl-post-url
   "Add data to the url when a Carrot url is posted in slack."
   [user-token channel ts url-data]

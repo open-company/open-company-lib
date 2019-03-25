@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.16.39-alpha4"
+(defproject open-company/lib "0.17.0"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -58,7 +58,7 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.107.0"]
+    [com.taoensso/encore "2.108.1"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.6.0-alpha3" :exclusions [commons-codec]]

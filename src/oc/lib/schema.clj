@@ -1,6 +1,7 @@
 (ns oc.lib.schema
   "Prismatic schema common data schema fragments."
   (:require [clojure.string :as s]
+            [defun.core :refer (defun)]
             [schema.core :as schema]))
 
 ;; ----- Utility functions -----
@@ -62,11 +63,22 @@
     (catch Exception e
       false)))
 
+(defun name-for
+  "Make a single `name` field from `first-name` and/or `last-name`."
+  ([user] (name-for (:first-name user) (:last-name user)))
+  ([first-name :guard s/blank? last-name :guard s/blank?] "")
+  ([first-name last-name :guard s/blank?] first-name)
+  ([first-name :guard s/blank? last-name] last-name)
+  ([first-name last-name] (str first-name " " last-name)))
+
 (declare Author)
 (defn author-for-user
-  "Extract the author from the JWToken claims."
+  "Extract the author from the JWToken claims or DB user."
   [user]
-  (select-keys user (keys Author)))
+  (let [author (select-keys user (keys Author))]
+    (if (s/blank? (:name author))
+      (assoc author :name (name-for user))
+      author)))
 
 ;; ----- Schema -----
 

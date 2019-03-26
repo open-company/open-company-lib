@@ -1,6 +1,5 @@
 (ns oc.lib.jwt
-  (:require [clojure.string :as s]
-            [if-let.core :refer (if-let* when-let*)]
+  (:require [if-let.core :refer (if-let* when-let*)]
             [defun.core :refer (defun defun-)]
             [taoensso.timbre :as timbre]
             [schema.core :as schema]

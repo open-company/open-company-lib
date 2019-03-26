@@ -11,7 +11,8 @@
 
 (defn- get-post-options
   [token]
-  {:headers {"Authorization" (str "Bearer " token)}})
+  {:headers {"Authorization" (str "Bearer " token)
+             "origin" "carrot.io"}})
 
 (defn- get-data
   [request-url token]

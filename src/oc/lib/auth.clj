@@ -30,7 +30,8 @@
 (defn get-options
   [token]
   {:headers {"Content-Type" "application/vnd.open-company.auth.v1+json"
-             "Authorization" (str "Bearer " token)}})
+             "Authorization" (str "Bearer " token)
+             "origin" "carrot.io"}})
 
 (defn user-token [user auth-server-url passphrase service-name]
   (let [token-request

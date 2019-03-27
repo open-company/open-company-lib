@@ -30,7 +30,12 @@
                  :body body}))
       (do 
         (timbre/trace "Slack response:" body)
-        (-> body json/decode keywordize-keys)))))
+        (try
+          (-> body json/decode keywordize-keys)
+          (catch com.fasterxml.jackson.core.JsonParseException e
+            (timbre/info "Error parsing Slack response" body)
+            (timbre/error e)
+            (throw e)))))))
 
 (defn get-team-info [token]
   (:team (slack-api :team.info {:token token})))

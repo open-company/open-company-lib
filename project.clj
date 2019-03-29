@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.3-alpha6"
+(defproject open-company/lib "0.17.3-alpha9"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {

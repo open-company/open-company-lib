@@ -31,4 +31,4 @@
         r (re-seq #"happy_face_(red|green|blue|purple|yellow).svg$" absolute-avatar-url)]
     (if r
       (str (subs absolute-avatar-url 0 (- (count absolute-avatar-url) 3)) "png")
-      (circle-image absolute-avatar-url 32))))
+      (circle-image filestack-api-key absolute-avatar-url 32))))

@@ -38,7 +38,7 @@
         (try
           (let [response-body (-> body json/decode keywordize-keys)]
             (if-not (:ok response-body)
-              (report-slack-error body (info "Slack request was rejected"
+              (report-slack-error body (ex-info "Slack request was rejected"
                                          {:body body
                                           :status status
                                           :method method

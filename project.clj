@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.3-alpha7.2"
+(defproject open-company/lib "0.17.3"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -18,7 +18,7 @@
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.4.490"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
-    [org.clojure/core.match "0.3.0-alpha5"]
+    [org.clojure/core.match "0.3.0"]
     ;; Clojure reader https://github.com/clojure/tools.reader
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [org.clojure/tools.reader "1.3.2"]
@@ -73,7 +73,7 @@
     [amazonica "0.3.141"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.525"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.534"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.8"]
@@ -104,7 +104,7 @@
     ;; HTTP client https://github.com/dakrone/clj-http
     [clj-http "3.9.1"]
     ;; String manipulation library https://github.com/funcool/cuerdas
-    [funcool/cuerdas "2.1.0"]
+    [funcool/cuerdas "2.2.0"]
   ]
 
   :profiles {
@@ -117,7 +117,7 @@
         ;; NB: clj-time is pulled in manually
         ;; NB: joda-time is pulled in by clj-time
         ;; NB: commons-codec pulled in manually
-        [midje "1.9.6" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
+        [midje "1.9.8" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje
@@ -146,7 +146,7 @@
         ;; Dead code finder (use carefully, false positives) https://github.com/venantius/yagni
         [venantius/yagni "0.1.7" :exclusions [org.clojure/clojure]]
         ;; Autotest https://github.com/jakemcc/lein-test-refresh
-        [com.jakemccrary/lein-test-refresh "0.24.0"]
+        [com.jakemccrary/lein-test-refresh "0.24.1"]
       ]  
     }]
 

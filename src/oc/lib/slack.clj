@@ -45,7 +45,7 @@
                                           :params params}))
               response-body))
           (catch com.fasterxml.jackson.core.JsonParseException e
-            (report-slack-error e)))))))
+            (report-slack-error response-body e)))))))
 
 (defn get-team-info [token]
   (:team (slack-api :team.info {:token token})))

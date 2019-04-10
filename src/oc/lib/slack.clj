@@ -18,19 +18,34 @@
   [text]
   (str marker-char text))
 
+(defn report-slack-error [body e]
+  (timbre/info "Error parsing Slack response" body)
+  (timbre/error e)
+  (throw e))
+
 (defn slack-api [method params]
   (timbre/info "Making slack request:" method)
   (let [url (str "https://slack.com/api/" (name method))
         {:keys [status headers body error] :as resp} @(http/get url {:query-params params :as :text})]
     (if error
-      (throw (ex-info "Error from Slack API"
-                {:method method
-                 :params params
-                 :status status
-                 :body body}))
+      (report-slack-error body (ex-info "Error from Slack API"
+                                {:method method
+                                 :params params
+                                 :status status
+                                 :body body}))
       (do 
         (timbre/trace "Slack response:" body)
-        (-> body json/decode keywordize-keys)))))
+        (try
+          (let [response-body (-> body json/decode keywordize-keys)]
+            (if-not (:ok response-body)
+              (report-slack-error body (ex-info "Slack request was rejected"
+                                         {:body body
+                                          :status status
+                                          :method method
+                                          :params params}))
+              response-body))
+          (catch com.fasterxml.jackson.core.JsonParseException e
+            (report-slack-error body e)))))))
 
 (defn get-team-info [token]
   (:team (slack-api :team.info {:token token})))

@@ -1,5 +1,5 @@
 (ns oc.lib.html
-  "Functions related to processing text."
+  "Functions related to processing HTML."
   (:require [cuerdas.core :as str]
             #?(:clj [jsoup.soup :as soup])))
 
@@ -34,9 +34,11 @@
      size))
 
 (defn first-body-thumbnail
-  "Given an entry body get the first thumbnail available.
+  "
+  Given an entry body get the first thumbnail available.
   Thumbnail type: image, video or chart.
-  This rely on the similitudes between jQuery and soup parsed objects like the attr function."
+  This rely on the similitudes between jQuery and soup parsed objects like the attr function.
+  "
   [html-body]
   (let [{els-count :count thumb-els :elements} (thumbnail-elements html-body)
         found (atom nil)]

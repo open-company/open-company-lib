@@ -23,12 +23,12 @@
   "
   First it fixes relative URLs, it prepends our production CDN domain to it if it's relative.
   Then if the url is pointing to one of our happy faces, it replaces the SVG extension with PNG
-  to have it resizable. If it's not one of our happy faces, it uses the on-the-fly resize url."
+  to have it resizable. If it's not one of our happy faces, it uses the on-the-fly resize url.
+  "
   [filestack-api-key avatar-url]
   (let [absolute-avatar-url (if (s/starts-with? avatar-url "/img")
                               (str "https://d1wc0stj82keig.cloudfront.net" avatar-url)
-                              avatar-url)
-        r (re-seq #"happy_face_(red|green|blue|purple|yellow).svg$" absolute-avatar-url)]
-    (if r
+                              avatar-url)]
+    (if (re-seq #"happy_face_(red|green|blue|purple|yellow).svg$" absolute-avatar-url) ; carrot default?
       (str (subs absolute-avatar-url 0 (- (count absolute-avatar-url) 3)) "png")
       (circle-image filestack-api-key absolute-avatar-url 32))))

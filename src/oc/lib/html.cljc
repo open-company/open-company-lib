@@ -4,16 +4,17 @@
             #?(:clj [jsoup.soup :as soup])))
 
 (defn- thumbnail-elements [body]
-  #?(:clj
-     (let [parsed-body (soup/parse body)
-           els (.select parsed-body "img:not(.emojione):not([data-media-type=GIF]), iframe")]
-      {:elements els
-       :count (count els)})
-     :cljs
-     (let [$body (js/$ (str "<div>" body "</div>"))
-           els (js->clj (js/$ "img:not(.emojione), iframe" $body))]
-       {:elements els
-        :count (.-length els)})))
+  (let [thumbnail-selector "img:not(.emojione):not([data-media-type='image/gif']), iframe"]
+    #?(:clj
+       (let [parsed-body (soup/parse body)
+             els (.select parsed-body thumbnail-selector)]
+        {:elements els
+         :count (count els)})
+       :cljs
+       (let [$body (js/$ (str "<div>" body "</div>"))
+             els (js->clj (js/$ thumbnail-selector $body))]
+         {:elements els
+          :count (.-length els)}))))
 
 (defn- $el [el]
   #?(:clj

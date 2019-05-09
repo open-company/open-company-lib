@@ -6,7 +6,7 @@
 (defn- thumbnail-elements [body]
   #?(:clj
      (let [parsed-body (soup/parse body)
-           els (.select parsed-body "img:not(.emojione), iframe")]
+           els (.select parsed-body "img:not(.emojione):not([data-media-type=GIF]), iframe")]
       {:elements els
        :count (count els)})
      :cljs

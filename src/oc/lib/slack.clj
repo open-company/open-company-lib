@@ -20,7 +20,7 @@
 
 (defn report-slack-error [body e]
   (timbre/info "Error parsing Slack response" body)
-  (timbre/error e)
+  (timbre/warn e)
   (throw e))
 
 (defn slack-api [method params]

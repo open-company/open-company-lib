@@ -1,7 +1,7 @@
 language: clojure
 sudo: false
 jdk:
-  - openjdk11
+  - openjdk9
 lein: 2.7.1
 cache:
   directories:

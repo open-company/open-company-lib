@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.6-alpha"
+(defproject open-company/lib "0.17.8"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -14,7 +14,7 @@
   ;; All profile dependencies
   :dependencies [
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.10.1-beta1" :scope "provided"]
+    [org.clojure/clojure "1.10.1-beta3" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.4.490"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
@@ -58,7 +58,7 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.108.1"]
+    [com.taoensso/encore "2.112.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.6.0-alpha3" :exclusions [commons-codec]]
@@ -70,13 +70,13 @@
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
-    [amazonica "0.3.141"
+    [amazonica "0.3.142"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.534"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.553"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.9.8"]
+    [com.fasterxml.jackson.core/jackson-databind "2.9.9"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -102,7 +102,7 @@
     ;; Clojure wrapper for jsoup HTML parser https://github.com/mfornos/clojure-soup
     [clj-soup/clojure-soup "0.1.3"]
     ;; HTTP client https://github.com/dakrone/clj-http
-    [clj-http "3.9.1"]
+    [clj-http "3.10.0"]
     ;; String manipulation library https://github.com/funcool/cuerdas
     [funcool/cuerdas "2.2.0"]
   ]

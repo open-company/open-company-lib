@@ -101,6 +101,7 @@
   :avatar-url (schema/maybe schema/Str)})
 
 (def SlackChannel {
+  (schema/optional-key :type) NonBlankStr
   :slack-org-id NonBlankStr
   :channel-name NonBlankStr
   :channel-id NonBlankStr})

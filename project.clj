@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.9-alpha1"
+(defproject open-company/lib "0.17.9"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -14,7 +14,7 @@
   ;; All profile dependencies
   :dependencies [
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.10.1-beta3" :scope "provided"]
+    [org.clojure/clojure "1.10.1-RC1" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "0.4.490"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
@@ -39,7 +39,7 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: commons-codec gets picked up from amazonica
-    [ring/ring-codec "1.1.1" :exclusions [commons-codec]]
+    [ring/ring-codec "1.1.2" :exclusions [commons-codec]]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
     [com.taoensso/timbre "4.10.0" :exclusions [com.taoensso/encore]]
     ;; Java logging lib https://commons.apache.org/proper/commons-logging/
@@ -73,7 +73,7 @@
     [amazonica "0.3.142"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.553"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.561"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.9"]

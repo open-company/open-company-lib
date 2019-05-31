@@ -6,7 +6,7 @@
     :url "https://www.gnu.org/licenses/agpl-3.0.en.html"
   }
 
-  :min-lein-version "2.7.1"
+  :min-lein-version "2.9.1"
 
   ;; JVM memory
   :jvm-opts ^:replace ["-Xms128m" "-Xmx256m" "-server"]

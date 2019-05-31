@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.9"
+(defproject open-company/lib "0.17.10"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -73,14 +73,20 @@
     [amazonica "0.3.142"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.561"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.563"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.9"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
-    [com.apa512/rethinkdb "0.15.26"]
+    [com.apa512/rethinkdb "0.15.26" :exclusions [aleph]]
+    ;; Asynch comm. for clojure (http-client) https://github.com/ztellman/aleph
+    ;; NB: Not used directly, dependency of RethinkDB
+    [aleph "0.4.7-alpha5" :exclusions [io.netty/netty-all]]
+    ;; Asynchronous event-driven network application framework https://netty.io/
+    ;; NB: Not used directly, dependency of Aleph
+    [io.netty/netty-all "5.0.0.Alpha2"]
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
     [cheshire "5.8.1"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
@@ -90,7 +96,7 @@
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
     ;; NB: com.amazonaws/jmespath-java is pulled in by Amazonica
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
-    [com.climate/squeedo "1.1.1" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
+    [com.climate/squeedo "1.1.2" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
     [org.slf4j/slf4j-nop "1.8.0-beta4"]
     ;; Data validation https://github.com/Prismatic/schema

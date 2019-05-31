@@ -10,7 +10,7 @@
   "
   [ttl]
   (let [fixed-ttl (if (string? ttl)
-                    (Integer. (re-find #"\d+" ttl)) ; TTL value from env var is a string
+                    (. Integer (parseInt (re-find #"\d+" ttl))) ; TTL value from env var is a string
                     ttl) ; default is an int
         ttl-date (time/plus (time/now) (time/days fixed-ttl))]
     (coerce/to-epoch ttl-date)))

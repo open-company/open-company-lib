@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.10"
+(defproject open-company/lib "0.17.11-alpha1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -86,7 +86,7 @@
     [aleph "0.4.7-alpha5" :exclusions [io.netty/netty-all]]
     ;; Asynchronous event-driven network application framework https://netty.io/
     ;; NB: Not used directly, dependency of Aleph
-    [io.netty/netty-all "5.0.0.Alpha2"]
+    [io.netty/netty-all "4.1.36.Final"]
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
     [cheshire "5.8.1"] 
     ;; Date and time lib https://github.com/clj-time/clj-time

@@ -84,9 +84,13 @@
     ;; Asynch comm. for clojure (http-client) https://github.com/ztellman/aleph
     ;; NB: Not used directly, dependency of RethinkDB
     [aleph "0.4.7-alpha5" :exclusions [io.netty/netty-all]]
+    ;; ----------------------------------------------------------------------------------------
+    ;; --- NB: DO NOT UPDATE TO nety-all 5.x
     ;; Asynchronous event-driven network application framework https://netty.io/
     ;; NB: Not used directly, dependency of Aleph
     [io.netty/netty-all "4.1.36.Final"]
+    ;; It has breaking changes with 4.x and Aleph depends on 4.x
+    ;; ----------------------------------------------------------------------------------------
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
     [cheshire "5.8.1"] 
     ;; Date and time lib https://github.com/clj-time/clj-time

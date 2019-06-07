@@ -310,6 +310,42 @@
           (drain-cursor query)))))
 
   ([conn table-name index-name index-value
+    order-by order start direction
+    relation-name relation-table-name relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (s-or-k? order-by)
+         (#{:desc :asc} order)
+         (not (nil? start))
+         (#{:before :after} direction)
+         (s-or-k? relation-name)
+         (s-or-k? relation-table-name)
+         (s-or-k? relation-field-name)
+         (s-or-k? relation-index-name)
+         (sequential? relation-fields)
+         (every? s-or-k? relation-fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])
+        order-fn (if (= order :desc) r/desc r/asc)
+        filter-fn (if (= direction :before) r/gt r/lt)]
+    (with-timeout default-timeout
+      (as-> (r/table table-name) query
+          (r/get-all query index-values {:index index-name})
+          (r/filter query (r/fn [row]
+                      (filter-fn start (r/get-field row order-by))))
+          (if-not count (r/order-by query (order-fn order-by)) query)
+          (if-not count (r/merge query (r/fn [resource]
+            {relation-name (-> (r/table relation-table-name)
+                               (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                               (r/pluck relation-fields)
+                               (r/coerce-to :array))}))
+                  query)
+          (if count (r/count query) query)
+          (r/run query conn)
+          (drain-cursor query)))))
+
+  ([conn table-name index-name index-value
     order-by order start direction limit
     relation-name relation-table-name relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
   {:pre [(conn? conn)
@@ -380,6 +416,85 @@
                                   (filter-fn start (r/get-field row order-by))))
             (if-not count (r/order-by query (order-fn order-by)) query)
             (if-not count (r/limit query limit) query)
+            (if-not count (r/merge query (r/fn [resource]
+              {relation-name (-> (r/table relation-table-name)
+                                 (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                                 (r/pluck relation-fields)
+                                 (r/coerce-to :array))}))
+                    query)
+            (if count (r/count query) query)
+            (r/run query conn)
+            (drain-cursor query))))))
+
+(defn read-all-resources-and-relations
+  "Like the above but doesn't apply limit."
+  ([conn table-name index-name index-value
+    order-by order start direction
+    relation-name relation-table-name
+    relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (s-or-k? order-by)
+         (#{:desc :asc} order)
+         (not (nil? start))
+         (#{:before :after} direction)
+         (s-or-k? relation-name)
+         (s-or-k? relation-table-name)
+         (s-or-k? relation-field-name)
+         (s-or-k? relation-index-name)
+         (sequential? relation-fields)
+         (every? s-or-k? relation-fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])
+        order-fn (if (= order :desc) r/desc r/asc)
+        filter-fn (if (= direction :before) r/gt r/lt)]
+    (with-timeout default-timeout
+      (as-> (r/table table-name) query
+            (r/get-all query index-values {:index index-name})
+            (r/filter query (r/fn [row]
+                                  (filter-fn start (r/get-field row order-by))))
+            (if-not count (r/order-by query (order-fn order-by)) query)
+            (if-not count (r/merge query (r/fn [resource]
+              {relation-name (-> (r/table relation-table-name)
+                                 (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})
+                                 (r/pluck relation-fields)
+                                 (r/coerce-to :array))}))
+                    query)
+            (if count (r/count query) query)
+            (r/run query conn)
+            (drain-cursor query)))))
+  ([conn table-name index-name index-value
+    order-by order start direction
+    filter-map
+    relation-name relation-table-name
+    relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (string? index-value) (sequential? index-value))
+         (s-or-k? order-by)
+         (#{:desc :asc} order)
+         (not (nil? start))
+         (#{:before :after} direction)
+         (sequential? filter-map)
+         (s-or-k? relation-name)
+         (s-or-k? relation-table-name)
+         (s-or-k? relation-field-name)
+         (s-or-k? relation-index-name)
+         (sequential? relation-fields)
+         (every? s-or-k? relation-fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])
+        order-fn (if (= order :desc) r/desc r/asc)
+        filter-fn (if (= direction :before) r/gt r/lt)
+        filter-by-fn (build-filter-fn filter-map)]
+    (with-timeout default-timeout
+      (as-> (r/table table-name) query
+            (r/get-all query index-values {:index index-name})
+            (r/filter query filter-by-fn)
+            (r/filter query (r/fn [row]
+                                  (filter-fn start (r/get-field row order-by))))
+            (if-not count (r/order-by query (order-fn order-by)) query)
             (if-not count (r/merge query (r/fn [resource]
               {relation-name (-> (r/table relation-table-name)
                                  (r/get-all [(r/get-field resource relation-field-name)] {:index relation-index-name})

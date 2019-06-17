@@ -378,7 +378,6 @@
             (r/filter query filter-by-fn)
             (r/filter query (r/fn [row]
                                   (filter-fn start (r/get-field row order-by))))
-            (if count (r/count query) query)
             (if-not count (r/order-by query (order-fn order-by)) query)
             (if-not count (r/limit query limit) query)
             (if-not count (r/merge query (r/fn [resource]
@@ -387,6 +386,7 @@
                                  (r/pluck relation-fields)
                                  (r/coerce-to :array))}))
                     query)
+            (if count (r/count query) query)
             (r/run query conn)
             (drain-cursor query))))))
 

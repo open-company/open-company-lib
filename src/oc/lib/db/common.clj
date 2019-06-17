@@ -427,7 +427,7 @@
             (drain-cursor query))))))
 
 (defn read-all-resources-and-relations
-  "Like the above but doesn't apply limit."
+  "Like `read-resources-and-relations` but doesn't apply limit."
   ([conn table-name index-name index-value
     order-by order start direction
     relation-name relation-table-name

@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.12"
+(defproject open-company/lib "0.17.13-alpha1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -27,7 +27,7 @@
     [org.clojure/tools.macro "0.1.5"]
     ;; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
     ;; NB: org.clojure/tools.macro is pulled in manually
-    [defun "0.3.0-RC1" :exclusions [org.clojure/tools.macro]] 
+    [defun "0.3.1" :exclusions [org.clojure/tools.macro]] 
     ;; More than one binding for if/when macros https://github.com/LockedOn/if-let
     [lockedon/if-let "0.3.0"]
     ;; Component Lifecycle https://github.com/stuartsierra/component
@@ -47,7 +47,7 @@
     [commons-logging "1.2"]
     ;; Java codec library https://commons.apache.org/proper/commons-codec/
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [commons-codec "1.12"]
+    [commons-codec "1.13"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
     ;; ----------------------------------------------------------------------------------------
@@ -73,7 +73,7 @@
     [amazonica "0.3.143"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.573"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.598"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.9"]
@@ -127,15 +127,15 @@
         ;; NB: clj-time is pulled in manually
         ;; NB: joda-time is pulled in by clj-time
         ;; NB: commons-codec pulled in manually
-        [midje "1.9.8" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
+        [midje "1.9.9" :exclusions [joda-time org.clojure/tools.macro clj-time commons-codec]] 
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje
         [lein-midje "3.2.1"]
         ;; Linter https://github.com/jonase/eastwood
-        [jonase/eastwood "0.3.5"]
+        [jonase/eastwood "0.3.6"]
         ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        
-        [lein-kibit "0.1.6" :exclusions [org.clojure/clojure]]
+        [lein-kibit "0.1.7" :exclusions [org.clojure/clojure]]
       ]
     }
 

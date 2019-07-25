@@ -1,5 +1,6 @@
-(ns oc.lib.user-avatar
-  (:require [clojure.string :as s]))
+(ns oc.lib.user
+  (:require [clojure.string :as s]
+            [defun.core :refer (defun)]))
 
 (def author-logo 32)
 
@@ -32,3 +33,16 @@
     (if (re-seq #"happy_face_(red|green|blue|purple|yellow).svg$" absolute-avatar-url) ; carrot default?
       (str (subs absolute-avatar-url 0 (- (count absolute-avatar-url) 3)) "png")
       (circle-image filestack-api-key absolute-avatar-url 32))))
+
+(defun name-for;
+  "
+  Make a single `name` field from `first-name` and/or `last-name`.
+
+  Use email as the name if the entire user is provided and there's no first or last name.
+  "
+  ([user :guard #(and (s/blank? (:first-name %)) (s/blank? (:last-name %)))] (name-for (:email user) ""))
+  ([user] (name-for (:first-name user) (:last-name user)))
+  ([first-name :guard s/blank? last-name :guard s/blank?] "")
+  ([first-name last-name :guard s/blank?] first-name)
+  ([first-name :guard s/blank? last-name] last-name)
+  ([first-name last-name] (str first-name " " last-name)))

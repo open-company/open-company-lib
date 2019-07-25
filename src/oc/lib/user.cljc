@@ -40,9 +40,13 @@
 
   Use email as the name if the entire user is provided and there's no first or last name.
   "
-  ([user :guard #(and (s/blank? (:first-name %)) (s/blank? (:last-name %)))] (name-for (:email user) ""))
+  ([user :guard #(and (s/blank? (:first-name %))
+                      (s/blank? (:last-name %))
+                      (s/blank? (:name %)))]
+    (name-for (:email user) ""))
+  ([user :guard #(not (s/blank? (:name %)))] (name-for (:name user) ""))
   ([user] (name-for (:first-name user) (:last-name user)))
   ([first-name :guard s/blank? last-name :guard s/blank?] "")
   ([first-name last-name :guard s/blank?] first-name)
   ([first-name :guard s/blank? last-name] last-name)
-  ([first-name last-name] (str first-name " " last-name)))
+  ([first-name last-name] (s/trim (str first-name " " last-name))))

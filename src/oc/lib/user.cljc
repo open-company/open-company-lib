@@ -16,7 +16,7 @@
     (str "https://process.filestackapi.com/"
          (when-not is-filestack-resource?
            (str filestack-api-key "/"))
-         "resize=w:" author-logo ",h:" author-logo ",fit:crop,align:faces/"
+         "resize=w:" size ",h:" size ",fit:crop,align:faces/"
          "circle/"
          filestack-resource)))
 
@@ -26,13 +26,15 @@
   Then if the url is pointing to one of our happy faces, it replaces the SVG extension with PNG
   to have it resizable. If it's not one of our happy faces, it uses the on-the-fly resize url.
   "
-  [filestack-api-key avatar-url]
-  (let [absolute-avatar-url (if (s/starts-with? avatar-url "/img")
-                              (str "https://d1wc0stj82keig.cloudfront.net" avatar-url)
-                              avatar-url)]
-    (if (re-seq #"happy_face_(red|green|blue|purple|yellow).svg$" absolute-avatar-url) ; carrot default?
-      (str (subs absolute-avatar-url 0 (- (count absolute-avatar-url) 3)) "png")
-      (circle-image filestack-api-key absolute-avatar-url 32))))
+  ([filestack-api-key avatar-url avatar-size]
+   (let [absolute-avatar-url (if (s/starts-with? avatar-url "/img")
+                               (str "https://d1wc0stj82keig.cloudfront.net" avatar-url)
+                               avatar-url)]
+     (if (re-seq #"happy_face_(red|green|blue|purple|yellow).svg$" absolute-avatar-url) ; carrot default?
+       (str (subs absolute-avatar-url 0 (- (count absolute-avatar-url) 3)) "png")
+       (circle-image filestack-api-key absolute-avatar-url avatar-size))))
+  ([filestack-api-key avatar-url]
+   (fix-avatar-url filestack-api-key avatar-url author-logo)))
 
 (defun name-for;
   "

@@ -7,7 +7,8 @@
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
             [oc.lib.db.common :as db-common]
-            [oc.lib.schema :as lib-schema]))
+            [oc.lib.schema :as lib-schema]
+            [oc.lib.user :as lib-user]))
 
 (def media-type "application/jwt")
 
@@ -54,9 +55,9 @@
     (vec (map :team-id teams))))
 
 (defn name-for
-  "Fn moved to lib-schema ns. Here for backwards compatability."
-  ([user] (lib-schema/name-for user))
-  ([first last] (lib-schema/name-for first last)))
+  "Fn moved to lib.user ns. Here for backwards compatability."
+  ([user] (lib-user/name-for user))
+  ([first last] (lib-user/name-for first last)))
 
 (defun- bot-for
   "

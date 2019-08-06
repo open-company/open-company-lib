@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.14-alpha1"
+(defproject open-company/lib "0.17.14"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -58,7 +58,7 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.114.0"]
+    [com.taoensso/encore "2.115.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.6.0-alpha3" :exclusions [commons-codec]]
@@ -70,10 +70,10 @@
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
-    [amazonica "0.3.143"
+    [amazonica "0.3.145"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.598"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.604"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.9.9"]
@@ -92,7 +92,7 @@
     ;; It has breaking changes with 4.x and Aleph depends on 4.x
     ;; ----------------------------------------------------------------------------------------
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
-    [cheshire "5.8.1"] 
+    [cheshire "5.9.0"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
     [clj-time "0.15.1"]
     ;; A clj-time inspired date library for clojurescript. https://github.com/andrewmcveigh/cljs-time

@@ -24,7 +24,7 @@
 
 
 #?(:cljs
-   (defn- encode-state-string
+   (defn encode-state-string
      [data]
      (-> data
          pr-str
@@ -32,7 +32,7 @@
    )
 
 #?(:cljs
-   (defn- decode-state-string
+   (defn decode-state-string
      [s]
      (-> s
          js/atob

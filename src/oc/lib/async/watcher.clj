@@ -95,13 +95,17 @@
 
   ([message :guard :send]
   ;; For every client that's registered interest in the specified item, send them the specified event
-  (let [watch-id (:watch-id message)]
-    (timbre/info "Send request for:" watch-id)
-    (let [client-ids (watchers-for watch-id)]
-      (if (empty? client-ids)
+  (let [watch-id (:watch-id message)
+        sender-client-id (:sender-ws-client-id message)]
+    (timbre/info "Send request for:" watch-id "skipping" sender-client-id)
+    (let [client-ids (watchers-for watch-id)
+          without-sender-client-ids (if sender-client-id
+                                     (vec (disj (set client-ids) sender-client-id))
+                                     client-ids)]
+      (if (empty? without-sender-client-ids)
         (timbre/debug "No watchers for:" watch-id)
-        (timbre/debug "Send request to:" client-ids))
-      (doseq [client-id client-ids]
+        (timbre/debug "Send request to:" without-sender-client-ids))
+      (doseq [client-id without-sender-client-ids]
         (send-event client-id (:event message) (:payload message))))))
 
   ([message]

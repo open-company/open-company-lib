@@ -21,12 +21,17 @@
   "Given a Base64 encoded string return the decoded data."
   [state-str]
   #?(:clj
-     (let [url-decoded   (URLDecoder/decode state-str (.name StandardCharsets/UTF_8))
+     (let [decode-url    #(URLDecoder/decode % (.name StandardCharsets/UTF_8))
+           url-decoded   (decode-url state-str)
            b64-decoder   (Base64/getDecoder)
            decoded-bytes (.decode b64-decoder url-decoded)
-           decoded-str   (String. decoded-bytes)]
-       (edn/read-string decoded-str)))
+           decoded-str   (String. decoded-bytes)
+           state-map     (edn/read-string decoded-str)]
+       (cond-> state-map
+         (:redirect state-map) (update :redirect decode-url))))
   #?(:cljs
-     (-> state-str
-         js/atob
-         edn/read-string)))
+     (let [state-map (-> state-str
+                         js/atob
+                         edn/read-string)]
+       (cond-> state-map
+         (:redirect state-map) (update :redirect js/decodeURIComponent)))))

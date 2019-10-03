@@ -1,7 +1,11 @@
 (ns oc.lib.html
   "Functions related to processing HTML."
   (:require [cuerdas.core :as str]
-            #?(:clj [jsoup.soup :as soup])))
+            #?(:clj
+               [jsoup.soup :as soup]
+               [autoclave.core :as acl]))
+  #?(:cljs
+     (:import [goog.html.sanitizer HtmlSanitizer])))
 
 (defn- thumbnail-elements [body]
   (let [thumbnail-selector "img:not(.emojione):not([data-media-type='image/gif']), iframe"]
@@ -60,3 +64,13 @@
                                 (.attr $el "src"))})))
             (reset! found {:type (.attr $el "data-media-type") :thumbnail (.attr $el "data-thumbnail")})))))
     @found))
+
+(defn sanitize-html
+  [html-str]
+  #?(:clj
+     (let [policy (acl/html-merge-policies :BLOCKS :FORMATTING :IMAGES :LINKS :STYLES)]
+       (acl/html-sanitize policy html-str))
+     ;; -----------------------------------
+     :cljs
+     (let [sanitizer (HtmlSanitizer.)]
+       (str (.sanitize sanitizer html-str)))))

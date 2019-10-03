@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.18"
+(defproject open-company/lib "0.17.19-alpha"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -111,6 +111,8 @@
     [hickory "0.7.1" :exclusions [org.clojure/clojurescript]]
     ;; Clojure wrapper for jsoup HTML parser https://github.com/mfornos/clojure-soup
     [clj-soup/clojure-soup "0.1.3"]
+    ;; Safe handling of HTML (OWASP HTML Sanitizer wrapper)
+    [alxlit/autoclave "0.2.0"]
     ;; HTTP client https://github.com/dakrone/clj-http
     [clj-http "3.10.0"]
     ;; String manipulation library https://github.com/funcool/cuerdas

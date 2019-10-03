@@ -1,9 +1,8 @@
 (ns oc.lib.html
   "Functions related to processing HTML."
   (:require [cuerdas.core :as str]
-            #?(:clj
-               [jsoup.soup :as soup]
-               [autoclave.core :as acl]))
+            #?(:clj [jsoup.soup :as soup])
+            #?(:clj [autoclave.core :as acl]))
   #?(:cljs
      (:import [goog.html.sanitizer HtmlSanitizer])))
 

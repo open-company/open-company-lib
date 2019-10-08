@@ -64,14 +64,15 @@
 
 #?(:clj
    (def user-input-html-policy
-     (let [string-array  (fn [sa] (into-array java.lang.String sa))]
+     (let [string-array     (fn [sa] (into-array java.lang.String sa))
+           iframe-src-regex #"^https://(www.youtube.com|www.vimeo.com)/.*"]
        (.. (HtmlPolicyBuilder.)
            ;; -- common --
            (allowCommonBlockElements)
            (allowCommonInlineFormattingElements)
            (allowStyling)
            (allowStandardUrlProtocols)
-           (allowElements (string-array ["span" "img" "a"]))
+           (allowElements (string-array ["span" "img" "a" "iframe"]))
            ;; -- span --
            (allowWithoutAttributes (string-array ["span"]))
            (allowAttributes (string-array ["class"
@@ -84,19 +85,35 @@
                                            "data-found"
                                            "data-auto-link"
                                            "data-href"]))
-           (onElements (string-array ["span"]))
+             (onElements (string-array ["span"]))
            ;; -- images --
            (allowAttributes (string-array ["src"
                                            "alt"
                                            "class"
                                            "data-media-type"
                                            "data-thumbnail"]))
-           (onElements (string-array ["img"]))
+             (onElements (string-array ["img"]))
            ;; -- anchors / links --
            (allowAttributes (string-array ["href"
                                            "target"]))
-           (onElements (string-array ["a"]))
-           (requireRelNofollowOnLinks)
+             (onElements (string-array ["a"]))
+             (requireRelNofollowOnLinks)
+           ;; -- iframes (embeds) --
+           (allowAttributes (string-array ["src"]))
+             (matching iframe-src-regex)
+             (onElements (string-array ["iframe"]))
+           (allowAttributes (string-array ["class"
+                                           "width"
+                                           "height"
+                                           "data-media-type"
+                                           "frameborder"
+                                           "webkitallowfullscreen"
+                                           "mozallowfullscreen"
+                                           "allowfullscreen"
+                                           "data-thumbnail"
+                                           "data-video-type"
+                                           "data-video-id"]))
+             (onElements (string-array ["iframe"]))
            (toFactory)))))
 
 #?(:clj

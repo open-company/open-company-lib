@@ -65,7 +65,7 @@
 #?(:clj
    (def user-input-html-policy
      (let [string-array     (fn [sa] (into-array java.lang.String sa))
-           iframe-src-regex #"^https://(www.youtube.com|www.vimeo.com)/.*"]
+           iframe-src-regex #"^https://((www\.)?youtube.com|player.vimeo.com|(www\.)?loom.com)/.*"]
        (.. (HtmlPolicyBuilder.)
            ;; -- common --
            (allowCommonBlockElements)

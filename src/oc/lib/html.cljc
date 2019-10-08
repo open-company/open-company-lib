@@ -1,10 +1,8 @@
 (ns oc.lib.html
   "Functions related to processing HTML."
   (:require [cuerdas.core :as str]
-            #?(:clj [jsoup.soup :as soup])
-            #?(:clj [autoclave.core :as acl]))
-  #?(:cljs
-     (:import [goog.html.sanitizer HtmlSanitizer])))
+            #?(:clj [jsoup.soup :as soup]))
+  #?(:clj (:import [org.owasp.html HtmlPolicyBuilder])))
 
 (defn- thumbnail-elements [body]
   (let [thumbnail-selector "img:not(.emojione):not([data-media-type='image/gif']), iframe"]
@@ -64,12 +62,30 @@
             (reset! found {:type (.attr $el "data-media-type") :thumbnail (.attr $el "data-thumbnail")})))))
     @found))
 
-(defn sanitize-html
-  [html-str]
-  #?(:clj
-     (let [policy (acl/html-merge-policies :BLOCKS :FORMATTING :IMAGES :LINKS :STYLES)]
-       (acl/html-sanitize policy html-str))
-     ;; -----------------------------------
-     :cljs
-     (let [sanitizer (HtmlSanitizer.)]
-       (str (.sanitize sanitizer html-str)))))
+#?(:clj
+   (def user-input-html-policy
+     (let [string-array (fn [sa] (into-array java.lang.String sa))]
+       (.. (HtmlPolicyBuilder.)
+           (allowCommonBlockElements)
+           (allowCommonInlineFormattingElements)
+           (allowStyling)
+           (allowElements (string-array ["span" "img"]))
+           (allowWithoutAttributes (string-array ["span"]))
+           (allowAttributes (string-array ["class"
+                                           "data-first-name"
+                                           "data-last-name"
+                                           "data-slack-username"
+                                           "data-user-id"
+                                           "data-email"
+                                           "data-avatar-url"
+                                           "data-found"]))
+           (onElements (string-array ["span"]))
+           (allowAttributes (string-array ["src"]))
+           (onElements (string-array ["img"]))
+           (toFactory))))
+
+   (defn sanitize-html
+     "Sanitizes HTML content assumed to have been created by a (untrusted) user."
+     [html-str]
+     (.sanitize user-input-html-policy html-str)
+     ))

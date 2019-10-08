@@ -2,7 +2,7 @@
   "Functions related to processing HTML."
   (:require [cuerdas.core :as str]
             #?(:clj [jsoup.soup :as soup]))
-  #?(:clj (:import [org.owasp.html HtmlPolicyBuilder])))
+  #?(:clj (:import [org.owasp.html HtmlPolicyBuilder Sanitizers])))
 
 (defn- thumbnail-elements [body]
   (let [thumbnail-selector "img:not(.emojione):not([data-media-type='image/gif']), iframe"]
@@ -64,12 +64,15 @@
 
 #?(:clj
    (def user-input-html-policy
-     (let [string-array (fn [sa] (into-array java.lang.String sa))]
+     (let [string-array  (fn [sa] (into-array java.lang.String sa))]
        (.. (HtmlPolicyBuilder.)
+           ;; -- common --
            (allowCommonBlockElements)
            (allowCommonInlineFormattingElements)
            (allowStyling)
-           (allowElements (string-array ["span" "img"]))
+           (allowStandardUrlProtocols)
+           (allowElements (string-array ["span" "img" "a"]))
+           ;; -- span --
            (allowWithoutAttributes (string-array ["span"]))
            (allowAttributes (string-array ["class"
                                            "data-first-name"
@@ -78,10 +81,22 @@
                                            "data-user-id"
                                            "data-email"
                                            "data-avatar-url"
-                                           "data-found"]))
+                                           "data-found"
+                                           "data-auto-link"
+                                           "data-href"]))
            (onElements (string-array ["span"]))
-           (allowAttributes (string-array ["src"]))
+           ;; -- images --
+           (allowAttributes (string-array ["src"
+                                           "alt"
+                                           "class"
+                                           "data-media-type"
+                                           "data-thumbnail"]))
            (onElements (string-array ["img"]))
+           ;; -- anchors / links --
+           (allowAttributes (string-array ["href"
+                                           "target"]))
+           (onElements (string-array ["a"]))
+           (requireRelNofollowOnLinks)
            (toFactory)))))
 
 #?(:clj

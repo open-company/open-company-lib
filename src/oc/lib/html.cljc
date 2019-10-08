@@ -82,8 +82,9 @@
            (onElements (string-array ["span"]))
            (allowAttributes (string-array ["src"]))
            (onElements (string-array ["img"]))
-           (toFactory))))
+           (toFactory)))))
 
+#?(:clj
    (defn sanitize-html
      "Sanitizes HTML content assumed to have been created by a (untrusted) user."
      [html-str]

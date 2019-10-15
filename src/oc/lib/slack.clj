@@ -174,6 +174,14 @@
     
     result)))
 
+(defn message-webhook [webhook from message]
+  (let [options {:form-params {:payload
+                 (json/encode {:username from
+                  :icon_url "https://carrot.io/img/carrot_logo.png"
+                  :text message})}}
+        {:keys [status headers body error] :as resp} @(http/post webhook options)]
+    (not error)))
+
 (comment
 
   (require '[oc.lib.slack :as slack] :reload)

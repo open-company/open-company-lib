@@ -148,7 +148,7 @@
          (every? s-or-k? fields)]}
   (with-timeout default-timeout
     (-> (r/table table-name)
-        (r/with-fields fields)
+        (r/pluck fields)
         (r/run conn)
         (drain-cursor))))
 

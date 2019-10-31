@@ -125,7 +125,12 @@
 
 #?(:clj
    (defn strip-html-tags
-     "Reduces an html string to only its textual content, removing all tags"
-     [html-str]
-     (let [policy (.toFactory (HtmlPolicyBuilder.))]
-       (.sanitize policy html-str))))
+     "Reduces an html string to only its textual content, removing all tags. Takes
+     optional args:
+       - `:decode-entities?` if true, will decode HTML entities (e.g. &#64;)"
+     [html-str & {:keys [decode-entities?] :as opts}]
+     (let [policy    (.toFactory (HtmlPolicyBuilder.))
+           sanitized (.sanitize policy html-str)]
+       (if-not decode-entities?
+         sanitized
+         (.text (soup/parse sanitized))))))

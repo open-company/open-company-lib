@@ -122,3 +122,10 @@
      [html-str]
      (.sanitize user-input-html-policy html-str)
      ))
+
+#?(:clj
+   (defn strip-html-tags
+     "Reduces an html string to only its textual content, removing all tags"
+     [html-str]
+     (let [policy (.toFactory (HtmlPolicyBuilder.))]
+       (.sanitize policy html-str))))

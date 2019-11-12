@@ -111,6 +111,8 @@
     [hickory "0.7.1" :exclusions [org.clojure/clojurescript]]
     ;; Clojure wrapper for jsoup HTML parser https://github.com/mfornos/clojure-soup
     [clj-soup/clojure-soup "0.1.3"]
+    ;; Safe handling of HTML https://github.com/owasp/java-html-sanitizer
+    [com.googlecode.owasp-java-html-sanitizer/owasp-java-html-sanitizer "20180219.1"]
     ;; HTTP client https://github.com/dakrone/clj-http
     [clj-http "3.10.0"]
     ;; String manipulation library https://github.com/funcool/cuerdas

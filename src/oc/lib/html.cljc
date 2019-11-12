@@ -1,7 +1,8 @@
 (ns oc.lib.html
   "Functions related to processing HTML."
   (:require [cuerdas.core :as str]
-            #?(:clj [jsoup.soup :as soup])))
+            #?(:clj [jsoup.soup :as soup]))
+  #?(:clj (:import [org.owasp.html HtmlPolicyBuilder Sanitizers])))
 
 (defn- thumbnail-elements [body]
   (let [thumbnail-selector "img:not(.emojione):not([data-media-type='image/gif']), iframe"]
@@ -60,3 +61,76 @@
                                 (.attr $el "src"))})))
             (reset! found {:type (.attr $el "data-media-type") :thumbnail (.attr $el "data-thumbnail")})))))
     @found))
+
+#?(:clj
+   (def user-input-html-policy
+     (let [string-array     (fn [sa] (into-array java.lang.String sa))
+           iframe-src-regex #"^https://((www\.)?youtube.com|player.vimeo.com|(www\.)?loom.com)/.*"]
+       (.. (HtmlPolicyBuilder.)
+           ;; -- common --
+           (allowCommonBlockElements)
+           (allowCommonInlineFormattingElements)
+           (allowStyling)
+           (allowStandardUrlProtocols)
+           (allowElements (string-array ["span" "img" "a" "iframe"]))
+           ;; -- span --
+           (allowWithoutAttributes (string-array ["span"]))
+           (allowAttributes (string-array ["class"
+                                           "data-first-name"
+                                           "data-last-name"
+                                           "data-slack-username"
+                                           "data-user-id"
+                                           "data-email"
+                                           "data-avatar-url"
+                                           "data-found"
+                                           "data-auto-link"
+                                           "data-href"]))
+             (onElements (string-array ["span"]))
+           ;; -- images --
+           (allowAttributes (string-array ["src"
+                                           "alt"
+                                           "class"
+                                           "data-media-type"
+                                           "data-thumbnail"]))
+             (onElements (string-array ["img"]))
+           ;; -- anchors / links --
+           (allowAttributes (string-array ["href"
+                                           "target"]))
+             (onElements (string-array ["a"]))
+             (requireRelNofollowOnLinks)
+           ;; -- iframes (embeds) --
+           (allowAttributes (string-array ["src"]))
+             (matching iframe-src-regex)
+             (onElements (string-array ["iframe"]))
+           (allowAttributes (string-array ["class"
+                                           "width"
+                                           "height"
+                                           "data-media-type"
+                                           "frameborder"
+                                           "webkitallowfullscreen"
+                                           "mozallowfullscreen"
+                                           "allowfullscreen"
+                                           "data-thumbnail"
+                                           "data-video-type"
+                                           "data-video-id"]))
+             (onElements (string-array ["iframe"]))
+           (toFactory)))))
+
+#?(:clj
+   (defn sanitize-html
+     "Sanitizes HTML content assumed to have been created by a (untrusted) user."
+     [html-str]
+     (.sanitize user-input-html-policy html-str)
+     ))
+
+#?(:clj
+   (defn strip-html-tags
+     "Reduces an html string to only its textual content, removing all tags. Takes
+     optional args:
+       - `:decode-entities?` if true, will decode HTML entities (e.g. &#64;)"
+     [html-str & {:keys [decode-entities?] :as opts}]
+     (let [policy    (.toFactory (HtmlPolicyBuilder.))
+           sanitized (.sanitize policy html-str)]
+       (if-not decode-entities?
+         sanitized
+         (.text (soup/parse sanitized))))))

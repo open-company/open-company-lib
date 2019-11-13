@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.20-alpha"
+(defproject open-company/lib "0.17.23"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -58,7 +58,7 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.115.0"]
+    [com.taoensso/encore "2.116.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.6.0-alpha3" :exclusions [commons-codec]]
@@ -70,13 +70,13 @@
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
-    [amazonica "0.3.145"
+    [amazonica "0.3.150"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.604"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.673"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.9.9"]
+    [com.fasterxml.jackson.core/jackson-databind "2.10.1"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -94,7 +94,7 @@
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
     [cheshire "5.9.0"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
-    [clj-time "0.15.1"]
+    [clj-time "0.15.2"]
     ;; A clj-time inspired date library for clojurescript. https://github.com/andrewmcveigh/cljs-time
     [com.andrewmcveigh/cljs-time "0.5.2"]
     ;; AWS SQS consumer https://github.com/TheClimateCorporation/squeedo
@@ -102,15 +102,17 @@
     ;; NB: com.amazonaws/aws-java-sdk-sqs is pulled in by Amazonica
     [com.climate/squeedo "1.1.2" :exclusions [com.amazonaws/jmespath-java com.amazonaws/aws-java-sdk-sqs]]
     ;; Squeedo dependency
-    [org.slf4j/slf4j-nop "1.8.0-beta4"]
+    [org.slf4j/slf4j-nop "2.0.0-alpha1"]
     ;; Data validation https://github.com/Prismatic/schema
-    [prismatic/schema "1.1.11"]
+    [prismatic/schema "1.1.12"]
     ;; Environment settings from different sources https://github.com/weavejester/environ
     [environ "1.1.0"]
     ;; HTML as data https://github.com/davidsantiago/hickory
     [hickory "0.7.1" :exclusions [org.clojure/clojurescript]]
     ;; Clojure wrapper for jsoup HTML parser https://github.com/mfornos/clojure-soup
     [clj-soup/clojure-soup "0.1.3"]
+    ;; Safe handling of HTML https://github.com/owasp/java-html-sanitizer
+    [com.googlecode.owasp-java-html-sanitizer/owasp-java-html-sanitizer "20180219.1"]
     ;; HTTP client https://github.com/dakrone/clj-http
     [clj-http "3.10.0"]
     ;; String manipulation library https://github.com/funcool/cuerdas

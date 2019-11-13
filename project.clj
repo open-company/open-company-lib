@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.22"
+(defproject open-company/lib "0.17.23"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -70,13 +70,13 @@
     ;; NB: commons-codec is pulled in manually
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
-    [amazonica "0.3.146"
+    [amazonica "0.3.150"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.656"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.673"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.10.0"]
+    [com.fasterxml.jackson.core/jackson-databind "2.10.1"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb

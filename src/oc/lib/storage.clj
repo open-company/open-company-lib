@@ -110,15 +110,27 @@
       default-on-error))))
 
 (defun orgs-team-for
+  "
+  Retrieve the orgs for a specified team from the Storage service.
+
+  Arity/3 but the 2nd argument can be either a map of the user data that will be used for
+  a JWToken, or can be a JWToken.
+
+  Config:
+  - storage-server-url
+  - passphrase (not needed if JWT is passed)
+  - auth-server-url (not needed if JWT is passed)
+  - service-name (always optional)
+  "
   ([config :guard #(and (map? %)
                         (contains? % :storage-server-url)
                         (contains? % :auth-server-url)
                         (contains? % :passphrase))
     user-data :guard map?
     team-id]
-   (let [jwt (auth/user-token user-data (:auth-server-url config)
+  (let [jwt (auth/user-token user-data (:auth-server-url config)
               (:passphrase config) (:service-name config))]
     (orgs-team-for config jwt team-id)))
   ([config :guard map? jwt :guard string? team-id]
-   (let [body (get-data (str (:storage-server-url config) "/orgs-team/" team-id) jwt)]
-     (-> body :collection :items))))
+    (let [body (get-data (str (:storage-server-url config) "/orgs-team/" team-id) jwt)]
+      (-> body :collection :items))))

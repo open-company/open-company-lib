@@ -102,9 +102,7 @@
                            :unfurls url-data}))
 
 (defn- slack-timestamp?
-  "
-  Slack timestamps look like: 1518175926.000301
-  "
+  "Slack timestamps look like: 1518175926.000301"
   [value]
   (re-matches #"\d*\.\d*" value))
 
@@ -174,7 +172,9 @@
     
     result)))
 
-(defn message-webhook [webhook from message]
+(defn message-webhook
+  "Send a message to a Slack webhook for monitoring/reporting purposes."
+  [webhook from message]
   (let [options {:form-params {:payload
                  (json/encode {:username from
                   :icon_url "https://carrot.io/img/carrot_logo.png"

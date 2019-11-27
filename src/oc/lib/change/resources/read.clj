@@ -26,6 +26,6 @@
                                                      :read-at lib-schema/ISO8601}]
   [dynamodb-opts user-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
   (->> (far/get-item dynamodb-opts (table-name dynamodb-opts) {:user_id user-id
-                                                 :item_id item-id})
-      (map #(clojure.set/rename-keys % {:user_id :user-id :avatar_url :avatar-url :read_at :read-at}))
-      (map #(select-keys % [:user-id :read-at]))))
+                                                               :item_id item-id})
+      (clojure.set/rename-keys % {:user_id :user-id :avatar_url :avatar-url :read_at :read-at})
+      (select-keys % [:user-id :read-at])))

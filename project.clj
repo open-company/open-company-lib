@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.23"
+(defproject open-company/lib "0.17.25-alpha1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -117,6 +117,11 @@
     [clj-http "3.10.0"]
     ;; String manipulation library https://github.com/funcool/cuerdas
     [funcool/cuerdas "2.2.0"]
+    ;; DynamoDB client https://github.com/ptaoussanis/faraday
+    ;; NB: com.amazonaws/aws-java-sdk-dynamodb is pulled in by amazonica
+    ;; NB: joda-time is pulled in by clj-time
+    ;; NB: encore pulled in from oc.lib
+    [com.taoensso/faraday "1.10.0-alpha1" :exclusions [com.amazonaws/aws-java-sdk-dynamodb joda-time com.taoensso/encore]]
   ]
 
   :profiles {

@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.24-alpha1"
+(defproject open-company/lib "0.17.24"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -16,7 +16,7 @@
     ;; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/clojure "1.10.1" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "0.4.500"]
+    [org.clojure/core.async "0.5.527"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "0.3.0"]
     ;; Clojure reader https://github.com/clojure/tools.reader
@@ -41,7 +41,7 @@
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.1.2" :exclusions [commons-codec]]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
-    [com.taoensso/timbre "4.10.0" :exclusions [com.taoensso/encore]]
+    [com.taoensso/timbre "4.10.0" :exclusions [com.taoensso/encore io.aviso/pretty]]
     ;; Java logging lib https://commons.apache.org/proper/commons-logging/
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [commons-logging "1.2"]
@@ -71,16 +71,17 @@
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
     [amazonica "0.3.150"
-     :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind com.amazonaws/aws-java-sdk-dynamodb]]
+     :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind
+                  com.amazonaws/aws-java-sdk-dynamodb com.amazonaws/aws-java-sdk-kms]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.673"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.683"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.10.1"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
-    [com.apa512/rethinkdb "0.15.26" :exclusions [aleph]]
+    [com.apa512/rethinkdb "0.15.26" :exclusions [aleph org.clojure/tools.logging]]
     ;; Asynch comm. for clojure (http-client) https://github.com/ztellman/aleph
     ;; NB: Not used directly, dependency of RethinkDB
     [aleph "0.4.7-alpha5" :exclusions [io.netty/netty-all]]
@@ -114,9 +115,9 @@
     ;; Safe handling of HTML https://github.com/owasp/java-html-sanitizer
     [com.googlecode.owasp-java-html-sanitizer/owasp-java-html-sanitizer "20191001.1"]
     ;; HTTP client https://github.com/dakrone/clj-http
-    [clj-http "3.10.0"]
+    [clj-http "3.10.0" :exclusions [org.apache.httpcomponents/httpclient]]
     ;; String manipulation library https://github.com/funcool/cuerdas
-    [funcool/cuerdas "2.2.0"]
+    [funcool/cuerdas "2.2.1"]
   ]
 
   :profiles {
@@ -137,7 +138,7 @@
         ;; Linter https://github.com/jonase/eastwood
         [jonase/eastwood "0.3.6"]
         ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        
-        [lein-kibit "0.1.7" :exclusions [org.clojure/clojure]]
+        [lein-kibit "0.1.8" :exclusions [org.clojure/clojure]]
       ]
     }
 

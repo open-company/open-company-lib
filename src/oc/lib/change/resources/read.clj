@@ -20,10 +20,10 @@
       (map #(clojure.set/rename-keys % {:container_id :container-id :item_id :item-id :read_at :read-at}))
       (map #(select-keys % [:container-id :item-id :read-at]))))
 
-(schema/defn ^:always-validate retrieve-by-item :- [{:user-id lib-schema/UniqueID
-                                                     :name schema/Str
-                                                     :avatar-url (schema/maybe schema/Str)
-                                                     :read-at lib-schema/ISO8601}]
+(schema/defn ^:always-validate retrieve-by-user-item :- {(schema/optional-key :user-id) lib-schema/UniqueID
+                                                         (schema/optional-key :name) schema/Str
+                                                         (schema/optional-key :avatar-url) (schema/maybe schema/Str)
+                                                         (schema/optional-key :read-at) lib-schema/ISO8601}
   [dynamodb-opts user-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
   (->> (far/get-item dynamodb-opts (table-name dynamodb-opts) {:user_id user-id
                                                                :item_id item-id})

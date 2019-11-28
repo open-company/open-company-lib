@@ -466,7 +466,7 @@
             (drain-cursor query)))))
   ([conn table-name index-name index-value
     order-by order start direction
-    filter-fn-or-map
+    filter-map
     relation-name relation-table-name
     relation-field-name relation-index-name relation-fields {:keys [count] :or {count false}}]
   {:pre [(conn? conn)
@@ -477,8 +477,7 @@
          (#{:desc :asc} order)
          (not (nil? start))
          (#{:before :after} direction)
-         (or (sequential? filter-fn-or-map)
-             (map? filter-fn-or-map))
+         (sequential? filter-map)
          (s-or-k? relation-name)
          (s-or-k? relation-table-name)
          (s-or-k? relation-field-name)
@@ -488,9 +487,7 @@
   (let [index-values (if (sequential? index-value) index-value [index-value])
         order-fn (if (= order :desc) r/desc r/asc)
         filter-fn (if (= direction :before) r/gt r/lt)
-        filter-by-fn (if (sequential? filter-fn-or-map)
-                       (build-filter-fn filter-fn-or-map)
-                       filter-fn-or-map)]
+        filter-by-fn (build-filter-fn filter-map)]
     (with-timeout default-timeout
       (as-> (r/table table-name) query
             (r/get-all query index-values {:index index-name})

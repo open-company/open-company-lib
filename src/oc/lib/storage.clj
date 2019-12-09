@@ -130,7 +130,7 @@
     team-id]
   (let [jwt (auth/user-token user-data (:auth-server-url config)
               (:passphrase config) (:service-name config))]
-    (orgs-team-for config jwt team-id)))
+    (orgs-for config jwt team-id)))
 
   ([config :guard map? jwt :guard string? team-id]
     (let [body (get-data (str (:storage-server-url config) "/orgs/?team-id=" team-id) jwt)]

@@ -109,7 +109,7 @@
       (timbre/warn "Unable to retrieve org data.")
       default-on-error))))
 
-(defun orgs-team-for
+(defun orgs-for
   "
   Retrieve the orgs for a specified team from the Storage service.
 
@@ -131,6 +131,7 @@
   (let [jwt (auth/user-token user-data (:auth-server-url config)
               (:passphrase config) (:service-name config))]
     (orgs-team-for config jwt team-id)))
+
   ([config :guard map? jwt :guard string? team-id]
-    (let [body (get-data (str (:storage-server-url config) "/orgs-team/" team-id) jwt)]
+    (let [body (get-data (str (:storage-server-url config) "/orgs/?team-id=" team-id) jwt)]
       (-> body :collection :items))))

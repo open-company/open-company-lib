@@ -717,7 +717,10 @@
                   (-> (r/table table-name)
                       (r/get primary-key-value)
                       (r/update (r/fn [document]
-                        {:updated-at ts field-key (-> (r/get-field document field-key)(set-operation element))}))
+                        {:updated-at ts
+                         field-key (-> (r/get-field document field-key)
+                                    (r/default [])
+                                    (set-operation element))}))
                       (r/run conn)))]
     (if (or (= 1 (:replaced update)) (= 1 (:unchanged update)))
       (read-resource conn table-name primary-key-value)

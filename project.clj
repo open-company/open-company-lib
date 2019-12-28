@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.24.3"
+(defproject open-company/lib "0.17.24.4"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -71,7 +71,9 @@
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
     ;; NB: com.amazonaws/aws-java-sdk-kms is pulled in by com.amazonaw/aws-java-sdk-dynamodb
-    [amazonica "0.3.152"
+    ;; NB: DON'T UPGRADE to 0.3.152, results in a warning: com.amazonaws.services.s3.internal.UseArnRegionResolver getProfilesConfigFile
+    ;;                                                     WARNING: Unable to load config file /Users/...
+    [amazonica "0.3.150"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind
                   com.amazonaws/aws-java-sdk-dynamodb com.amazonaws/aws-java-sdk-kms]]
     ;; DynamoDB SDK

@@ -71,9 +71,7 @@
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
     ;; NB: com.amazonaws/aws-java-sdk-kms is pulled in by com.amazonaw/aws-java-sdk-dynamodb
-    ;; NB: DON'T UPGRADE to 0.3.152, results in a warning: com.amazonaws.services.s3.internal.UseArnRegionResolver getProfilesConfigFile
-    ;;                                                     WARNING: Unable to load config file /Users/...
-    [amazonica "0.3.150"
+    [amazonica "0.3.152"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind
                   com.amazonaws/aws-java-sdk-dynamodb com.amazonaws/aws-java-sdk-kms]]
     ;; DynamoDB SDK

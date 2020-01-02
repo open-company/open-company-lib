@@ -10,6 +10,9 @@
 (defn- user-id-gsi-name [db-opts]
   (str (:table-prefix db-opts) "_read_gsi_user_id"))
 
+(defn- container-id-item-id-gsi-name [db-opts]
+  (str (:table-prefix db-opts) "_read_gsi_container_id_item_id"))
+
 (schema/defn ^:always-validate retrieve-by-user :- [{(schema/optional-key :container-id) lib-schema/UniqueID
                                                      :item-id lib-schema/UniqueID
                                                      :read-at lib-schema/ISO8601}]
@@ -29,3 +32,12 @@
                                                                :item_id item-id})
       (clojure.set/rename-keys {:user_id :user-id :avatar_url :avatar-url :read_at :read-at})
       (select-keys [:user-id :read-at])))
+
+(schema/defn ^:always-validate retrieve-by-item :- [{:user-id lib-schema/UniqueID
+                                                     :name schema/Str
+                                                     :avatar-url (schema/maybe schema/Str)
+                                                     :read-at lib-schema/ISO8601}]
+  [dynamodb-opts item-id :- lib-schema/UniqueID]
+  (->> (far/query dynamodb-opts (table-name dynamodb-opts) {:item_id [:eq item-id]})
+      (map #(clojure.set/rename-keys % {:user_id :user-id :avatar_url :avatar-url :read_at :read-at}))
+      (map #(select-keys % [:user-id :name :avatar-url :read-at]))))

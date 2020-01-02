@@ -58,10 +58,10 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.117.0"]
+    [com.taoensso/encore "2.118.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
-    [raven-clj "1.6.0-alpha3" :exclusions [commons-codec]]
+    [raven-clj "1.6.0-alpha4" :exclusions [commons-codec]]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.15.3"] 
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
@@ -71,11 +71,11 @@
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
     ;; NB: com.amazonaws/aws-java-sdk-kms is pulled in by com.amazonaw/aws-java-sdk-dynamodb
-    [amazonica "0.3.150"
+    [amazonica "0.3.152"
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind
                   com.amazonaws/aws-java-sdk-dynamodb com.amazonaws/aws-java-sdk-kms]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.683"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.699"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.10.1"]
@@ -145,7 +145,7 @@
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje
-        [lein-midje "3.2.1"]
+        [lein-midje "3.2.2"]
         ;; Linter https://github.com/jonase/eastwood
         [jonase/eastwood "0.3.6"]
         ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        

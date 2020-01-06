@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.25-alpha8"
+(defproject open-company/lib "0.17.25.2-alpha1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -16,7 +16,7 @@
     ;; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/clojure "1.10.1" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "0.5.527"]
+    [org.clojure/core.async "0.6.532"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "0.3.0"]
     ;; Clojure reader https://github.com/clojure/tools.reader
@@ -47,7 +47,7 @@
     [commons-logging "1.2"]
     ;; Java codec library https://commons.apache.org/proper/commons-codec/
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [commons-codec "1.13"]
+    [commons-codec "1.14"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
     ;; ----------------------------------------------------------------------------------------
@@ -58,7 +58,7 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.118.0"]
+    [com.taoensso/encore "2.119.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.6.0-alpha4" :exclusions [commons-codec]]
@@ -75,10 +75,10 @@
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind
                   com.amazonaws/aws-java-sdk-dynamodb com.amazonaws/aws-java-sdk-kms]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.699"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.700"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.10.1"]
+    [com.fasterxml.jackson.core/jackson-databind "2.10.2"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb

@@ -300,3 +300,17 @@
   (if (instance? clojure.lang.IMeta v)
     (with-meta v {:replace true})
     v))
+
+;; ----- Get WS client id ----
+
+(defn get-client-id-from-context [ctx service-key]
+  (get-in ctx [:request :headers service-key]))
+
+(defn get-interaction-client-id [ctx]
+  (get-client-id-from-context ctx "oc-interaction-client-id"))
+
+(defn get-change-client-id [ctx]
+  (get-client-id-from-context ctx "oc-change-client-id"))
+
+(defn get-notify-client-id [ctx]
+  (get-client-id-from-context ctx "oc-notify-client-id"))

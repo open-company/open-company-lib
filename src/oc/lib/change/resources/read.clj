@@ -10,9 +10,6 @@
 (defn- user-id-gsi-name [db-opts]
   (str (:table-prefix db-opts) "_read_gsi_user_id"))
 
-(defn- container-id-item-id-gsi-name [db-opts]
-  (str (:table-prefix db-opts) "_read_gsi_container_id_item_id"))
-
 (schema/defn ^:always-validate retrieve-by-user :- [{(schema/optional-key :container-id) lib-schema/UniqueID
                                                      :item-id lib-schema/UniqueID
                                                      :read-at lib-schema/ISO8601}]

@@ -25,10 +25,10 @@
                                                          (schema/optional-key :avatar-url) (schema/maybe schema/Str)
                                                          (schema/optional-key :read-at) lib-schema/ISO8601}
   [dynamodb-opts user-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
-  (->> (far/get-item dynamodb-opts (table-name dynamodb-opts) {:user_id user-id
-                                                               :item_id item-id})
+  (-> (far/get-item dynamodb-opts (table-name dynamodb-opts) {:item_id item-id
+                                                               :user_id user-id})
       (clojure.set/rename-keys {:user_id :user-id :avatar_url :avatar-url :read_at :read-at})
-      (select-keys [:user-id :read-at])))
+      (select-keys [:user-id :name :avatar-url :read-at])))
 
 (schema/defn ^:always-validate retrieve-by-item :- [{:user-id lib-schema/UniqueID
                                                      :name schema/Str

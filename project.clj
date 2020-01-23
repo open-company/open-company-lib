@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.25.2-alpha2"
+(defproject open-company/lib "0.17.25.2"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -16,7 +16,7 @@
     ;; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/clojure "1.10.1" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "0.6.532"]
+    [org.clojure/core.async "0.7.559"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "0.3.0"]
     ;; Clojure reader https://github.com/clojure/tools.reader
@@ -61,7 +61,7 @@
     [com.taoensso/encore "2.119.0"]
     ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
     ;; NB: commons-codec pulled in manually
-    [raven-clj "1.6.0-alpha4" :exclusions [commons-codec]]
+    [raven-clj "1.6.0" :exclusions [commons-codec]]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.15.3"] 
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
@@ -75,7 +75,7 @@
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind
                   com.amazonaws/aws-java-sdk-dynamodb com.amazonaws/aws-java-sdk-kms]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.700"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.712"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.10.2"]
@@ -127,7 +127,7 @@
     ;; NB: com.amazonaws/aws-java-sdk-dynamodb is pulled in by amazonica
     ;; NB: joda-time is pulled in by clj-time
     ;; NB: encore pulled in from oc.lib
-    [com.taoensso/faraday "1.10.0-alpha1" :exclusions [com.amazonaws/aws-java-sdk-dynamodb joda-time com.taoensso/encore]]
+    [com.taoensso/faraday "1.11.0-alpha1" :exclusions [com.amazonaws/aws-java-sdk-dynamodb joda-time com.taoensso/encore]]
   ]
 
   :profiles {
@@ -147,7 +147,7 @@
         ;; Example-based testing https://github.com/marick/lein-midje
         [lein-midje "3.2.2"]
         ;; Linter https://github.com/jonase/eastwood
-        [jonase/eastwood "0.3.6"]
+        [jonase/eastwood "0.3.7"]
         ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        
         [lein-kibit "0.1.8" :exclusions [org.clojure/clojure]]
       ]

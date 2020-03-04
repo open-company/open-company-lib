@@ -62,6 +62,8 @@
             (reset! found {:type (.attr $el "data-media-type") :thumbnail (.attr $el "data-thumbnail")})))))
     @found))
 
+(def allowed-block-elements ["span" "img" "a" "iframe" "pre" "div"])
+
 #?(:clj
    (def user-input-html-policy
      (let [string-array     (fn [sa] (into-array java.lang.String sa))
@@ -72,7 +74,7 @@
            (allowCommonInlineFormattingElements)
            (allowStyling)
            (allowStandardUrlProtocols)
-           (allowElements (string-array ["span" "img" "a" "iframe"]))
+           (allowElements (string-array allowed-block-elements))
            ;; -- span --
            (allowWithoutAttributes (string-array ["span"]))
            (allowAttributes (string-array ["class"
@@ -114,6 +116,18 @@
                                            "data-video-type"
                                            "data-video-id"]))
              (onElements (string-array ["iframe"]))
+            ;; -- pre --
+           (allowAttributes (string-array ["class"]))
+             (onElements (string-array ["pre"]))
+           ;; -- code --
+           (allowWithoutAttributes (string-array ["code"]))
+           ;; -- div for polls --
+           (allowAttributes (string-array ["class"
+                                           "contenteditable"
+                                           "data-media-type"
+                                           "data-poll-id"
+                                           "id"]))
+             (onElements (string-array ["div"]))
            (toFactory)))))
 
 #?(:clj

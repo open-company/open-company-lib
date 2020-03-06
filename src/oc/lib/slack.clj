@@ -2,6 +2,7 @@
   "Make simple (not web socket) Slack Web API HTTP requests and extract the response."
   (:require [clojure.walk :refer (keywordize-keys)]
             [org.httpkit.client :as http]
+            [org.httpkit.sni-client :as sni]
             [cheshire.core :as json]
             [defun.core :refer (defun)]
             [taoensso.timbre :as timbre]))
@@ -26,13 +27,15 @@
 (defn slack-api [method params]
   (timbre/info "Making slack request:" method)
   (let [url (str "https://slack.com/api/" (name method))
-        {:keys [status headers body error] :as resp} @(http/get url {:query-params params :as :text})]
+        {:keys [status headers body error] :as resp} @(http/get url {:client @sni/default-client
+                                                                     :query-params params :as :text})]
     (if error
       (report-slack-error body (ex-info "Error from Slack API"
                                 {:method method
                                  :params params
                                  :status status
-                                 :body body}))
+                                 :body body
+                                 :response resp}))
       (do 
         (timbre/trace "Slack response:" body)
         (try

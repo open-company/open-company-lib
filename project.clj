@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.25.2"
+(defproject open-company/lib "0.17.26-alpha1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -16,9 +16,9 @@
     ;; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/clojure "1.10.1" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "0.7.559"]
+    [org.clojure/core.async "1.0.567"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
-    [org.clojure/core.match "0.3.0"]
+    [org.clojure/core.match "1.0.0"]
     ;; Clojure reader https://github.com/clojure/tools.reader
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [org.clojure/tools.reader "1.3.2"]
@@ -34,7 +34,7 @@
     [com.stuartsierra/component "0.4.0"]
     ;; ----------------------------------------------------------------------------------------
     ;; --- NB: DO NOT UPGRADE TO 2.4.0-alpha3
-    [http-kit "2.3.0"] ; HTTP client and server http://http-kit.org/
+    [http-kit "2.4.0-alpha6"] ; HTTP client and server https://github.com/http-kit/http-kit
     ;; --- it breaks WS connections returning an net::ERR_INVALID_HTTP_RESPONSE on connect ----
     ;; ----------------------------------------------------------------------------------------
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
@@ -75,7 +75,7 @@
      :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind
                   com.amazonaws/aws-java-sdk-dynamodb com.amazonaws/aws-java-sdk-kms]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.712"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.738"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.10.2"]
@@ -96,7 +96,7 @@
     ;; It has breaking changes with 4.x and Aleph depends on 4.x
     ;; ----------------------------------------------------------------------------------------
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
-    [cheshire "5.9.0"] 
+    [cheshire "5.10.0"] 
     ;; Date and time lib https://github.com/clj-time/clj-time
     [clj-time "0.15.2"]
     ;; A clj-time inspired date library for clojurescript. https://github.com/andrewmcveigh/cljs-time
@@ -147,7 +147,7 @@
         ;; Example-based testing https://github.com/marick/lein-midje
         [lein-midje "3.2.2"]
         ;; Linter https://github.com/jonase/eastwood
-        [jonase/eastwood "0.3.7"]
+        [jonase/eastwood "0.3.10"]
         ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        
         [lein-kibit "0.1.8" :exclusions [org.clojure/clojure]]
       ]
@@ -162,7 +162,7 @@
         ;; Runs bikeshed, kibit and eastwood https://github.com/itang/lein-checkall
         [lein-checkall "0.1.1"]
         ;; pretty-print the lein project map https://github.com/technomancy/leiningen/tree/master/lein-pprint
-        [lein-pprint "1.2.0"]
+        [lein-pprint "1.3.2"]
         ;; Check for outdated dependencies https://github.com/xsc/lein-ancient
         [lein-ancient "0.6.15"]
         ;; Catch spelling mistakes in docs and docstrings https://github.com/cldwalker/lein-spell

@@ -126,6 +126,7 @@
                                            "contenteditable"
                                            "data-media-type"
                                            "data-poll-id"
+                                           "data-question"
                                            "id"]))
              (onElements (string-array ["div"]))
            (toFactory)))))

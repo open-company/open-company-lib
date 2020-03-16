@@ -117,16 +117,20 @@
                                            "data-video-id"]))
              (onElements (string-array ["iframe"]))
             ;; -- pre --
-           (allowAttributes (string-array ["class"]))
+           (allowAttributes (string-array ["class"
+                                           "data-disable-toolbar"]))
              (onElements (string-array ["pre"]))
            ;; -- code --
-           (allowWithoutAttributes (string-array ["code"]))
+           (allowAttributes (string-array ["class"
+                                           "data-disable-toolbar"]))
+             (onElements (string-array ["code"]))
            ;; -- div for polls --
            (allowAttributes (string-array ["class"
                                            "contenteditable"
                                            "data-media-type"
                                            "data-poll-id"
                                            "data-question"
+                                           "data-disable-toolbar"
                                            "id"]))
              (onElements (string-array ["div"]))
            (toFactory)))))

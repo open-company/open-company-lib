@@ -62,7 +62,7 @@
             (reset! found {:type (.attr $el "data-media-type") :thumbnail (.attr $el "data-thumbnail")})))))
     @found))
 
-(def allowed-block-elements ["span" "img" "a" "iframe" "pre" "div"])
+(def allowed-block-elements ["span" "img" "a" "iframe" "pre" "code" "div" "mark"])
 
 #?(:clj
    (def user-input-html-policy
@@ -133,6 +133,9 @@
                                            "data-disable-toolbar"
                                            "id"]))
              (onElements (string-array ["div"]))
+           ;; -- Mark for highlighter button --
+           (allowAttributes (string-array ["class"]))
+             (onElements (string-array ["mark"]))
            (toFactory)))))
 
 #?(:clj

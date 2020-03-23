@@ -9,7 +9,7 @@
 (defn valid?
   "Wrap Prismatic Schema's exception throwing validation, returning true or false instead."
   [data-schema value]
-  #(:clj
+  #?(:clj
   (try
     (schema/validate data-schema value)
     true

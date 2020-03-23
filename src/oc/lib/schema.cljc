@@ -9,11 +9,18 @@
 (defn valid?
   "Wrap Prismatic Schema's exception throwing validation, returning true or false instead."
   [data-schema value]
+  #(:clj
   (try
     (schema/validate data-schema value)
     true
-    (catch #?(:clj Exception :cljs :default) e
-      false)))
+    (catch Exception e
+      false))
+   :cljs
+  (try
+    (schema/validate data-schema value)
+    true
+    (catch :default e
+      false))))
 
 (defn uuid-string?
   "Is this string a UUID e.g. ce257963-843b-4dbb-91d3-a96ef6479b81"
@@ -52,17 +59,28 @@
 (defn conn?
   "Check if a var is a valid RethinkDB connection map/atom."
   [conn]
-  (let [excp #?(:clj Exception :cljs :default)]
-    (try
-      (if (and 
-            (map? conn)
-            (:client @conn)
-            (:db @conn)
-            (:token @conn))
-        true
-        false)
-      (catch excp e
-        false))))
+  #?(:clj
+  (try
+    (if (and 
+          (map? conn)
+          (:client @conn)
+          (:db @conn)
+          (:token @conn))
+      true
+      false)
+    (catch Exception e
+      false))
+  :cljs
+  (try
+    (if (and 
+          (map? conn)
+          (:client @conn)
+          (:db @conn)
+          (:token @conn))
+      true
+      false)
+    (catch :default e
+      false))))
 
 (defn name-for
   "Fn moved to lib.user ns. Here for backwards compatability."

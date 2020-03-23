@@ -9,12 +9,11 @@
 (defn valid?
   "Wrap Prismatic Schema's exception throwing validation, returning true or false instead."
   [data-schema value]
-  (let [excp #?(:clj Exception :cljs :default)]
-    (try
-      (schema/validate data-schema value)
-      true
-      (catch excp e
-        false))))
+  (try
+    (schema/validate data-schema value)
+    true
+    (catch #?(:clj Exception :cljs :default) e
+      false)))
 
 (defn uuid-string?
   "Is this string a UUID e.g. ce257963-843b-4dbb-91d3-a96ef6479b81"

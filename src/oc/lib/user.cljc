@@ -52,3 +52,24 @@
   ([first-name last-name :guard s/blank?] first-name)
   ([first-name :guard s/blank? last-name] last-name)
   ([first-name last-name] (s/trim (str first-name " " last-name))))
+
+(defn short-name-for;
+  "
+  Select the first available between: first-name, last-name, name.
+
+  Fallback to email if none are available.
+  "
+  [user]
+  (s/trim
+   (cond
+    (seq (:first-name user))
+    (:first-name user)
+
+    (seq (:last-name user))
+    (:last-name user)
+
+    (seq (:name user))
+    (:name user)
+
+    :else
+    (:email user))))

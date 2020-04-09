@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.27-alpha1"
+(defproject open-company/lib "0.17.27-alpha2"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -27,7 +27,7 @@
     [org.clojure/tools.macro "0.1.5"]
     ;; Erlang-esque pattern matching for Clojure functions https://github.com/killme2008/defun
     ;; NB: org.clojure/tools.macro is pulled in manually
-    [defun "0.3.1" :exclusions [org.clojure/tools.macro]] 
+    [defun "0.3.1" :exclusions [org.clojure/tools.macro]]
     ;; More than one binding for if/when macros https://github.com/LockedOn/if-let
     [lockedon/if-let "0.3.0"]
     ;; Component Lifecycle https://github.com/stuartsierra/component
@@ -63,7 +63,7 @@
     ;; NB: commons-codec pulled in manually
     [raven-clj "1.6.0" :exclusions [commons-codec]]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
-    [liberator "0.15.3"] 
+    [liberator "0.15.3"]
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
     ;; NB: joda-time is pulled in by clj-time
     ;; NB: commons-logging is pulled in manually
@@ -96,7 +96,7 @@
     ;; It has breaking changes with 4.x and Aleph depends on 4.x
     ;; ----------------------------------------------------------------------------------------
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
-    [cheshire "5.10.0"] 
+    [cheshire "5.10.0"]
     ;; Date and time lib https://github.com/clj-time/clj-time
     [clj-time "0.15.2"]
     ;; A clj-time inspired date library for clojurescript. https://github.com/andrewmcveigh/cljs-time
@@ -141,14 +141,14 @@
         ;; NB: joda-time is pulled in by clj-time
         ;; NB: commons-codec pulled in manually
         ;; NB: io.aviso/pretty pulled in by timbre
-        [midje "1.9.9" :exclusions [io.aviso/pretty joda-time org.clojure/tools.macro clj-time commons-codec]] 
+        [midje "1.9.9" :exclusions [io.aviso/pretty joda-time org.clojure/tools.macro clj-time commons-codec]]
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje
         [lein-midje "3.2.2"]
         ;; Linter https://github.com/jonase/eastwood
         [jonase/eastwood "0.3.11"]
-        ;; Static code search for non-idiomatic code https://github.com/jonase/kibit        
+        ;; Static code search for non-idiomatic code https://github.com/jonase/kibit
         [lein-kibit "0.1.8" :exclusions [org.clojure/clojure]]
       ]
     }
@@ -158,7 +158,7 @@
       :plugins [
         ;; Check for code smells https://github.com/dakrone/lein-bikeshed
         ;; NB: org.clojure/tools.cli is pulled in by lein-kibit
-        [lein-bikeshed "0.5.2" :exclusions [org.clojure/tools.cli]] 
+        [lein-bikeshed "0.5.2" :exclusions [org.clojure/tools.cli]]
         ;; Runs bikeshed, kibit and eastwood https://github.com/itang/lein-checkall
         [lein-checkall "0.1.1"]
         ;; pretty-print the lein project map https://github.com/technomancy/leiningen/tree/master/lein-pprint
@@ -171,7 +171,7 @@
         [venantius/yagni "0.1.7" :exclusions [org.clojure/clojure]]
         ;; Autotest https://github.com/jakemcc/lein-test-refresh
         [com.jakemccrary/lein-test-refresh "0.24.1"]
-      ]  
+      ]
     }]
 
     :prod {}
@@ -220,7 +220,7 @@
 
   :eastwood {
     ;; Disable some linters that are enabled by default
-    ;; contant-test - just seems mostly ill-advised, logical constants are useful in something like a `->cond` 
+    ;; contant-test - just seems mostly ill-advised, logical constants are useful in something like a `->cond`
     ;; wrong-arity - unfortunate, but it's failing on 3/arity of sqs/send-message
     ;; implicit-dependencies - uhh, just seems dumb
     :exclude-linters [:constant-test :wrong-arity :implicit-dependencies]

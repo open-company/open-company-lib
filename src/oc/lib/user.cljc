@@ -36,7 +36,7 @@
   ([filestack-api-key avatar-url]
    (fix-avatar-url filestack-api-key avatar-url author-logo)))
 
-(defun name-for;
+(defun name-for
   "
   Make a single `name` field from `first-name` and/or `last-name`.
 
@@ -48,7 +48,18 @@
     (name-for (:email user) ""))
   ([user :guard #(not (s/blank? (:name %)))] (name-for (:name user) ""))
   ([user] (name-for (:first-name user) (:last-name user)))
-  ([first-name :guard s/blank? last-name :guard s/blank?] "")
-  ([first-name last-name :guard s/blank?] first-name)
-  ([first-name :guard s/blank? last-name] last-name)
+  ([_first-name :guard s/blank? _last-name :guard s/blank?] "")
+  ([first-name _last-name :guard s/blank?] first-name)
+  ([_first-name :guard s/blank? last-name] last-name)
   ([first-name last-name] (s/trim (str first-name " " last-name))))
+
+(defun short-name-for
+  "
+  Select the first available between: `first-name`, `last-name` or `name`.
+
+  Fallback to `email` if none are available.
+  "
+  ([user :guard #(not (s/blank? (:first-name %)))] (:first-name user))
+  ([user :guard #(not (s/blank? (:last-name %)))] (:last-name user))
+  ([user :guard #(not (s/blank? (:name %)))] (:name user))
+  ([user] (name-for (:email user) "")))

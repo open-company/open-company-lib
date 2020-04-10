@@ -36,7 +36,7 @@
   ([filestack-api-key avatar-url]
    (fix-avatar-url filestack-api-key avatar-url author-logo)))
 
-(defun name-for;
+(defun name-for
   "
   Make a single `name` field from `first-name` and/or `last-name`.
 
@@ -53,7 +53,7 @@
   ([first-name :guard s/blank? last-name] last-name)
   ([first-name last-name] (s/trim (str first-name " " last-name))))
 
-(defn short-name-for;
+(defn short-name-for
   "
   Select the first available between: first-name, last-name, name.
 

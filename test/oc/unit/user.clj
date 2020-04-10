@@ -3,6 +3,7 @@
             [oc.lib.user :refer (name-for short-name-for)]))
 
 (facts "The 'best' name is chosen for a user record"
+  (name-for {}) => ""
   (name-for {:email "email"}) => "email"
   (name-for {:email "email" :last-name "last"}) => "last"
   (name-for {:email "email" :first-name "first"}) => "first"

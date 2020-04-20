@@ -20,34 +20,34 @@
 (def Slug (schema/pred slug/valid-slug?))
 
 (schema/defn ^:always-validate retrieve
-  :- {:user-id lib-schema/UniqueID :org-slug Slug :publisher-uuids [lib-schema/UniqueID] :board-uuids [lib-schema/UniqueID]}
+  :- {:user-id lib-schema/UniqueID :org-slug Slug :publisher-uuids (schema/maybe [lib-schema/UniqueID]) :board-uuids (schema/maybe [lib-schema/UniqueID])}
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug]
   (if-let [user-item (far/get-item dynamodb-opts (table-name dynamodb-opts) {:user_id user-id
                                                                              :org_slug org-slug})]
     (clojure.set/rename-keys user-item {:user_id :user-id :org_slug :org-slug :publisher_uuids :publisher-uuids :board_uuids :board-uuids})
-    {:user-id user-id :org-slug org-slug :publisher-uuids [] :board-uuids []}))
+    {:user-id user-id :org-slug org-slug :publisher-uuids nil :board-uuids nil}))
 
 (schema/defn ^:always-validate retrieve-all
-  :- [{:user-id lib-schema/UniqueID :org-slug Slug :publisher-uuids [lib-schema/UniqueID] :board-uuids [lib-schema/UniqueID]}]
+  :- [{:user-id lib-schema/UniqueID :org-slug Slug :publisher-uuids (schema/maybe [lib-schema/UniqueID]) :board-uuids (schema/maybe [lib-schema/UniqueID])}]
   [dynamodb-opts org-slug :- Slug]
   (doseq [item (far/query dynamodb-opts (table-name dynamodb-opts) {:org_slug org-slug} {:index org-slug-gsi-name})]
     (map #(clojure.set/rename-keys % {:user_id :user-id :org_slug :org-slug :publisher_uuids :publisher-uuids :board_uuids :board-uuids}))))
 
 (schema/defn ^:always-validate retrieve-publisher-followers
-  :- {:publisher-uuid lib-schema/UniqueID :org-slug Slug :publisher-uuids [lib-schema/UniqueID] :board-uuids [lib-schema/UniqueID]}
-  [dynamodb-opts publisher-uuid :- lib-schema/UniqueID org-slug :- Slug]
+  :- {:publisher-uuid lib-schema/UniqueID :org-slug Slug :publisher-uuids [lib-schema/UniqueID]}
+  [dynamodb-opts org-slug :- Slug publisher-uuid :- lib-schema/UniqueID]
   (if-let [item (far/get-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid publisher-uuid
                                                                                            :org_slug org-slug})]
     (clojure.set/rename-keys item {:publisher_uuid :publisher-uuid :org_slug :org-slug :follower_uuids :follower-uuids})
-    {:publisher-uuid publisher-uuid :org-slug org-slug :follower-uuids []}))
+    {:publisher-uuid publisher-uuid :org-slug org-slug :follower-uuids nil}))
 
 (schema/defn ^:always-validate retrieve-board-followers
   :- {:board-uuid lib-schema/UniqueID :org-slug Slug :follower-uuids [lib-schema/UniqueID]}
-  [dynamodb-opts board-uuid :- lib-schema/UniqueID org-slug :- Slug]
+  [dynamodb-opts org-slug :- Slug board-uuid :- lib-schema/UniqueID]
   (if-let [item (far/get-item dynamodb-opts (board-follower-table-name dynamodb-opts) {:board_uuid board-uuid
                                                                                        :org_slug org-slug})]
     (clojure.set/rename-keys item {:board_uuid :board-uuid :org_slug :org-slug :follower_uuids :follower-uuids})
-    {:board-uuid board-uuid :org-slug org-slug :follower-uuids []}))
+    {:board-uuid board-uuid :org-slug org-slug :follower-uuids nil}))
 
 (schema/defn ^:always-validate delete!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug]
@@ -92,18 +92,16 @@
   (far/put-item dynamodb-opts (table-name dynamodb-opts) {
       :user_id user-id
       :org_slug org-slug
-      :publisher_uuids publisher-uuids
-      :board_uuids board-uuids})
+      :publisher_uuids (or publisher-uuids [])
+      :board_uuids (or board-uuids [])})
   (doseq [u publisher-uuids]
-    (let [follower-item (far/get-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid u
-                                                                                                   :org_slug org-slug})
-          next-followers (vec (conj (set (:follower_uuids follower-item)) user-id))]
+    (let [follower-item (retrieve-publisher-followers dynamodb-opts org-slug u)
+          next-followers (vec (conj (set (:follower-uuids follower-item)) user-id))]
       (far/put-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid u
                                                                                  :org_slug org-slug
                                                                                  :follower_uuids next-followers})))
   (doseq [b board-uuids]
-    (let [follower-item (far/get-item dynamodb-opts (board-follower-table-name dynamodb-opts) {:board_uuid b
-                                                                                               :org_slug org-slug})
+    (let [follower-item (retrieve-board-followers dynamodb-opts org-slug b)
           next-followers (vec (conj (set (:follower_uuids follower-item)) user-id))]
       (far/put-item dynamodb-opts (board-follower-table-name dynamodb-opts) {:board_uuid b
                                                                              :org_slug org-slug
@@ -113,49 +111,49 @@
 (schema/defn ^:always-validate store-publishers!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug publisher-uuids :- [lib-schema/UniqueID]]
   (let [item (retrieve dynamodb-opts user-id org-slug)]
-    (store! dynamodb-opts user-id org-slug (vec (set publisher-uuids)) (:board-uuids item)))
+    (store! dynamodb-opts user-id org-slug (vec (set publisher-uuids)) (or (:board-uuids item) [])))
   true)
 
 (schema/defn ^:always-validate store-boards!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug board-uuids :- [lib-schema/UniqueID]]
   (let [item (retrieve dynamodb-opts user-id org-slug)]
-    (store! dynamodb-opts user-id org-slug (:publisher-uuids item) (vec (set board-uuids))))
+    (store! dynamodb-opts user-id org-slug (or (:publisher-uuids item) []) (vec (set board-uuids))))
   true)
 
 (schema/defn ^:always-validate follow-publisher!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug publisher-uuid :- lib-schema/UniqueID]
   (let [item (retrieve dynamodb-opts user-id org-slug)
-        next-publisher-uuids (if (seq (:publisher_uuids item))
-                               (vec (clojure.set/union (set (:publisher_uuids item)) #{publisher-uuid}))
+        next-publisher-uuids (if (seq (:publisher-uuids item))
+                               (vec (clojure.set/union (set (:publisher-uuids item)) #{publisher-uuid}))
                                [publisher-uuid])]
-    (store! dynamodb-opts user-id org-slug next-publisher-uuids))
+    (store! dynamodb-opts user-id org-slug next-publisher-uuids (or (:board-uuids item) [])))
   true)
 
 (schema/defn ^:always-validate follow-board!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug board-uuid :- lib-schema/UniqueID]
   (let [item (retrieve dynamodb-opts user-id org-slug)
-        next-board-uuids (if (seq (:board_uuids item))
-                           (vec (clojure.set/union (set (:board_uuids item)) #{board-uuid}))
+        next-board-uuids (if (seq (:board-uuids item))
+                           (vec (clojure.set/union (set (:board-uuids item)) #{board-uuid}))
                            [board-uuid])]
-    (store! dynamodb-opts user-id org-slug next-board-uuids))
+    (store! dynamodb-opts user-id org-slug (or (:publisher-uuids item) []) next-board-uuids))
   true)
 
 (schema/defn ^:always-validate unfollow-publisher!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug publisher-uuid :- lib-schema/UniqueID]
   (let [item (retrieve dynamodb-opts user-id org-slug)
-        next-publisher-uuids (if (seq (:publisher_uuids item))
-                               (vec (clojure.set/difference (set (:publisher_uuids item)) #{publisher-uuid}))
+        next-publisher-uuids (if (seq (:publisher-uuids item))
+                               (vec (clojure.set/difference (set (:publisher-uuids item)) #{publisher-uuid}))
                                [])]
-    (store! dynamodb-opts user-id org-slug next-publisher-uuids))
+    (store! dynamodb-opts user-id org-slug next-publisher-uuids (or (:board-uuids item) [])))
   true)
 
 (schema/defn ^:always-validate unfollow-board!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug board-uuid :- lib-schema/UniqueID]
   (let [item (retrieve dynamodb-opts user-id org-slug)
-        next-board-uuids (if (seq (:board_uuids item))
-                           (vec (clojure.set/difference (set (:board_uuids item)) #{board-uuid}))
+        next-board-uuids (if (seq (:board-uuids item))
+                           (vec (clojure.set/difference (set (:board-uuids item)) #{board-uuid}))
                            [])]
-    (store! dynamodb-opts user-id org-slug next-board-uuids))
+    (store! dynamodb-opts user-id org-slug (or (:publisher-uuids item) []) next-board-uuids))
   true)
 
 (comment

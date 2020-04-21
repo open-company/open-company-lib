@@ -34,7 +34,7 @@
     (map #(clojure.set/rename-keys % {:user_id :user-id :org_slug :org-slug :publisher_uuids :publisher-uuids :board_uuids :board-uuids}))))
 
 (schema/defn ^:always-validate retrieve-publisher-followers
-  :- {:publisher-uuid lib-schema/UniqueID :org-slug Slug :publisher-uuids [lib-schema/UniqueID]}
+  :- {:publisher-uuid lib-schema/UniqueID :org-slug Slug :follower-uuids [lib-schema/UniqueID]}
   [dynamodb-opts org-slug :- Slug publisher-uuid :- lib-schema/UniqueID]
   (if-let [item (far/get-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid publisher-uuid
                                                                                            :org_slug org-slug})]

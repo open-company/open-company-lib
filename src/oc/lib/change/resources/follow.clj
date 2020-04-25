@@ -38,7 +38,7 @@
 (schema/defn ^:always-validate retrieve-all
   :- [{:user-id lib-schema/UniqueID :org-slug Slug :publisher-uuids (schema/maybe [lib-schema/UniqueID]) :board-uuids (schema/maybe [lib-schema/UniqueID])}]
   [dynamodb-opts org-slug :- Slug]
-  (doseq [item (far/query dynamodb-opts (table-name dynamodb-opts) {:org_slug [:eq org-slug]} {:index org-slug-gsi-name})]
+  (doseq [item (far/query dynamodb-opts (table-name dynamodb-opts) {:org_slug [:eq org-slug]} {:index (org-slug-gsi-name dynamodb-opts)})]
     (map #(clojure.set/rename-keys % {:user_id :user-id :org_slug :org-slug :publisher_uuids :publisher-uuids :board_uuids :board-uuids}))))
 
 (schema/defn ^:always-validate retrieve-publisher-followers
@@ -71,7 +71,9 @@
 (schema/defn ^:always-validate retrieve-all-board-followers
   :- [{:org-slug Slug :follower-uuids [lib-schema/UniqueID] :board-uuid lib-schema/UniqueID :resource-type ResourceType}]
   [dynamodb-opts org-slug :- Slug]
-  (let [followers (far/query dynamodb-opts (board-follower-table-name dynamodb-opts) {:org_slug [:eq org-slug]} {:index (org-slug-board-followers-gsi-name dynamodb-opts)})]
+  (let [followers (far/query dynamodb-opts (board-follower-table-name dynamodb-opts)
+                   {:org_slug [:eq org-slug]}
+                   {:index (org-slug-board-followers-gsi-name dynamodb-opts)})]
     (mapv #(-> %
             (clojure.set/rename-keys {:org_slug :org-slug
                                       :board_uuid :board-uuid
@@ -81,31 +83,33 @@
 
 (schema/defn ^:always-validate delete!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug]
-
   (far/delete-item dynamodb-opts (table-name dynamodb-opts) {:user_id user-id
                                                              :org_slug org-slug})
-
-  (let [publisher-followers (->> (far/query dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:org_slug [:eq org-slug]}
-                                  {:filter-expr "#k contains :v"
+  (let [publisher-followers (->> (far/query dynamodb-opts (publisher-follower-table-name dynamodb-opts)
+                                  {:org_slug [:eq org-slug]}
+                                  {:index (org-slug-publisher-followers-gsi-name dynamodb-opts)
+                                   :filter-expr "contains(#k, :v)"
                                    :expr-attr-names {"#k" "follower_uuids"}
                                    :expr-attr-vals {":v" user-id}})
                               (map #(clojure.set/rename-keys % {:publisher_uuid :publisher-uuid :org_slug :org-slug :follower_uuids :follower-uuids})))]
     (doseq [follower publisher-followers
             :let [next-followers (vec (disj (set (:follower-uuids follower)) user-id))]]
       (far/put-item dynamodb-opts (publisher-follower-table-name dynamodb-opts)
-       {:user_id (:user-id follower)
+       {:publisher_uuid (:publisher-uuid follower)
         :org_slug (:org-slug follower)
         :follower_uuids next-followers})))
 
-  (let [board-followers (->> (far/query dynamodb-opts (board-follower-table-name dynamodb-opts) {:org_slug [:eq org-slug]}
-                              {:filter-expr "#k contains :v"
+  (let [board-followers (->> (far/query dynamodb-opts (board-follower-table-name dynamodb-opts)
+                              {:org_slug [:eq org-slug]}
+                              {:index (org-slug-board-followers-gsi-name dynamodb-opts)
+                               :filter-expr "contains(#k, :v)"
                                :expr-attr-names {"#k" "follower_uuids"}
                                :expr-attr-vals {":v" user-id}})
                           (map #(clojure.set/rename-keys % {:board_uuid :board-uuid :org_slug :org-slug :follower_uuids :follower-uuids})))]
     (doseq [follower board-followers
             :let [next-followers (vec (disj (set (:follower-uuids follower)) user-id))]]
-      (far/put-item dynamodb-opts (publisher-follower-table-name dynamodb-opts)
-       {:user_id (:user-id follower)
+      (far/put-item dynamodb-opts (board-follower-table-name dynamodb-opts)
+       {:board_uuid (:board-uuid follower)
         :org_slug (:org-slug follower)
         :follower_uuids next-followers})))
   true)
@@ -113,30 +117,53 @@
 (schema/defn ^:always-validate delete-by-org!
   [dynamodb-opts org-slug :- Slug]
   (doseq [item (far/query dynamodb-opts (table-name dynamodb-opts)
-                {:org_slug [:eq org-slug]} {:index org-slug-gsi-name})]
+                {:org_slug [:eq org-slug]} {:index (org-slug-gsi-name dynamodb-opts)})]
     (delete! dynamodb-opts (:user_id item) org-slug))
+  (doseq [item (far/query dynamodb-opts (publisher-follower-table-name dynamodb-opts)
+                {:org_slug [:eq org-slug]} {:index (org-slug-publisher-followers-gsi-name dynamodb-opts)})]
+    (delete! dynamodb-opts (:user_id item) org-slug))
+  (doseq [item (far/query dynamodb-opts (publisher-follower-table-name dynamodb-opts)
+                {:org_slug [:eq org-slug]} {:index (org-slug-publisher-followers-gsi-name dynamodb-opts)})]
+    (delete! dynamodb-opts (:user_id item) org-slug))
+
+  (far/delete-item dynamodb-opts (table-name dynamodb-opts) {:org_slug [:eq org-slug]})
   true)
 
 (schema/defn ^:always-validate store!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug publisher-uuids :- [lib-schema/UniqueID] board-uuids :- [lib-schema/UniqueID]]
-  (far/put-item dynamodb-opts (table-name dynamodb-opts) {
-      :user_id user-id
-      :org_slug org-slug
-      :publisher_uuids (or publisher-uuids [])
-      :board_uuids (or board-uuids [])})
-  (doseq [u publisher-uuids]
-    (let [follower-item (retrieve-publisher-followers dynamodb-opts org-slug u)
-          next-followers (vec (conj (set (:follower-uuids follower-item)) user-id))]
-      (far/put-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid u
-                                                                                 :org_slug org-slug
-                                                                                 :follower_uuids next-followers})))
-  (doseq [b board-uuids]
-    (let [follower-item (retrieve-board-followers dynamodb-opts org-slug b)
-          next-followers (vec (conj (set (:follower_uuids follower-item)) user-id))]
-      (far/put-item dynamodb-opts (board-follower-table-name dynamodb-opts) {:board_uuid b
-                                                                             :org_slug org-slug
-                                                                             :follower_uuids next-followers})))
-  true)
+  (let [prev-item (retrieve dynamodb-opts user-id org-slug)
+        losing-publisher-uuids (clojure.set/difference (set (:publisher-uuids prev-item)) (set publisher-uuids))
+        losing-board-uuids (clojure.set/difference (set (:board-uuids prev-item)) (set board-uuids))]
+    (far/put-item dynamodb-opts (table-name dynamodb-opts) {
+        :user_id user-id
+        :org_slug org-slug
+        :publisher_uuids (or publisher-uuids [])
+        :board_uuids (or board-uuids [])})
+    (doseq [u publisher-uuids]
+      (let [follower-item (retrieve-publisher-followers dynamodb-opts org-slug u)
+            next-followers (vec (conj (set (:follower-uuids follower-item)) user-id))]
+        (far/put-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid u
+                                                                                   :org_slug org-slug
+                                                                                   :follower_uuids next-followers})))
+    (doseq [u losing-publisher-uuids]
+      (let [follower-item (retrieve-publisher-followers dynamodb-opts org-slug u)
+            next-followers (vec (disj (set (:follower-uuids follower-item)) user-id))]
+        (far/put-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid u
+                                                                                   :org_slug org-slug
+                                                                                   :follower_uuids next-followers})))
+    (doseq [b board-uuids]
+      (let [follower-item (retrieve-board-followers dynamodb-opts org-slug b)
+            next-followers (vec (conj (set (:follower-uuids follower-item)) user-id))]
+        (far/put-item dynamodb-opts (board-follower-table-name dynamodb-opts) {:board_uuid b
+                                                                               :org_slug org-slug
+                                                                               :follower_uuids next-followers})))
+    (doseq [b losing-board-uuids]
+      (let [follower-item (retrieve-board-followers dynamodb-opts org-slug b)
+            next-followers (vec (disj (set (:follower-uuids follower-item)) user-id))]
+        (far/put-item dynamodb-opts (board-follower-table-name dynamodb-opts) {:board_uuid b
+                                                                               :org_slug org-slug
+                                                                               :follower_uuids next-followers})))
+    true))
 
 (schema/defn ^:always-validate store-publishers!
   [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug publisher-uuids :- [lib-schema/UniqueID]]
@@ -229,7 +256,7 @@
    @(far/update-table dynamodb-opts
      (follow/table-name dynamodb-opts)
      {:gsindexes {:operation :create
-                  :name follow/org-slug-gsi-name
+                  :name (follow/org-slug-gsi-name dynamodb-opts)
                   :billing-mode :pay-per-request
                   :hash-keydef [:org_slug :s]
                   :range-keydef [:user_id :s]

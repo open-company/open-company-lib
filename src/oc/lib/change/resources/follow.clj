@@ -50,7 +50,7 @@
 (schema/defn ^:always-validate retrieve-publisher-followers
   :- {:follow-publisher-uuid lib-schema/UniqueID :org-slug Slug :follower-uuids (schema/maybe [lib-schema/UniqueID])}
   [dynamodb-opts org-slug :- Slug follow-publisher-uuid :- lib-schema/UniqueID]
-  (if-let [item (far/get-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:follow_publisher_uuid follow-publisher-uuid
+  (if-let [item (far/get-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid follow-publisher-uuid
                                                                                            :org_slug org-slug})]
     (clojure.set/rename-keys item {:follow_publisher_uuid :follow-publisher-uuid :org_slug :org-slug :follower_uuids :follower-uuids})
     {:follow-publisher-uuid follow-publisher-uuid :org-slug org-slug :follower-uuids nil}))

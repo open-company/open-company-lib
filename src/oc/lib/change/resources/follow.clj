@@ -48,12 +48,12 @@
                                       :unfollow_board_uuids :unfollow-board-uuids}))))
 
 (schema/defn ^:always-validate retrieve-publisher-followers
-  :- {:follow-publisher-uuid lib-schema/UniqueID :org-slug Slug :follower-uuids (schema/maybe [lib-schema/UniqueID])}
-  [dynamodb-opts org-slug :- Slug follow-publisher-uuid :- lib-schema/UniqueID]
-  (if-let [item (far/get-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid follow-publisher-uuid
+  :- {:publisher-uuid lib-schema/UniqueID :org-slug Slug :follower-uuids (schema/maybe [lib-schema/UniqueID])}
+  [dynamodb-opts org-slug :- Slug publisher-uuid :- lib-schema/UniqueID]
+  (if-let [item (far/get-item dynamodb-opts (publisher-follower-table-name dynamodb-opts) {:publisher_uuid publisher-uuid
                                                                                            :org_slug org-slug})]
-    (clojure.set/rename-keys item {:follow_publisher_uuid :follow-publisher-uuid :org_slug :org-slug :follower_uuids :follower-uuids})
-    {:follow-publisher-uuid follow-publisher-uuid :org-slug org-slug :follower-uuids nil}))
+    (clojure.set/rename-keys item {:publisher_uuid :publisher-uuid :org_slug :org-slug :follower_uuids :follower-uuids})
+    {:publisher-uuid publisher-uuid :org-slug org-slug :follower-uuids nil}))
 
 (schema/defn ^:always-validate retrieve-board-unfollowers
   :- {:board-uuid lib-schema/UniqueID :org-slug Slug :unfollower-uuids (schema/maybe [lib-schema/UniqueID])}
@@ -205,10 +205,10 @@
   true)
 
 (schema/defn ^:always-validate unfollow-publisher!
-  [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug follow-publisher-uuid :- lib-schema/UniqueID]
+  [dynamodb-opts user-id :- lib-schema/UniqueID org-slug :- Slug unfollow-publisher-uuid :- lib-schema/UniqueID]
   (let [item (retrieve dynamodb-opts user-id org-slug)
         next-follow-publisher-uuids (if (seq (:follow-publisher-uuids item))
-                               (vec (clojure.set/difference (set (:follow-publisher-uuids item)) #{follow-publisher-uuid}))
+                               (vec (clojure.set/difference (set (:follow-publisher-uuids item)) #{unfollow-publisher-uuid}))
                                [])]
     (store! dynamodb-opts user-id org-slug next-follow-publisher-uuids (or (:unfollow-board-uuids item) [])))
   true)

@@ -51,6 +51,10 @@
 
       (= :contains (:fn filter))
       (r/contains (:value filter) (r/get-field row (:field filter)))
+      ;; Special case to make sure we get also non existing field
+      (and (= :ne (:fn filter))
+           (true? (:value filter)))
+      (r/not (r/default (r/get-field row (:field filter)) false))
 
       (= :ne (:fn filter))
       (r/ne (:value filter) (r/get-field row (:field filter)))
@@ -230,7 +234,24 @@
           (r/filter (build-filter-fn filter-map))
           (r/pluck fields)
           (r/run conn)
-          (drain-cursor)))))
+          (drain-cursor))))
+
+  ([conn table-name index-name index-value filter-map fields]
+  {:pre [(conn? conn)
+         (s-or-k? table-name)
+         (s-or-k? index-name)
+         (or (s-or-k? index-value) (sequential? index-value))
+         (sequential? filter-map)
+         (sequential? fields)
+         (every? s-or-k? fields)]}
+  (let [index-values (if (sequential? index-value) index-value [index-value])]
+    (with-timeout default-timeout
+      (-> (r/table table-name)
+          (r/get-all index-values {:index index-name})
+          (r/filter (build-filter-fn filter-map))
+          (r/pluck fields)
+          (r/run conn)
+          (drain-cursor))))))
 
 (defn read-resources-and-relations
   "

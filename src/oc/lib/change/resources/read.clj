@@ -247,8 +247,8 @@
                                                           (schema/optional-key :part-id) lib-schema/UniqueID}]
   [db-opts org-id :- lib-schema/UniqueID]
   (->> (far/query db-opts (part-table-name db-opts) {:org_id [:eq org-id]} {:index (part-org-id-user-id-gsi-name db-opts)})
-      (map #(clojure.set/rename-keys % {:user_id :user-id :part_id :part-id}))
-      (map #(select-keys % [:user-id :part-id]))))
+      (map #(clojure.set/rename-keys % {:user_id :user-id :part_id :part-id :read_at :read-at}))
+      (map #(select-keys % [:user-id :part-id :read-at]))))
 
 ;; Move
 

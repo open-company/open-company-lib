@@ -313,6 +313,16 @@
 
 (def delete! delete-user-item!)
 
+(schema/defn ^:always-validate delete-parts-by-item!
+
+  ([db-opts container-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
+   (delete-parts-by-item! db-opts item-id))
+
+  ([db-opts item-id :- lib-schema/UniqueID]
+   ;; Remove all part reads
+   (doseq [part (retrieve-parts-by-item db-opts item-id)]
+     (delete-user-part! db-opts (:user-id part) (:part-id part)))))
+
 (schema/defn ^:always-validate delete-by-item!
 
   ([db-opts container-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
@@ -323,8 +333,7 @@
    (doseq [item (retrieve-by-item db-opts item-id)]
      (delete! db-opts (:user-id item) item-id))
    ;; Remove all part reads
-   (doseq [part (retrieve-parts-by-item db-opts item-id)]
-     (delete-user-part! db-opts (:user-id part) (:part-id part)))))
+   (delete-parts-by-item! db-opts item-id)))
 
 (schema/defn ^:always-validate delete-by-container!
   [db-opts container-id :- lib-schema/UniqueID]
@@ -495,22 +504,6 @@
   (lib-read/store! db-opts "aaaa-aaaa-aaaa" "bbbb-bbbb-bbbb" "cccc-cccc-cccc"
                            "1111-1111-1111" "Albert Camus" "http//..." (oc-time/current-timestamp))
 
-  (require '[oc.lib.time :as oc-time])
-  (require '[taoensso.faraday :as far])
-  (require '[oc.lib.change.resources.read :as lr] :reload)
-  (require '[oc.change.resources.read :as r] :reload)
-  (def oid "aaaa-aaaa-aaaa")
-  (def cid "bbbb-bbbb-bbbb")
-  (def iid "cccc-cccc-cccc")
-  (def iid2 "cccc-cccc-1111")
-  (def pid "dddd-dddd-dddd")
-  (def pid2 "dddd-dddd-1111")
-  (def uid "1111-1111-1111")
-  (def avatar "https://stocastico.io/image.png")
-  (def uname "Iacopo Carraro")
-  (def c config/dynamodb-opts)
-  (r/store! oid cid iid uid avatar uname (oc-time/current-timestamp))
-  (r/store-part! oid cid iid pid2 uid avatar uname (oc-time/current-timestamp))
   (lib-read/retrieve-by-item db-opts iid)
   (lib-read/retrieve-parts-by-item db-opts iid)
 

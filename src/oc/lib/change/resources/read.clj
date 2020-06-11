@@ -45,7 +45,7 @@
 (schema/defn ^:always-validate retrieve-by-user-org :- [{(schema/optional-key :item-id) lib-schema/UniqueID
                                                          (schema/optional-key :read-at) lib-schema/ISO8601}]
   [dynamodb-opts org-id :- lib-schema/UniqueID user-id :- lib-schema/UniqueID]
-  (->> (far/query dynamodb-opts (table-name dynamodb-opts) {:org-id [:eq org-id]
+  (->> (far/query dynamodb-opts (table-name dynamodb-opts) {:org_id [:eq org-id]
                                                             :user_id [:eq user-id]}
                                                            {:index (org-id-user-id-gsi-name dynamodb-opts)})
       (map #(clojure.set/rename-keys % {:item_id :item-id :read_at :read-at}))

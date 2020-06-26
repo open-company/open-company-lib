@@ -106,6 +106,19 @@
       (map #(clojure.set/rename-keys % {:container_id :container-id :item_id :item-id :seen_at :seen-at}))
       (map #(select-keys % [:item-id :container-id :seen-at]))))
 
+(schema/defn ^:always-validate retrieve-by-user-container :- {(schema/optional-key :org-id) lib-schema/UniqueID
+                                                              (schema/optional-key :container-id) lib-schema/UniqueID
+                                                              (schema/optional-key :seen-at) lib-schema/ISO8601}
+  [db-opts user-id :- lib-schema/UniqueID container-id :- lib-schema/UniqueID]
+  (let [seen-items (far/query db-opts (table-name db-opts) {:container_id [:eq container-id]
+                                                            :user_id [:eq user-id]}
+                                                           {:index (container-id-gsi-name db-opts)})]
+    (if (seq seen-items)
+      (-> (first seen-items)
+       (clojure.set/rename-keys {:container_id :container-id :item_id :item-id :seen_at :seen-at})
+       (select-keys [:item-id :container-id :seen-at]))
+      {})))
+
 (schema/defn ^:always-validate retrieve-by-user-item :- (schema/maybe {:org-id lib-schema/UniqueID
                                                                        :container-id lib-schema/UniqueID
                                                                        :item-id lib-schema/UniqueID

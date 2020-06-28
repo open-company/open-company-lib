@@ -32,7 +32,7 @@
     container-id :- lib-schema/UniqueID
     seen-at :- lib-schema/ISO8601
     seen-ttl :- schema/Int]
-  (store! user-id org-id container-id entire-container seen-at seen-ttl))
+  (store! db-opts user-id org-id container-id entire-container seen-at seen-ttl))
 
   ;; Store a seen entry for the specified user
   ([db-opts
@@ -115,8 +115,8 @@
                                                            {:index (container-id-gsi-name db-opts)})]
     (if (seq seen-items)
       (-> (first seen-items)
-       (clojure.set/rename-keys {:container_id :container-id :item_id :item-id :seen_at :seen-at})
-       (select-keys [:item-id :container-id :seen-at]))
+       (clojure.set/rename-keys {:container_id :container-id :org_id :org-id :seen_at :seen-at})
+       (select-keys [:org-id :container-id :seen-at]))
       {})))
 
 (schema/defn ^:always-validate retrieve-by-user-item :- (schema/maybe {:org-id lib-schema/UniqueID
@@ -157,7 +157,7 @@
                    :billing-mode :pay-per-request
                    :hash-keydef [:item_id :s]
                    :range-keydef [:container_id :s]
-                   :projection :keys-only}}))
+                   :projection :all}}))
 
   (doseq [item (far/query config/dynamodb-opts (lib-seen/table-name db-opts) {:item_id [:eq "512b-4ad1-9924"]} {:index seen/container-id-item-id-gsi-name})]
     (aprint
@@ -173,7 +173,7 @@
                    :billing-mode :pay-per-request
                    :hash-keydef [:container_id :s]
                    :range-keydef [:user_id :s]
-                   :projection :keys-only}}))
+                   :projection :all}}))
 
   (doseq [item (far/query config/dynamodb-opts (lib-seen/table-name db-opts) {:container_id [:eq "25a3-4692-bf02"]} {:index seen/container-id-gsi-name})]
     (aprint

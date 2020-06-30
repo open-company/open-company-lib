@@ -23,35 +23,6 @@
 (defn- create-container-item-id [container-id item-id]
   (str container-id "-" item-id))
 
-(schema/defn ^:always-validate store!
-
-  ;; Saw the whole container, so the item-id is a placeholder
-  ([db-opts
-    user-id :- lib-schema/UniqueID
-    org-id :- lib-schema/UniqueID
-    container-id :- lib-schema/UniqueID
-    seen-at :- lib-schema/ISO8601
-    seen-ttl :- schema/Int]
-  (store! db-opts user-id org-id container-id entire-container seen-at seen-ttl))
-
-  ;; Store a seen entry for the specified user
-  ([db-opts
-    user-id :- lib-schema/UniqueID
-    org-id :- lib-schema/UniqueID
-    container-id :- lib-schema/UniqueID
-    item-id :- lib-schema/UniqueID
-    seen-at :- lib-schema/ISO8601
-    seen-ttl :- schema/Int]
-  (far/put-item db-opts (table-name db-opts) {
-      :user_id user-id
-      :org_id org-id
-      :container_item_id (create-container-item-id container-id item-id)
-      :container_id container-id
-      :item_id item-id
-      :seen_at seen-at
-      :ttl (ttl/ttl-epoch seen-ttl)})
-  true))
-
 (schema/defn ^:always-validate delete-by-item!
   [db-opts container-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
   (doseq [item (far/query db-opts (table-name db-opts) {:item_id [:eq item-id]} {:index (container-id-item-id-gsi-name db-opts)})]
@@ -132,6 +103,37 @@
       (-> item
        (clojure.set/rename-keys {:org_id :org-id :container_id :container-id :item_id :item-id :seen_at :seen-at})
        (select-keys [:org-id :container-id :item-id :seen-at])))))
+
+(schema/defn ^:always-validate store!
+
+  ;; Saw the whole container, so the item-id is a placeholder
+  ([db-opts
+    user-id :- lib-schema/UniqueID
+    org-id :- lib-schema/UniqueID
+    container-id :- lib-schema/UniqueID
+    seen-at :- lib-schema/ISO8601
+    seen-ttl :- schema/Int]
+  (store! db-opts user-id org-id container-id entire-container seen-at seen-ttl))
+
+  ;; Store a seen entry for the specified user
+  ([db-opts
+    user-id :- lib-schema/UniqueID
+    org-id :- lib-schema/UniqueID
+    container-id :- lib-schema/UniqueID
+    item-id :- lib-schema/UniqueID
+    seen-at :- lib-schema/ISO8601
+    seen-ttl :- schema/Int]
+  (let [prev-seen (retrieve-by-user-item db-opts user-id item-id)]
+    (when (pos? (compare seen-at (:seen-at prev-seen)))
+      (far/put-item db-opts (table-name db-opts) {
+          :user_id user-id
+          :org_id org-id
+          :container_item_id (create-container-item-id container-id item-id)
+          :container_id container-id
+          :item_id item-id
+          :seen_at (if  (:seen-at prev-seen) seen-at)
+          :ttl (ttl/ttl-epoch seen-ttl)})))
+  true))
 
 (comment
 

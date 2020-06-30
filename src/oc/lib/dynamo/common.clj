@@ -44,9 +44,9 @@
     (let [fixed-ttl-field-name (or ttl-field-name "ttl")
           ttl-description (dynamodbv2/describe-time-to-live dynamodb-opts :table-name table-name)]
       (if (= (-> ttl-description :time-to-live-description :time-to-live-status) "ENABLED")
-          (println "Enabling TTL on " table-name "\n"
+          (println "Disabling TTL on " table-name "\n"
             (dynamodbv2/update-time-to-live
               dynamodb-opts
               :table-name table-name
               :time-to-live-specification {:attribute-name fixed-ttl-field-name :enabled false}))
-        (println "TTL already enabled on " table-name)))))
+        (println "TTL already disabled on " table-name)))))

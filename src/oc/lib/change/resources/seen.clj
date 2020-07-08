@@ -131,7 +131,7 @@
           :container_item_id (create-container-item-id container-id item-id)
           :container_id container-id
           :item_id item-id
-          :seen_at (if  (:seen-at prev-seen) seen-at)
+          :seen_at seen-at
           :ttl (ttl/ttl-epoch seen-ttl)})))
   true))
 

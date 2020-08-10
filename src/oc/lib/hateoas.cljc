@@ -1,5 +1,7 @@
 (ns oc.lib.hateoas
-  "Namespace of helpers for creating HATEOAS links.")
+  "Namespace of helpers for creating HATEOAS links."
+  (:require [defun.core :refer (defun)]
+            [cuerdas.core :as string]))
 
 (def OPTIONS "OPTIONS")
 (def HEAD "HEAD")
@@ -128,3 +130,102 @@
   (archive-link url {}))
   ([url others]
   (link-map "archive" DELETE url {} others)))
+
+;; Href formatter
+
+(defn link-replace-href
+  "Given a link with an :href and a :replace map,
+   and given a replacements map, apply the replacements to the link."
+  [link replacements]
+  (update link :href
+   #(reduce (fn [href [k v]]
+              (string/replace href v (get replacements k)))
+     %
+     (:replace link))))
+
+;; Retrieve link: mostly used by the client
+
+(defn- s-or-k?
+  "Truthy if the provided value is a string or a keyword."
+  [value]
+  (or (string? value)
+      (keyword? value)))
+
+(defn- nil-or-map?
+  [v]
+  (or (nil? v)
+      (map? v)))
+
+(defn- check-params [link params]
+  (or (nil? params)
+      (every? #(or (= % :replace)
+                   (= (get link %) (get params %)))
+       (keys params))))
+
+(defun link-for
+
+  ([nil & rest]
+   false)
+
+  ([links :guard sequential? rels :guard sequential? methods :guard sequential?]
+   (some (fn [rel] (link-for links rel methods)) rels))
+
+  ([links :guard sequential? rels :guard sequential? methods :guard sequential? params :guard nil-or-map? replacements :guard map?]
+   (let [link (link-for links rels methods params)]
+     (link-replace-href link replacements)))
+
+  ([links :guard sequential? rels :guard sequential? methods :guard sequential? params :guard nil-or-map?]
+   (some (fn [rel] (link-for links rel methods params)) rels))
+
+  ([links :guard sequential? rels :guard sequential? method :guard string?]
+   (some #(link-for links % method) rels))
+
+  ([links :guard sequential? rels :guard sequential? method :guard string? params :guard nil-or-map? replacements :guard map?]
+   (let [link (link-for links rels method params)]
+     (link-replace-href link replacements)))
+
+  ([links :guard sequential? rels :guard sequential? method :guard string? params :guard nil-or-map?]
+   (some #(link-for links % method params) rels))
+
+  ([links :guard sequential? rel :guard string? methods :guard sequential?]
+   (some #(link-for links rel %) methods))
+
+  ([links :guard sequential? rel :guard string? methods :guard sequential? params :guard nil-or-map? replacements :guard map?]
+   (let [link (link-for links rel methods params)]
+     (link-replace-href link replacements)))
+
+  ([links :guard sequential? rel :guard string? methods :guard sequential? params :guard nil-or-map?]
+   (some #(link-for links rel % params) methods))
+
+  ([links :guard sequential? rel :guard string?]
+   (some #(when (= (:rel %) rel) %) links))
+
+  ([links :guard sequential? rel :guard string? params :guard nil-or-map? replacements :guard map?]
+   (let [link (link-for links rel params)]
+     (link-replace-href link replacements)))
+
+  ([links :guard sequential? rel :guard string? params :guard nil-or-map?]
+   (some (fn [link]
+           (when (and (= (:rel link) rel)
+                      (check-params link params))
+             link))
+    links))
+
+  ([links :guard sequential? rel :guard string? method :guard string?]
+   (some (fn [link]
+           (when (and (= (:rel link) rel)
+                     (= (:method link) method))
+             link))
+    links))
+
+  ([links :guard sequential? rel :guard string? method :guard string? params :guard nil-or-map? replacements :guard map?]
+   (let [link (link-for links rel method params)]
+     (link-replace-href link replacements)))
+
+  ([links :guard sequential? rel :guard string? method :guard string? params :guard nil-or-map?]
+   (some (fn [link]
+           (when (and (= (:rel link) rel)
+                      (= (:method link) method)
+                      (check-params link params))
+             link))
+    links)))

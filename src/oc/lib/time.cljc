@@ -12,10 +12,13 @@
 (def timestamp-format
   (format/formatters :date-time))
 
+(defn to-iso [t]
+  (format/unparse timestamp-format t))
+
 (defn current-timestamp
   "ISO 8601 string timestamp for the current time."
   []
-  (format/unparse timestamp-format (time/now)))
+  (to-iso (time/now)))
 
 ;; ----- Timestamp in milliseconds -----
 

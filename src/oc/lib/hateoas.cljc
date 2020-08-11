@@ -137,11 +137,13 @@
   "Given a link with an :href and a :replace map,
    and given a replacements map, apply the replacements to the link."
   [link replacements]
-  (update link :href
-   #(reduce (fn [href [k v]]
-              (string/replace href v (get replacements k)))
-     %
-     (:replace link))))
+  (when (and (map? link)
+             (:href link))
+    (update link :href
+     #(reduce (fn [href [k v]]
+                (string/replace href v (str (get replacements k))))
+       %
+       (:replace link)))))
 
 ;; Retrieve link: mostly used by the client
 

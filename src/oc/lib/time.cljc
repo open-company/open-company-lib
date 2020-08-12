@@ -15,6 +15,9 @@
 (defn to-iso [t]
   (format/unparse timestamp-format t))
 
+(defn from-iso [s]
+  (format/parse timestamp-format s))
+
 (defn current-timestamp
   "ISO 8601 string timestamp for the current time."
   []

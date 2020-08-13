@@ -73,7 +73,8 @@
    - Sean Johnson and Stuart Levinson left replies on updates you care about.
    - Sean Johnson, Stuart Levinson and 1 other left 6 replies on updates you care about.
    - Sean Johnson, Stuart Levinson and 2 others left 6 replies on updates you care about."
-  [{:keys [comment-count comment-authors entry-count] :as replies-data}]
+  [{:keys [comment-count comment-authors entry-count]
+    :or {comment-count 0 comment-authors 0 entry-count 0}}]
   (if (zero? comment-count)
     (str "There are no replies on updates you care about.")
     (let [space-join (fn [& parts] (s/join " " parts))
@@ -161,7 +162,8 @@
   - Other 3 updates were published by 2 authors.
   - Other 4 updates were published across 3 topics.
   - Other 5 updates were published by 3 authors across 4 topics."
-  [{:keys [board-count entry-count entry-author-count] :as unfollowing-data}]
+  [{:keys [board-count entry-count entry-author-count]
+    :or {board-count 0 entry-count 0 entry-author-count 0}}]
   (when (pos? entry-count)
     (str
      (case entry-count

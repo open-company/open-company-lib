@@ -75,8 +75,7 @@
    - Sean Johnson, Stuart Levinson and 2 others left 6 replies on updates you care about."
   [{:keys [comment-count comment-authors entry-count]
     :or {comment-count 0 comment-authors 0 entry-count 0}}]
-  (if (zero? comment-count)
-    (str "There are no replies on updates you care about.")
+  (when (pos? comment-count)
     (let [space-join (fn [& parts] (s/join " " parts))
           author-name (fn [n & [suffix]] (-> comment-authors (nth n) :name (str suffix)))
           authors-string (case (count comment-authors)
@@ -85,13 +84,26 @@
                           3 (space-join (author-name 0 ",") (author-name 1) "and 1 other")
                             (space-join (author-name 0 ",") (author-name 1 ",") "and" (- (count comment-authors) 2) "others"))
           replies-string (case comment-count
-                          1 "left a reply"
-                            "left replies")
+                          1 "left a"
+                            "left")
+          replies-word (case comment-count
+                          1 "reply"
+                            "replies")
           updates-string (case entry-count
                           1 "on an update"
                             "on updates")
           care-string "you care about."]
-     (space-join authors-string replies-string updates-string care-string))))
+     [:p.digest-replies-section
+       authors-string
+       " "
+       replies-string
+       " "
+       [:span.underline
+        replies-word]
+       " "
+       updates-string
+       " "
+       care-string])))
 
 (defn new-boards-summary-node
   "Give the newly created boards list, creates a phrase like:
@@ -119,27 +131,32 @@
            "Since your last digest, "
            [:a
              {:href (board-url-fn "topics")}
-             "1 topic was created: "]
-            [:a
-              {:href (board-url-fn (-> new-boards-list first :slug))}
-              (-> new-boards-list first :name)]]
+             "1 topic "]
+           "was created: "
+           [:a
+             {:href (board-url-fn (-> new-boards-list first :slug))}
+             (-> new-boards-list first :name)]
+          "."]
         2 [:p.digest-new-boards-section
             "Since your last digest, "
             [:a
               {:href (board-url-fn "topics")}
-              board-count " topics were created: "]
+              board-count " topics "]
+            "were created: "
             [:a
               {:href (board-url-fn (-> new-boards-list first :slug))}
               (-> new-boards-list first :name)]
             " and "
             [:a
               {:href (board-url-fn (-> new-boards-list second :slug))}
-              (-> new-boards-list second :name)]]
+              (-> new-boards-list second :name)]
+            "."]
           [:p.digest-new-boards-section
             "Since your last digest, "
             [:a
               {:href (board-url-fn "topics")}
-              board-count " topics were created:"]
+              board-count " topics "]
+            "were created: "
             (for [b (subvec new-boards-list 0 (- board-count 2))]
               [:span
                 "&nbsp;"
@@ -153,25 +170,5 @@
             " and "
             [:a
               {:href (board-url-fn (-> new-boards-list last :slug))}
-              (-> new-boards-list last :name)]]))))
-
-(defn unfollowing-summary-label
-  "Given the unfollowing data, creates a phrase like:
-  - Another update was published.
-  - Other 2 updates were published.
-  - Other 3 updates were published by 2 authors.
-  - Other 4 updates were published across 3 topics.
-  - Other 5 updates were published by 3 authors across 4 topics."
-  [{:keys [board-count entry-count entry-author-count]
-    :or {board-count 0 entry-count 0 entry-author-count 0}}]
-  (when (pos? entry-count)
-    (str
-     (case entry-count
-      1 "Another update was"
-        (str "Other " entry-count " updates were"))
-     " published"
-     (when (> entry-author-count 1)
-       (str " by " entry-author-count " authors"))
-     (when (> board-count 1)
-       (str " across " board-count " topics"))
-     ".")))
+              (-> new-boards-list last :name)]
+            "."]))))

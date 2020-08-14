@@ -107,26 +107,14 @@
 
 (defn new-boards-summary-node
   "Give the newly created boards list, creates a phrase like:
-   - Since your last digest, no new topics were create. Create one now.
    - Since your last digest, 1 topic was created: New topic.
    - Since your last digest, 2 topics were created: First topic and Second topic.
    - Since your last digest, 3 topics were created: First topic, Second topic and Third topic.
    - Since your last digest, 4 topics were created: First topic, Second topic, Third topic and Fourth topic."
   [new-boards-list board-url-fn]
   (let [board-count (count new-boards-list)]
-    (if (zero? board-count)
-      [:p.digest-new-boards-section "Since your last digest, no new topics were created."
-       [:a
-         {:href (board-url-fn "topics")}
-         "Create one now"]
-        "."]
+    (when-not (zero? board-count)
       (case board-count
-       0 [:p.digest-new-boards-section
-           "Since your last digest, no new topics were created."
-           [:a
-             {:href (board-url-fn "topics")}
-             "Create one now"]
-           "."]
        1 [:p.digest-new-boards-section
            "Since your last digest, "
            [:a

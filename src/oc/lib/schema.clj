@@ -135,3 +135,24 @@
                                                 :params {:expires_in schema/Any
                                                          :id_token NonBlankStr
                                                          :scope NonBlankStr}}}})
+;; Brand color schema
+
+(defn hex-color? [c]
+  (and (string? c)
+       (re-matches #"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" c)))
+
+(def Color (schema/pred #(<= 0 % 254)))
+
+(def RGBColor
+  {:r Color
+   :g Color
+   :b Color})
+
+(def Color
+  {:rgb RGBColor
+   :hex (schema/pred hex-color?)
+   :button-color schema/Str})
+
+(def BrandColor
+  {:light Color
+   :dark Color})

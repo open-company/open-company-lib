@@ -154,8 +154,10 @@
   {:rgb RGBColor
    :hex HEXColor})
 
+(def OCBrandColor
+  {:primary Color
+   :secondary Color})
+
 (def BrandColor
-  {:light {:primary Color
-           :secondary Color}
-   :dark {:primary Color
-          :secondary Color}})
+  {:light OCBrandColor
+   :dark OCBrandColor})

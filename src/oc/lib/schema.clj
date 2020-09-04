@@ -141,18 +141,21 @@
   (and (string? c)
        (re-matches #"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" c)))
 
-(def Color (schema/pred #(<= 0 % 254)))
+(def HEXColor (schema/pred hex-color?))
+
+(def RGBChannel (schema/pred #(<= 0 % 254)))
 
 (def RGBColor
-  {:r Color
-   :g Color
-   :b Color})
+  {:r RGBChannel
+   :g RGBChannel
+   :b RGBChannel})
 
 (def Color
   {:rgb RGBColor
-   :hex (schema/pred hex-color?)
-   :button-color schema/Str})
+   :hex HEXColor})
 
 (def BrandColor
-  {:light Color
-   :dark Color})
+  {:light {:primary Color
+           :secondary Color}
+   :dark {:primary Color
+          :secondary Color}})

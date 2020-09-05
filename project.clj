@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.29-alpha35"
+(defproject open-company/lib "0.17.29-alpha36"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -78,7 +78,7 @@
     [com.amazonaws/aws-java-sdk-dynamodb "1.11.762"]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [com.fasterxml.jackson.core/jackson-databind "2.11.0.rc1"]
+    [com.fasterxml.jackson.core/jackson-databind "2.11.2"]
     ;; A Clojure library for JSON Web Token(JWT) https://github.com/liquidz/clj-jwt
     [clj-jwt "0.1.1"]
     ;; RethinkDB client for Clojure https://github.com/apa512/clj-rethinkdb
@@ -96,7 +96,7 @@
     ;; It has breaking changes with 4.x and Aleph depends on 4.x
     ;; ----------------------------------------------------------------------------------------
     ;; JSON encoding / decoding https://github.com/dakrone/cheshire
-    [cheshire "5.10.0"]
+    [cheshire "5.10.0" :exlusions [com.fasterxml.jackson.core/jackson-databind]]
     ;; Date and time lib https://github.com/clj-time/clj-time
     [clj-time "0.15.2"]
     ;; A clj-time inspired date library for clojurescript. https://github.com/andrewmcveigh/cljs-time

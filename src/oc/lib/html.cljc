@@ -30,10 +30,11 @@
       (.-tagName el)))
 
 (defn- read-size [size]
-  #?(:clj
-     (Integer/parseInt (re-find #"\A-?\d+" size))
-     :cljs
-     size))
+  (when-not (str/blank? size)
+    #?(:clj
+       (Integer/parseInt (re-find #"\A-?\d+" size))
+       :cljs
+       size)))
 
 (defn first-body-thumbnail
   "

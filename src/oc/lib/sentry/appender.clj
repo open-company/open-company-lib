@@ -3,7 +3,6 @@
 
 (ns oc.lib.sentry.appender
   (:require [sentry-clj.core :as sentry]
-            [defun.core :refer (defun)]
             [taoensso.timbre :as timbre]))
 
 (def stacktrace-depth 20)
@@ -40,12 +39,15 @@
                       reverse)))]
     (assoc ex-map :exception [(assoc-in ex [:stacktrace :frames] trimmed)])))
 
-(defun appender
+(defn appender
   "Sentry timbre appender to send error level messages with a throwable to Sentry."
-  [sentry-dsn]
-  (assert sentry-dsn (str "The Sentry appender requires a dsn, none given:" sentry-dsn))
-  (println "DBG sentry-appender/appender" sentry-dsn)
-  (sentry/init! sentry-dsn)
+  [{:keys [dsn release environment]}]
+  (assert dsn (str "The Sentry appender requires a dsn, none given:" dsn))
+  (let [sentry-client (sentry/init! dsn)]
+    (when release
+      (.setRelease sentry-client release))
+    (when environment
+      (.setEnvironment sentry-client environment)))
   {:doc "A timbre appender that sends errors to getsentry.com"
    :min-level :error ; critical this not drop to warn or below as this appender logs at warning level (infinite loop!)
    :enabled? true

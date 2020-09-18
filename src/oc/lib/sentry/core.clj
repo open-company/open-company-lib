@@ -27,28 +27,34 @@
    (timbre/warn "Failed sentry wrap: empty DSN")
    handler)
 
-  ([handler sentry-dsn :guard (comp not s/blank?)]
-   (sentry-ring/wrap-report-exceptions handler sentry-dsn {}))
-                                       ; {:postprocess-fn (fn [req e]
-                                       ;                   (cond-> e
-                                       ;                    (:environment config)  (assoc :environment (:environment config))
-                                       ;                    (:release config)      (assoc :release (:release config))))}))
+  ([handler sentry-config :guard (comp not s/blank?)]
+   (let [{:keys [dsn release environment]} sentry-config]
+     (sentry-ring/wrap-report-exceptions handler dsn {})))
+                                         ; {:postprocess-fn (fn [req e]
+                                         ;                    (cond-> e
+                                         ;                     (:environment config)  (assoc :environment (:environment config))
+                                         ;                     (:release config)      (assoc :release (:release config))))})))
 
-  ([handler sys-conf :guard map?]
-   (recur (-> sys-conf :sentry-capturer :config :dsn))))
+  ([handler sys-conf :guard :sentry-capturer]
+   (recur handler (-> sys-conf :sentry-capturer :config))))
 
 (def sentry-appender sa/appender)
 
-(defn init [sentry-dsn]
-  (sentry/init! sentry-dsn)
-  ;; Send unhandled exceptions to log and Sentry
-  ;; See https://stuartsierra.com/2015/05/27/clojure-uncaught-exceptions
-  (Thread/setDefaultUncaughtExceptionHandler
-   (reify Thread$UncaughtExceptionHandler
-     (uncaughtException [_ thread ex]
-       (timbre/error ex "Uncaught exception on" (.getName thread) (.getMessage ex))
-       (when ex
-         (sentry/send-event ex))))))
+(defn init [{:keys [dsn environment release]}]
+  (let [sentry-client (sentry/init! dsn)]
+    (when release
+      (.setRelease sentry-client release))
+    (when environment
+      (.setEnvironment sentry-client environment))
+    ;; Send unhandled exceptions to log and Sentry
+    ;; See https://stuartsierra.com/2015/05/27/clojure-uncaught-exceptions
+    (Thread/setDefaultUncaughtExceptionHandler
+     (reify Thread$UncaughtExceptionHandler
+       (uncaughtException [_ thread ex]
+         (timbre/error ex "Uncaught exception on" (.getName thread) (.getMessage ex))
+         (when ex
+           (sentry/send-event ex)))))
+    sentry-client))
 
 (defrecord SentryCapturer [dsn release environment]
   component/Lifecycle
@@ -63,7 +69,7 @@
       (let [config {:dsn dsn
                     :release release
                     :environment environment}
-            sentry (init dsn)]
+            sentry (init config)]
         (timbre/info "[sentry-capturer] started")
         (assoc component :sentry-capturer {:handler sentry :config config}))))
 

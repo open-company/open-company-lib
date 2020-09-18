@@ -23,11 +23,11 @@
 
 (defun wrap
 
-  ([handler empty-dsn :guard s/blank?]
+  ([handler nil]
    (timbre/warn "Failed sentry wrap: empty DSN")
    handler)
 
-  ([handler sentry-config :guard (comp not s/blank?)]
+  ([handler sentry-config :guard map?]
    (let [{:keys [dsn release environment]} sentry-config]
      (sentry-ring/wrap-report-exceptions handler dsn {})))
                                          ; {:postprocess-fn (fn [req e]

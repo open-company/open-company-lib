@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.29-alpha36"
+(defproject open-company/lib "0.17.29-alpha37"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -59,9 +59,8 @@
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
     [com.taoensso/encore "2.119.0"]
-    ;; Interface to Sentry error reporting https://github.com/sethtrain/raven-clj
-    ;; NB: commons-codec pulled in manually
-    [raven-clj "1.6.0" :exclusions [commons-codec]]
+    ;; Interface to Sentry error reporting https://github.com/getsentry/sentry-clj
+    [io.sentry/sentry-clj "0.7.2"]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.15.3"]
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
@@ -128,6 +127,8 @@
     ;; NB: joda-time is pulled in by clj-time
     ;; NB: encore pulled in from oc.lib
     [com.taoensso/faraday "1.11.0-alpha1" :exclusions [com.amazonaws/aws-java-sdk-dynamodb joda-time com.taoensso/encore]]
+    ;; This is needed by sentry-clj if we want to use the ring middleware
+    [ring/ring-core "1.8.0" :exclusions [clj-time joda-time commons-codec]]
   ]
 
   :profiles {

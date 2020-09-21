@@ -15,7 +15,7 @@
 (def json-mime-type "application/json")
 (def text-mime-type "text/plain")
 
-(def help-email "hello@wuts.io")
+(def help-email "hello@carrot.io")
 (def error-msg (str "We've been notified of this error. Please contact " help-email " for additional help."))
 
 ;; ----- Ring Middleware -----

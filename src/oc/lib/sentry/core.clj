@@ -77,5 +77,5 @@
     (if sentry-capturer
       (do
         (timbre/info "[sentry-capturer] stopped")
-        (dissoc component :sentry-capturer))
+        (assoc component :sentry-capturer nil))
       component)))

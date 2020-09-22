@@ -43,7 +43,7 @@
     (timbre/info "Stopping SQSListener")
     (when-let [consumer (:retriever component)] 
       (sqs/stop-consumer consumer))
-    (dissoc component :retriever)))
+    (assoc component :retriever nil)))
 
 (defn sqs-listener 
   ([{:keys [sqs-creds sqs-queue message-handler]}]

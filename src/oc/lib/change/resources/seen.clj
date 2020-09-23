@@ -23,6 +23,9 @@
 (defn- create-container-item-id [container-id item-id]
   (str container-id "-" item-id))
 
+(declare retrieve-by-container-item)
+(declare store!)
+
 (schema/defn ^:always-validate delete-by-item!
   [db-opts container-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
   (doseq [item (far/query db-opts (table-name db-opts) {:item_id [:eq item-id]} {:index (container-id-item-id-gsi-name db-opts)})]

@@ -37,24 +37,12 @@
 
 (schema/defn ^:always-validate move-item!
   [db-opts item-id :- lib-schema/UniqueID old-container-id :- lib-schema/UniqueID new-container-id :- lib-schema/UniqueID]
-  (let [items-to-move (far/query db-opts (table-name db-opts) {:item_id [:eq item-id] :container_id [:eq old-container-id]}
-                       {:index (container-id-item-id-gsi-name db-opts)})]
+  (let [items-to-move (retrieve-by-container-item db-opts old-container-id item-id)]
     (timbre/info "Seen move-item! for" item-id "moving:" (count items-to-move) "items from container" old-container-id "to" new-container-id)
     (doseq [item items-to-move]
-      (let [old-container-item-id (create-container-item-id old-container-id item-id)
-            new-container-item-id (create-container-item-id new-container-id item-id)
-            full-item (far/get-item db-opts (table-name db-opts) {:user_id (:user_id item) :container_item_id old-container-item-id})]
-
-        (far/delete-item db-opts (table-name db-opts) {:container_item_id (:container_item_id full-item)
-                                                       :user_id (:user_id full-item)})
-        (far/put-item db-opts (table-name db-opts) {
-          :user_id (:user_id full-item)
-          :org_id (:org_id full-item)
-          :container_item_id new-container-item-id
-          :container_id (:container_id full-item)
-          :item_id (:item_id full-item)
-          :seen_at (:seen_at full-item)
-          :ttl (:ttl full-item)})))))
+      (store! db-opts (assoc item :container-id new-container-id))
+      (delete-by-item! db-opts old-container-id item-id))
+    true))
 
 (schema/defn ^:always-validate retrieve :- [{:container-id lib-schema/UniqueID
                                              :item-id lib-schema/UniqueID
@@ -66,6 +54,26 @@
          :expr-attr-vals {":v" (ttl/ttl-now)}})
       (map #(clojure.set/rename-keys % {:container_id :container-id :item_id :item-id :seen_at :seen-at}))
       (map #(select-keys % [:container-id :item-id :seen-at]))))
+
+(schema/defn ^:always-validate retrieve-by-container-item :- [{(schema/optional-key :org-id) lib-schema/UniqueID
+                                                               (schema/optional-key :container-id) lib-schema/UniqueID
+                                                               (schema/optional-key :item-id) lib-schema/UniqueID
+                                                               (schema/optional-key :container-item-id) lib-schema/UniqueID
+                                                               (schema/optional-key :user-id) lib-schema/UniqueID
+                                                               (schema/optional-key :seen-at) lib-schema/ISO8601
+                                                               (schema/optional-key :seen-ttl) schema/Any}]
+  [db-opts container-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
+  (->> (far/query db-opts (table-name db-opts) {:container_id [:eq container-id]
+                                                :item_id [:eq item-id]}
+                  {:index (container-id-item-id-gsi-name db-opts)})
+       (map #(clojure.set/rename-keys % {:org_id :org-id
+                                         :container_id :container-id
+                                         :item_id :item-id
+                                         :container_item_id :container-item-id
+                                         :user_id :user-id
+                                         :seen_at :seen-at
+                                         :seen_ttl :seen-ttl}))
+       (map #(select-keys % [:org-id :container-id :item-id :container-item-id :user-id :seen-at :seen-ttl]))))
 
 (schema/defn ^:always-validate retrieve-by-user-org :- [{(schema/optional-key :container-id) lib-schema/UniqueID
                                                          (schema/optional-key :item-id) lib-schema/UniqueID
@@ -105,6 +113,10 @@
        (select-keys [:org-id :container-id :item-id :seen-at])))))
 
 (schema/defn ^:always-validate store!
+  ;; Clone a seen item, NB: it uses dashed keys, not underscores
+  ([db-opts seen-item]
+   (store! db-opts (:user-id seen-item) (:org-id seen-item) (:container-id seen-item) (:item-id seen-item)
+           (:seen-at seen-item) (:seen-ttl seen-item)))
 
   ;; Saw the whole container, so the item-id is a placeholder
   ([db-opts

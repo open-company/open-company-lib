@@ -92,11 +92,11 @@
   (far/delete-item dynamodb-opts (table-name dynamodb-opts) {:user_id user-id
                                                              :org_slug org-slug})
   (let [publisher-followers (->> (far/query dynamodb-opts (publisher-follower-table-name dynamodb-opts)
-                                  {:org_slug [:eq org-slug]}
-                                  {:index (org-slug-publisher-followers-gsi-name dynamodb-opts)
-                                   :filter-expr "contains(#k, :v)"
-                                   :expr-attr-names {"#k" "follower_uuids"}
-                                   :expr-attr-vals {":v" user-id}})
+                                            {:org_slug [:eq org-slug]}
+                                            {:index (org-slug-publisher-followers-gsi-name dynamodb-opts)
+                                             :filter-expr "contains(#k, :v)"
+                                             :expr-attr-names {"#k" "follower_uuids"}
+                                             :expr-attr-vals {":v" user-id}})
                               (map #(clojure.set/rename-keys % {:publisher_uuid :publisher-uuid :org_slug :org-slug :follower_uuids :follower-uuids})))]
     (doseq [follower publisher-followers
             :let [next-followers (vec (disj (set (:follower-uuids follower)) user-id))]]
@@ -242,7 +242,7 @@
      :org_slug carrot
      :follower_uuids [1111-1111-1111 2222-2222-2222]}]
 
-   Board followers
+   Board unfollowers
    [{:unfollow_board_uuid bbbb-bbbb-bbbb
      :org_slug carrot
      :follower_uuids [1111-1111-1111 2222-2222-2222]}]

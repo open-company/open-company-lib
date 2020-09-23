@@ -24,14 +24,6 @@
 (defn container-id-gsi-name [db-opts]
   (keyword (str (:table-prefix db-opts) table "_gsi_container_id")))
 
-;; Helpers
-
-;; In theory, DynamoDB (and by extension, Faraday) support `{:return :count}` but it doesn't seem to be working
-;; https://github.com/ptaoussanis/faraday/issues/91
-(defn- count-for [db-opts user-id item-id]
-  (let [results (far/query db-opts (table-name db-opts) {:item_id [:eq item-id]})]
-    {:item-id item-id :count (count results) :last-read-at (:read_at (last (sort-by :read-at (filterv #(= (:user_id %) user-id) results))))}))
-
 ;; Store
 
 (schema/defn ^:always-validate store!
@@ -126,17 +118,14 @@
   (let [items-to-move (retrieve-by-item db-opts item-id)]
     (timbre/info "Read move-item! for" item-id "moving:" (count items-to-move) "items from container" old-container-id "to" new-container-id)
     (doseq [item items-to-move]
-      (let [full-item (retrieve-by-user-item db-opts (:user-id item) (:item-id item))]
-        (far/delete-item db-opts (table-name db-opts) {:item_id (:item-id full-item)
-                                                       :user_id (:user-id full-item)})
-        (far/put-item db-opts (table-name db-opts) {
-          :org_id (:org-id full-item)
-          :container_id new-container-id
-          :item_id (:item-id full-item)
-          :user_id (:user-id full-item)
-          :name (:name full-item)
-          :avatar_url (:avatar-url full-item)
-          :read_at (:read-at full-item)})))))
+      (far/update-item db-opts (table-name db-opts) {:item_id item-id
+                                                     :user_id (:user-id item)}
+                       {:update-expr "SET #k = :new_value"
+                        :cond-expr "#k = :old_value"
+                        :expr-attr-names {"#k" "container_id"}
+                        :expr-attr-vals {":new_value" new-container-id
+                                         ":old_value" old-container-id}
+                        :return :all-new}))))
 
 ;; Delete
 
@@ -172,6 +161,18 @@
                                                    :user_id (:user-id item)})))
 
 ;; Count
+
+;; In theory, DynamoDB (and by extension, Faraday) support `{:return :count}` but it doesn't seem to be working
+;; https://github.com/ptaoussanis/faraday/issues/91
+(defn- count-for [db-opts user-id item-id]
+  (let [item-reads (retrieve-by-item db-opts item-id)]
+    {:item-id item-id
+     :count (count item-reads)
+     :last-read-at (->> item-reads
+                        (filterv #(= (:user-id %) user-id))
+                        (sort-by :read-at)
+                        last
+                        :read-at)}))
 
 (schema/defn ^:always-validate counts :- [{:item-id lib-schema/UniqueID
                                            :count schema/Int

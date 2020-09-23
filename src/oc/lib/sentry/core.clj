@@ -23,12 +23,8 @@
 
 (defun wrap
 
-  ([handler nil]
-   (timbre/warn "Failed sentry wrap: empty DSN")
-   handler)
-
-  ([handler sys-conf :guard (comp :sentry-capturer :handler-fn)]
-   (wrap handler (-> sys-conf :handler-fn :sentry-capturer)))
+  ([handler sys-conf :guard :sentry-capturer]
+   (wrap handler (:sentry-capturer sys-conf)))
 
   ([handler sentry-config :guard :dsn]
    (let [{:keys [dsn release environment]} sentry-config]
@@ -37,7 +33,9 @@
                                          ;                    (cond-> e
                                          ;                     (:environment sentry-config)  (assoc :environment (:environment sentry-config))
                                          ;                     (:release sentry-config)      (assoc :release (:release sentry-config))))})))
-  )
+  ([handler _]
+   (timbre/warn "No Sentry configuration found to wrap the handler.")
+   handler))
 
 (defn init [{:keys [dsn environment release]}]
   (let [sentry-client (sentry/init! dsn)]

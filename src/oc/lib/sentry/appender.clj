@@ -89,7 +89,7 @@
   (do (require '[taoensso.timbre :as timbre])
       (require '[oc.lib.sentry.appender :reload true])
       (timbre/merge-config! {:appenders {:sentry-appender (oc.lib.sentry.appender/appender
-        "https://50ad5c0d6ffa47119259403854dc4d5d:2721d28d6622450c85cec0d4b5ea27e8@sentry.io/51845")}})
+        {:dsn "https://50ad5c0d6ffa47119259403854dc4d5d:2721d28d6622450c85cec0d4b5ea27e8@sentry.io/51845"})}})
       (dotimes [_ 1]
         (try
           (/ 1 0)
@@ -99,7 +99,9 @@
   (do (require '[taoensso.timbre :as timbre])
       (require '[oc.lib.sentry-appender :reload true])
       (timbre/merge-config! {:appenders {:sentry-appender (oc.lib.sentry-appender/sentry-appender
-        "https://50ad5c0d6ffa47119259403854dc4d5d:2721d28d6622450c85cec0d4b5ea27e8@sentry.io/51845")}})
+        {:dsn "https://50ad5c0d6ffa47119259403854dc4d5d:2721d28d6622450c85cec0d4b5ea27e8@sentry.io/51845"
+        :environment "local"
+        :release "your-release-LAST_COMMIT_SHA"})}})
       (dotimes [_ 1]
         (timbre/error "Test just" "string stuff")))
 

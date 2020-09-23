@@ -33,7 +33,7 @@
   (let [ex (-> ex-map :exception first)
         trimmed (reverse
                   (take stacktrace-depth
-                    (-> ex                    
+                    (-> ex
                       :stacktrace
                       :frames
                       reverse)))]

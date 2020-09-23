@@ -27,7 +27,10 @@
    (timbre/warn "Failed sentry wrap: empty DSN")
    handler)
 
-  ([handler sentry-config :guard map?]
+  ([handler sys-conf :guard :sentry-capturer]
+   (recur handler (:sentry-capturer sys-conf)))
+
+  ([handler sentry-config :guard :dsn]
    (let [{:keys [dsn release environment]} sentry-config]
      (sentry-ring/wrap-report-exceptions handler dsn {})))
                                          ; {:postprocess-fn (fn [req e]
@@ -35,10 +38,7 @@
                                          ;                     (:environment config)  (assoc :environment (:environment config))
                                          ;                     (:release config)      (assoc :release (:release config))))})))
 
-  ([handler sys-conf :guard :sentry-capturer]
-   (recur handler (-> sys-conf :sentry-capturer :config))))
-
-(def sentry-appender sa/appender)
+  )
 
 (defn init [{:keys [dsn environment release]}]
   (let [sentry-client (sentry/init! dsn)]
@@ -69,13 +69,17 @@
       (let [config {:dsn dsn
                     :release release
                     :environment environment}
-            sentry (init config)]
+            sentry-client (init config)]
         (timbre/info "[sentry-capturer] started")
-        (assoc component :sentry-capturer {:handler sentry :config config}))))
+        (assoc component :sentry-client sentry-client))))
 
-  (stop [{:keys [sentry-capturer] :as component}]
-    (if sentry-capturer
+  (stop [{:keys [sentry-client] :as component}]
+    (if sentry-client
       (do
         (timbre/info "[sentry-capturer] stopped")
-        (assoc component :sentry-capturer nil))
+        (assoc component :sentry-client nil))
       component)))
+
+;; ---- Shorthand for appender function ----
+
+(def sentry-appender sa/appender)

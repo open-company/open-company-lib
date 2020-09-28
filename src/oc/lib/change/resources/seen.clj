@@ -11,8 +11,12 @@
 (defn table-name [db-opts]
   (keyword (str (:table-prefix db-opts) "_seen")))
 
+(def container-id-item-id-gsi-projection :all)
+
 (defn container-id-item-id-gsi-name [db-opts]
   (keyword (str (:table-prefix db-opts) "_seen_gsi_container_id_item_id")))
+
+(def container-id-gsi-projection :all)
 
 (defn container-id-gsi-name [db-opts]
   (keyword (str (:table-prefix db-opts) "_seen_gsi_container_id")))

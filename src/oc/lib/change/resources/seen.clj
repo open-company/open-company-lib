@@ -32,7 +32,9 @@
 
 (schema/defn ^:always-validate delete-by-item!
   [db-opts container-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
-  (doseq [item (far/query db-opts (table-name db-opts) {:item_id [:eq item-id]} {:index (container-id-item-id-gsi-name db-opts)})]
+  (doseq [item (far/query db-opts (table-name db-opts) {:container_id [:eq container-id]
+                                                        :item_id [:eq item-id]}
+                                                       {:index (container-id-item-id-gsi-name db-opts)})]
     (far/delete-item db-opts (table-name db-opts) {:container_item_id (:container_item_id item)
                                                    :user_id (:user_id item)})))
 
@@ -180,7 +182,9 @@
                    :range-keydef [:container_id :s]
                    :projection :all}}))
 
-  (doseq [item (far/query config/dynamodb-opts (lib-seen/table-name db-opts) {:item_id [:eq "512b-4ad1-9924"]} {:index seen/container-id-item-id-gsi-name})]
+  (doseq [item (far/query config/dynamodb-opts (lib-seen/table-name db-opts) {:container_id [:eq "25a3-4692-bf02"]
+                                                                              :item_id [:eq "512b-4ad1-9924"]}
+                                                                             {:index seen/container-id-item-id-gsi-name})]
     (aprint
       (far/delete-item config/dynamodb-opts (lib-seen/table-name db-opts) {:container_item_id (:container_item_id item)
                                                              :user_id (:user_id item)})))

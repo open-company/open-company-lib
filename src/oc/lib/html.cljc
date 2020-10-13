@@ -4,8 +4,10 @@
             #?(:clj [jsoup.soup :as soup]))
   #?(:clj (:import [org.owasp.html HtmlPolicyBuilder Sanitizers])))
 
-(defn- thumbnail-elements [body]
-  (let [thumbnail-selector "img:not(.emojione):not([data-media-type='image/gif']), iframe"]
+(defn- thumbnail-elements [body exclude-gifs?]
+  (let [thumbnail-selector (if exclude-gifs?
+                             "img:not(.emojione):not([data-media-type='image/gif']), iframe"
+                             "img:not(.emojione), iframe")]
     #?(:clj
        (let [parsed-body (soup/parse body)
              els (.select parsed-body thumbnail-selector)]
@@ -34,7 +36,7 @@
     #?(:clj
        (Integer/parseInt (re-find #"\A-?\d+" size))
        :cljs
-       size)))
+       (js/parseInt size 10))))
 
 (defn first-body-thumbnail
   "
@@ -42,26 +44,27 @@
   Thumbnail type: image, video or chart.
   This rely on the similitudes between jQuery and soup parsed objects like the attr function.
   "
-  [html-body]
-  (let [{els-count :count thumb-els :elements} (thumbnail-elements html-body)
-        found (atom nil)]
-    (dotimes [el-num els-count]
-      (let [el #?(:clj (nth thumb-els el-num) :cljs (aget thumb-els el-num))
-            $el ($el el)]
-        (when-not @found
-          (if (= (str/lower (tag-name el)) "img")
-            (let [width (read-size (.attr $el "width"))
-                  height (read-size (.attr $el "height"))]
-              (when (and (not @found)
-                         (or (<= width (* height 2))
-                             (<= height (* width 2))))
-                (reset! found
-                  {:type "image"
-                   :thumbnail (if (.attr $el "data-thumbnail")
-                                (.attr $el "data-thumbnail")
-                                (.attr $el "src"))})))
-            (reset! found {:type (.attr $el "data-media-type") :thumbnail (.attr $el "data-thumbnail")})))))
-    @found))
+  ([html-body] (first-body-thumbnail html-body true))
+  ([html-body exclude-gifs?]
+   (let [{els-count :count thumb-els :elements} (thumbnail-elements html-body exclude-gifs?)
+         found (atom nil)]
+     (dotimes [el-num els-count]
+       (let [el #?(:clj (nth thumb-els el-num) :cljs (aget thumb-els el-num))
+             $el ($el el)]
+         (when-not @found
+           (if (= (str/lower (tag-name el)) "img")
+             (let [width (read-size (.attr $el "width"))
+                   height (read-size (.attr $el "height"))]
+               (when (and (not @found)
+                          (or (<= width (* height 2))
+                              (<= height (* width 2))))
+                 (reset! found
+                   {:type "image"
+                    :thumbnail (if (.attr $el "data-thumbnail")
+                                 (.attr $el "data-thumbnail")
+                                 (.attr $el "src"))})))
+             (reset! found {:type (.attr $el "data-media-type") :thumbnail (.attr $el "data-thumbnail")})))))
+     @found)))
 
 (def allowed-block-elements ["span" "img" "a" "iframe" "pre" "code" "div" "mark"])
 

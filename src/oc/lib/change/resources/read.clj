@@ -121,10 +121,8 @@
       (far/update-item db-opts (table-name db-opts) {:item_id item-id
                                                      :user_id (:user-id item)}
                        {:update-expr "SET #k = :new_value"
-                        :cond-expr "#k = :old_value"
                         :expr-attr-names {"#k" "container_id"}
-                        :expr-attr-vals {":new_value" new-container-id
-                                         ":old_value" old-container-id}
+                        :expr-attr-vals {":new_value" new-container-id}
                         :return :all-new}))))
 
 ;; Delete

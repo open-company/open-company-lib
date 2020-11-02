@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.29-alpha50"
+(defproject open-company/lib "0.17.29-alpha52"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -34,7 +34,7 @@
     [com.stuartsierra/component "1.0.0"]
     ;; ----------------------------------------------------------------------------------------
     ;; --- NB: DO NOT UPGRADE TO 2.4.0-alpha3
-    [http-kit "2.3.0"] ; HTTP client and server http://http-kit.org/
+    [http-kit "2.5.0"] ; HTTP client and server http://http-kit.org/
     ;; --- it breaks WS connections returning an net::ERR_INVALID_HTTP_RESPONSE on connect ----
     ;; ----------------------------------------------------------------------------------------
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
@@ -126,7 +126,7 @@
     ;; NB: com.amazonaws/aws-java-sdk-dynamodb is pulled in by amazonica
     ;; NB: joda-time is pulled in by clj-time
     ;; NB: encore pulled in from oc.lib
-    [com.taoensso/faraday "1.11.0-alpha1" :exclusions [com.amazonaws/aws-java-sdk-dynamodb joda-time com.taoensso/encore]]
+    [com.taoensso/faraday "1.11.0-alpha1" :exclusions [com.taoensso/nippy com.amazonaws/aws-java-sdk-dynamodb org.tukaani/xz joda-time com.taoensso/encore]]
     ;; This is needed by sentry-clj if we want to use the ring middleware
     [ring/ring-core "1.8.0" :exclusions [clj-time joda-time commons-codec]]
   ]

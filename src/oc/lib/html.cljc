@@ -31,13 +31,6 @@
      :cljs
       (.-tagName el)))
 
-(defn- read-size [size]
-  (when-not (str/blank? size)
-    #?(:clj
-       (Integer/parseInt (re-find #"\A-?\d+" size))
-       :cljs
-       (js/parseInt size 10))))
-
 (defn first-body-thumbnail
   "
   Given an entry body get the first thumbnail available.
@@ -53,16 +46,12 @@
              $el ($el el)]
          (when-not @found
            (if (= (str/lower (tag-name el)) "img")
-             (let [width (read-size (.attr $el "width"))
-                   height (read-size (.attr $el "height"))]
-               (when (and (not @found)
-                          (or (<= width (* height 2))
-                              (<= height (* width 2))))
-                 (reset! found
-                   {:type "image"
-                    :thumbnail (if (.attr $el "data-thumbnail")
-                                 (.attr $el "data-thumbnail")
-                                 (.attr $el "src"))})))
+             (when (not @found)
+               (reset! found
+                       {:type "image"
+                        :thumbnail (if (.attr $el "data-thumbnail")
+                                     (.attr $el "data-thumbnail")
+                                     (.attr $el "src"))}))
              (reset! found {:type (.attr $el "data-media-type") :thumbnail (.attr $el "data-thumbnail")})))))
      @found)))
 

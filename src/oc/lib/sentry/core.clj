@@ -37,12 +37,16 @@
    (timbre/warn "No Sentry configuration found to wrap the handler.")
    handler))
 
-(defn init [{:keys [dsn environment release]}]
-  (let [sentry-client (sentry/init! dsn)]
-    (when release
-      (.setRelease sentry-client release))
-    (when environment
-      (.setEnvironment sentry-client environment))
+(defn- sentry-init-config [{:keys [dsn environment release deploy debug]}]
+  (fn [options]
+    (.setDsn options dsn)
+    (.setEnvironment options environment)
+    (.setRelease options release)
+    (.setDeploy options deploy)
+    (.setDebug options debug)))
+
+(defn init [sentry-config]
+  (let [sentry-client (sentry/init! (sentry-init-config sentry-config))]
     ;; Send unhandled exceptions to log and Sentry
     ;; See https://stuartsierra.com/2015/05/27/clojure-uncaught-exceptions
     (Thread/setDefaultUncaughtExceptionHandler
@@ -53,7 +57,7 @@
            (sentry/send-event ex)))))
     sentry-client))
 
-(defrecord SentryCapturer [dsn release environment]
+(defrecord SentryCapturer [dsn release environment deploy debug]
   component/Lifecycle
 
   (start [component]
@@ -65,7 +69,9 @@
         component)
       (let [config {:dsn dsn
                     :release release
-                    :environment environment}
+                    :deploy deploy
+                    :environment environment
+                    :debug debug}
             sentry-client (init config)]
         (timbre/info "[sentry-capturer] started")
         (assoc component :sentry-client sentry-client))))

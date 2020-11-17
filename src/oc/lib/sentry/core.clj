@@ -47,14 +47,9 @@
 
 (defn init [sentry-config]
   (let [sentry-client (sentry/init! (sentry-init-config sentry-config))]
-    ;; Send unhandled exceptions to log and Sentry
-    ;; See https://stuartsierra.com/2015/05/27/clojure-uncaught-exceptions
-    (Thread/setDefaultUncaughtExceptionHandler
-     (reify Thread$UncaughtExceptionHandler
-       (uncaughtException [_ thread ex]
-         (timbre/error ex "Uncaught exception on" (.getName thread) (.getMessage ex))
-         (when ex
-           (sentry/send-event ex)))))
+    (timbre/handle-uncaught-jvm-exceptions! (fn [throwable thread]
+                                              (capture throwable)
+                                              (timbre/error throwable "Uncaught exception on" (.getName thread) (.getMessage throwable))))
     sentry-client))
 
 (defrecord SentryCapturer [dsn release environment deploy debug]

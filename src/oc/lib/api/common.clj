@@ -127,6 +127,21 @@
      :headers {"Location" location
                "Content-Type" (format "%s;charset=%s" media-type UTF8)}})))
 
+(defn refresh-token? [ctx]
+  (and (:jwtoken ctx)
+       (:user ctx)
+       (jwt/refresh? (:user ctx))))
+
+(defn refresh-token-response []
+  (ring-response {:body "JWToken must be refershed"
+                  :status 440
+                  :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}}))
+
+(defn handle-unauthorized [ctx]
+  (if (refresh-token? ctx)
+    (refresh-token-response)
+    (unauthorized-response)))
+
 ;; ----- Validations -----
 
 (defun only-accept
@@ -165,8 +180,12 @@
 (defn authenticated?
   "Return true if the request contains a valid JWToken"
   [ctx]
-  (if (= (-> ctx :request :request-method) :options)
+  (cond
+    (= (-> ctx :request :request-method) :options)
     true ; always allow options
+    (refresh-token? ctx)
+    false
+    :else
     (and (:jwtoken ctx) (:user ctx))))
 
 (defn get-token
@@ -202,17 +221,6 @@
      :default
      {:jwtoken false})))
 
-
-(defn allow-anonymous
-  "Allow unless there is a JWToken provided and it's invalid."
-  [ctx]
-  (if (= (-> ctx :request :request-method) :options)
-    true ; allows allow options
-    (boolean (or (nil? (:jwtoken ctx))
-                 (:jwtoken ctx)
-                 (nil? (:id-token ctx))
-                 (:id-token ctx)))))
-
 (defn allow-id-token
   "Allow options request. Allow jwtoken. Allow id token. Allow anonymous."
   [ctx]
@@ -237,19 +245,33 @@
     true ; always allow options
     (authenticated? ctx)))
 
+(defn allow-anonymous
+  "Allow unless there is a JWToken provided and it's invalid."
+  [ctx]
+  (cond (= (-> ctx :request :request-method) :options)
+        true ; always allow options
+        (:id-token ctx)
+        (allow-id-token ctx)
+
+        (:jwtoken ctx)
+        (allow-authenticated ctx)
+
+        :else
+        true))
+
 ;; ----- Resources - see: http://clojure-liberator.github.io/liberator/assets/img/decision-graph.svg
 
 ;; verify validity of JWToken if it's provided, but it's not required
 (defn anonymous-resource [passphrase] {
   :initialize-context (fn [ctx] (read-token (get-in ctx [:request :headers]) passphrase))
   :authorized? allow-anonymous
-  :handle-unauthorized (fn [_] (unauthorized-response))
+  :handle-unauthorized handle-unauthorized
   :handle-forbidden  (fn [ctx] (if (:jwtoken ctx) (forbidden-response) (unauthorized-response)))})
 
 (defn base-authenticated-resource [passphrase]{
   :initialize-context (fn [ctx] (read-token (get-in ctx [:request :headers]) passphrase))
   :handle-not-found (fn [_] (missing-response))
-  :handle-unauthorized (fn [_] (unauthorized-response))
+  :handle-unauthorized handle-unauthorized
   :handle-forbidden (fn [_] (forbidden-response))})
 
 (defn id-token-resource [passphrase]

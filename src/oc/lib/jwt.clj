@@ -1,47 +1,14 @@
 (ns oc.lib.jwt
-  (:require [if-let.core :refer (if-let* when-let*)]
-            [defun.core :refer (defun defun-)]
-            [taoensso.timbre :as timbre]
+  (:require [defun.core :refer (defun defun-)]
             [schema.core :as schema]
             [clj-jwt.core :as jwt]
             [clj-time.core :as t]
-            [clj-time.coerce :as tc]
+            [clojure.set :as clj-set]
             [oc.lib.db.common :as db-common]
             [oc.lib.schema :as lib-schema]
             [oc.lib.user :as lib-user]))
 
 (def media-type "application/jwt")
-
-(def SlackBots {lib-schema/UniqueID [{:id schema/Str :token schema/Str :slack-org-id schema/Str}]})
-
-(def GoogleToken
-  {:access-token schema/Str
-   :token-type schema/Str
-   :query-param schema/Any
-   :params {:expires_in schema/Any
-            :id_token schema/Str
-            :scope schema/Any}})
-
-(def Claims
-  (merge {:user-id lib-schema/UniqueID
-          :teams [lib-schema/UniqueID]
-          :admin [lib-schema/UniqueID]
-          :name schema/Str
-          :first-name schema/Str
-          :last-name schema/Str
-          :avatar-url (schema/maybe schema/Str)
-          :email lib-schema/NonBlankStr
-          :auth-source schema/Any
-          (schema/optional-key :slack-id) schema/Str
-          (schema/optional-key :slack-display-name) schema/Str
-          (schema/optional-key :slack-token) schema/Str
-          (schema/optional-key :slack-bots) SlackBots
-          (schema/optional-key :google-id) schema/Str
-          (schema/optional-key :google-token) schema/Any
-          :refresh-url lib-schema/NonBlankStr
-          :expire schema/Num
-          schema/Keyword schema/Any} ; and whatever else is in the JWT map to make it open for future extensions
-         lib-schema/slack-users))
 
 (schema/defn ^:always-validate admin-of :- (schema/maybe [lib-schema/UniqueID])
   "
@@ -51,7 +18,7 @@
   "
   [conn user-id :- lib-schema/UniqueID]
   {:pre [(db-common/conn? conn)]}
-  (let [teams (db-common/read-resources conn :teams :admins user-id)]              
+  (let [teams (db-common/read-resources conn :teams :admins user-id)]
     (vec (map :team-id teams))))
 
 (defn name-for
@@ -71,7 +38,7 @@
   (when (and (:bot-user-id slack-org) (:bot-token slack-org))
     ;; Extract and rename the keys for JWToken use
     (select-keys
-      (clojure.set/rename-keys slack-org {:bot-user-id :id :bot-token :token})
+      (clj-set/rename-keys slack-org {:bot-user-id :id :bot-token :token})
       [:slack-org-id :id :token])))
 
   ;; Empty case, no more Slack orgs
@@ -108,19 +75,30 @@
                              (map #(bot-for slack-org-to-bot % []) (vals team-to-slack-orgs)))] ; map of team to bot(s)
     (into {} (remove (comp empty? second) team-to-bots))))) ; remove any team with no bots
 
-(defn expired?
-  "Return true/false if the JWToken is expired."
+(defn refresh?
+  "Return true/false if the JWToken needs to be refresh.
+   Can happen when the expire field contains a past date or
+   if the claims are missing a required key
+   (check ValidJWTClaims and Claims schema diffs, ValidJWTClaims is used only
+    to ignore id-tokens)."
   [jwt-claims]
-  (if-let [expire (:expire jwt-claims)]
-    (t/after? (t/now) (tc/from-long expire))
-    (timbre/error "No expire field found in JWToken" jwt-claims)))
+  (not (lib-schema/valid? jwt-claims lib-schema/ValidJWTClaims)))
+
+(defn expire-time
+  "Given a token payload return the expiring date depending on the token content."
+  [payload]
+  (-> (if (empty? (:slack-bots payload)) 2 24)
+      t/hours t/from-now .getMillis))
 
 (defn expire
   "Set an expire property in the JWToken payload, longer if there's a bot, shorter if not."
   [payload]
-  (let [expire-by (-> (if (empty? (:slack-bots payload)) 2 24)
-                      t/hours t/from-now .getMillis)]
-    (assoc payload :expire expire-by)))
+  (assoc payload :expire (expire-time payload)))
+
+(defn timed-payload [payload]
+  (-> payload
+      expire
+      (assoc :created-at (.getMillis (t/now)))))
 
 (defn encode [payload passphrase]
   (-> payload
@@ -129,24 +107,24 @@
       jwt/to-str))
 
 (defn generate-id-token [claims passphrase]
-  (encode {:id-token true
-           :secure-uuid (:secure-uuid claims)
-           :org-id (:org-uuid claims)
-           :name (:name claims)
-           :first-name (:first-name claims)
-           :last-name (:last-name claims)
-           :user-id (:user-id claims)
-           :avatar-url (:avatar-url claims)
-           :teams [(:team-id claims)]}
-          passphrase))
+  (let [payload {:id-token true
+                 :secure-uuid (:secure-uuid claims)
+                 :org-id (:org-uuid claims)
+                 :name (:name claims)
+                 :first-name (:first-name claims)
+                 :last-name (:last-name claims)
+                 :user-id (:user-id claims)
+                 :avatar-url (:avatar-url claims)
+                 :teams [(:team-id claims)]}]
+  (encode payload passphrase)))
 
 (defn generate
   "Create a JSON Web Token from a payload."
   [payload passphrase]
-  (let [expiring-payload (expire payload)]
-    (when-not (:super-user expiring-payload) ;; trust the super user
-      (schema/validate Claims expiring-payload)) ; ensure we only generate valid JWTokens
-    (encode expiring-payload passphrase)))
+  (let [complete-payload (timed-payload payload)]
+    (when-not (:super-user complete-payload) ;; trust the super user
+      (schema/validate lib-schema/ValidJWTClaims complete-payload)) ; ensure we only generate valid JWTokens
+    (encode complete-payload passphrase)))
 
 (defn check-token
   "Verify a JSON Web Token with the passphrase that was (presumably) used to generate it."
@@ -155,7 +133,7 @@
     (-> token
         jwt/str->jwt
         (jwt/verify passphrase))
-    (catch Exception e
+    (catch Exception _
       false)))
 
 (defn decode
@@ -166,13 +144,11 @@
 (defn valid?
   [token passphrase]
   (try
-    (if-let* [check? (check-token token passphrase)
-              claims (:claims (decode token))
-              expired? (not (expired? claims))]
-      (do (schema/validate Claims claims)
-          true)
+    (if-let [claims (:claims (decode token))]
+      (and (check-token token passphrase)
+           (lib-schema/valid? claims lib-schema/Claims))
       false)
-    (catch Exception e
+    (catch Exception _
       false)))
 
 (defn decode-id-token
@@ -201,3 +177,40 @@
   ITokenSigner
   (-sign [this payload] (generate payload passphrase))
   (-unsign [this token] (when (check-token token passphrase) (decode token))))
+
+(comment
+  (require '[oc.lib.jwt :as jwt])
+
+  (def passphrase "this_is_a_test")
+  ;; Generate expired JWT
+  (def user-claims {:teams ["1234-1234-1234"]
+                    :user-id "4321-4321-4321"
+                    :first-name "Mickey"
+                    :last-name "Mouse"
+                    :email "test@example.com"
+                    :refresh-url "https://localhost:3002/users/refresh"
+                    :name "Mickey Mouse"
+                    :auth-source "email"
+                    :avatar-url "https://example.com/avatar"
+                    :admin []})
+
+  (def with-premium-teams (assoc user-claims :premium-teams []))
+
+  (def old-jwt (-> user-claims
+                   jwt/expire
+                   (jwt/encode passphrase)))
+
+  (def new-jwt (-> with-premium-teams
+                   (jwt/generate passphrase)))
+
+  (def otf-claims (comp :claims jwt/decode))
+
+  (assert (not (jwt/valid? old-jwt passphrase)) "Old payload is not valid.")
+
+  (assert (and (jwt/valid? old-jwt passphrase)
+               (not (jwt/refresh? (otf-claims old-jwt)))) "Old payload is valid, but needs refresh.")
+
+  (assert (not (jwt/valid? new-jwt passphrase)) "New payload is not valid.")
+
+  (assert (and (jwt/valid? new-jwt passphrase)
+               (not (jwt/refresh? new-jwt passphrase))) "New payload is valid, but needs refresh."))

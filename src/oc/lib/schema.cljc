@@ -175,11 +175,15 @@
 
 ;; JWT Schemas
 
-(defn- expired? [epoch]
-  (not (t/before? (t/now) (tc/from-long epoch))))
+(defn- past? [epoch]
+     ;; We know server is always in UTC
+  #?(:clj (t/before? (t/now) (tc/from-long epoch))
+     ;; but browsers return timezoned dates by default
+     ;; make sure we take into account the tz difference
+     :cljs (t/before? (t/from-default-timezone (t/now)) (tc/from-long epoch))))
 
 (def NotExpired
-  (schema/pred (comp not expired?)))
+  (schema/pred (comp not past?)))
 
 (def SlackBot
   {:id schema/Str
@@ -203,7 +207,7 @@
   [UniqueID])
 
 (def CreatedAt
-  (schema/pred #(not (t/before? (t/now) (tc/from-long %)))))
+  (schema/pred past?))
 
 (def BaseClaims
   (merge SlackUsers

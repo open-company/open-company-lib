@@ -104,18 +104,18 @@
 (def EmailDomain (schema/pred valid-email-domain?))
 
 (def Author {
-  (r-k :name) NonBlankStr
-  (r-k :user-id) UniqueID
-  (r-k :avatar-url) (schema/maybe schema/Str)})
+  :name NonBlankStr
+  :user-id UniqueID
+  :avatar-url (schema/maybe schema/Str)})
 
 (def SlackChannel {
   (o-k :type) NonBlankStr
-  (r-k :slack-org-id) NonBlankStr
-  (r-k :channel-name) NonBlankStr
-  (r-k :channel-id) NonBlankStr})
+  :slack-org-id NonBlankStr
+  :channel-name NonBlankStr
+  :channel-id NonBlankStr})
 
 (def SlackThread (merge SlackChannel {
-                    (r-k :thread) NonBlankStr
+                    :thread NonBlankStr
                     (o-k :bot-token) NonBlankStr}))
 
 (def Conn (schema/pred conn?))
@@ -123,29 +123,29 @@
 (def User
   "The portion of JWT properties that we care about for authorship attribution"
   {
-    (r-k :user-id) UniqueID
-    (r-k :name) NonBlankStr
-    (r-k :avatar-url) (schema/maybe schema/Str)
+    :user-id UniqueID
+    :name NonBlankStr
+    :avatar-url (schema/maybe schema/Str)
     schema/Keyword schema/Any ; and whatever else is in the JWT map
   })
 
 (def SlackUsers
   "`:slack-users` map with entries for each Slack team, keyed by Slack team ID, e.g. `:T1N0ASD`"
-  {(o-k :slack-users) {(r-k schema/Keyword) {(r-k :slack-org-id) NonBlankStr
-                                             (r-k :id) NonBlankStr
-                                             (r-k :token) NonBlankStr
-                                             (o-k :display-name) NonBlankStr
-                                             schema/Keyword schema/Any}}}) ;; and whatever else is in here)
+  {(o-k :slack-users) {schema/Keyword {:slack-org-id NonBlankStr
+                                       :id NonBlankStr
+                                       :token NonBlankStr
+                                       (o-k :display-name) NonBlankStr
+                                       schema/Keyword schema/Any}}}) ;; and whatever else is in here)
 
 (def GoogleUsers
   "`:google-users` map with entries for each Google account."
-  {(o-k :google-users) {(r-k :id) NonBlankStr
-                        (r-k :token) {(r-k :access-token) NonBlankStr
-                                      (r-k :token-type) NonBlankStr
-                                      (r-k :query-param) schema/Any
-                                      (r-k :params) {(r-k :expires_in) schema/Any
-                                                     (r-k :id_token) NonBlankStr
-                                                     (r-k :scope) NonBlankStr}}}})
+  {(o-k :google-users) {:id NonBlankStr
+                        :token {:access-token NonBlankStr
+                                :token-type NonBlankStr
+                                :query-param schema/Any
+                                :params {:expires_in schema/Any
+                                         :id_token NonBlankStr
+                                         :scope NonBlankStr}}}})
 ;; Brand color schema
 
 (defn hex-color? [c]
@@ -157,21 +157,21 @@
 (def RGBChannel (schema/pred #(<= 0 % 254)))
 
 (def RGBColor
-  {(r-k :r) RGBChannel
-   (r-k :g) RGBChannel
-   (r-k :b) RGBChannel})
+  {:r RGBChannel
+   :g RGBChannel
+   :b RGBChannel})
 
 (def Color
-  {(r-k :rgb) RGBColor
-   (r-k :hex) HEXColor})
+  {:rgb RGBColor
+   :hex HEXColor})
 
 (def OCBrandColor
-  {(r-k :primary) Color
-   (r-k :secondary) Color})
+  {:primary Color
+   :secondary Color})
 
 (def BrandColor
-  {(r-k :light) OCBrandColor
-   (r-k :dark) OCBrandColor})
+  {:light OCBrandColor
+   :dark OCBrandColor})
 
 ;; JWT Schemas
 
@@ -181,16 +181,23 @@
 (def NotExpired
   (schema/pred (comp not expired?)))
 
+(def SlackBot
+  {:id schema/Str
+   :token schema/Str
+   :slack-org-id schema/Str})
+
 (def SlackBots
-  {(o-k UniqueID) [{(r-k :id) schema/Str (r-k :token) schema/Str (r-k :slack-org-id) schema/Str}]})
+  {UniqueID (schema/if map?
+              SlackBot
+              [SlackBot])}) ;; This is probably not needed, but since this was a vector before it's possible we break something
 
 (def GoogleToken
-  {(r-k :access-token) schema/Str
-   (r-k :token-type) schema/Str
-   (r-k :query-param) schema/Any
-   (r-k :params) {(r-k :expires_in) schema/Any
-                  (r-k :id_token) schema/Str
-                  (r-k :scope) schema/Any}})
+  {:access-token schema/Str
+   :token-type schema/Str
+   :query-param schema/Any
+   :params {:expires_in schema/Any
+            :id_token schema/Str
+            :scope schema/Any}})
 
 (def PremiumTeams
   [UniqueID])
@@ -200,15 +207,15 @@
 
 (def BaseClaims
   (merge SlackUsers
-         {(r-k :user-id) UniqueID
-          (r-k :teams) [UniqueID]
-          (r-k :admin) [UniqueID]
-          (r-k :name) schema/Str
-          (r-k :first-name) schema/Str
-          (r-k :last-name) schema/Str
-          (r-k :avatar-url) (schema/maybe schema/Str)
-          (r-k :email) NonBlankStr
-          (r-k :auth-source) schema/Any
+         {:user-id UniqueID
+          :teams [UniqueID]
+          :admin [UniqueID]
+          :name schema/Str
+          :first-name schema/Str
+          :last-name schema/Str
+          :avatar-url (schema/maybe schema/Str)
+          :email NonBlankStr
+          :auth-source schema/Any
           (o-k :slack-id) schema/Str
           (o-k :slack-display-name) schema/Str
           (o-k :slack-token) schema/Str
@@ -217,8 +224,8 @@
           (o-k :google-token) schema/Any
           (o-k :digest-delivery) schema/Any
           (o-k :latest-digest-delivery) schema/Any
-          (r-k :refresh-url) NonBlankStr
-          (r-k :expire) schema/Num
+          :refresh-url NonBlankStr
+          :expire schema/Num
           schema/Keyword schema/Any} ; and whatever else is in the JWT map to make it open for future extensions
          ))
 
@@ -233,12 +240,7 @@
 
 (def ValidJWTClaims
   "Represent a valid, non expired, complete JWToken."
-  (merge {(r-k :expire) NotExpired
-          (r-k :premium-teams) PremiumTeams
-          (r-k :token-created-at) CreatedAt}
+  (merge {:expire NotExpired
+          :premium-teams PremiumTeams
+          :token-created-at CreatedAt}
          BaseClaims))
-
-(def IdTokenOrValidJWTClaims
-  "Or an id-token or a valid, non expired, complete jwt."
-  (schema/conditional #(contains? % :id-token)
-                      ValidJWTClaims))

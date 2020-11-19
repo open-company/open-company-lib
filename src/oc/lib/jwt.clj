@@ -82,7 +82,7 @@
    (check ValidJWTClaims and Claims schema diffs, ValidJWTClaims is used only
     to ignore id-tokens)."
   [jwt-claims]
-  (not (lib-schema/valid? jwt-claims lib-schema/ValidJWTClaims)))
+  (not (lib-schema/valid? lib-schema/ValidJWTClaims jwt-claims)))
 
 (defn expire-time
   "Given a token payload return the expiring date depending on the token content."
@@ -98,7 +98,7 @@
 (defn timed-payload [payload]
   (-> payload
       expire
-      (assoc :created-at (.getMillis (t/now)))))
+      (assoc :token-created-at (.getMillis (t/now)))))
 
 (defn encode [payload passphrase]
   (-> payload
@@ -146,7 +146,7 @@
   (try
     (if-let [claims (:claims (decode token))]
       (and (check-token token passphrase)
-           (lib-schema/valid? claims lib-schema/Claims))
+           (lib-schema/valid? lib-schema/Claims claims))
       false)
     (catch Exception _
       false)))

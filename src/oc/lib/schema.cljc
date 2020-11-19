@@ -16,7 +16,7 @@
 
 (defn valid?
   "Wrap Prismatic Schema's exception throwing validation, returning true or false instead."
-  [value schema-def]
+  [schema-def value]
   (try
     (schema/validate schema-def value)
     true
@@ -126,7 +126,7 @@
     (r-k :user-id) UniqueID
     (r-k :name) NonBlankStr
     (r-k :avatar-url) (schema/maybe schema/Str)
-    (o-k schema/Keyword) schema/Any ; and whatever else is in the JWT map
+    schema/Keyword schema/Any ; and whatever else is in the JWT map
   })
 
 (def SlackUsers
@@ -135,7 +135,7 @@
                                              (r-k :id) NonBlankStr
                                              (r-k :token) NonBlankStr
                                              (o-k :display-name) NonBlankStr
-                                             (o-k schema/Keyword) schema/Any}}}) ;; and whatever else is in here)
+                                             schema/Keyword schema/Any}}}) ;; and whatever else is in here)
 
 (def GoogleUsers
   "`:google-users` map with entries for each Google account."
@@ -219,7 +219,7 @@
           (o-k :latest-digest-delivery) schema/Any
           (r-k :refresh-url) NonBlankStr
           (r-k :expire) schema/Num
-          (o-k schema/Keyword) schema/Any} ; and whatever else is in the JWT map to make it open for future extensions
+          schema/Keyword schema/Any} ; and whatever else is in the JWT map to make it open for future extensions
          ))
 
 (def Claims
@@ -235,7 +235,7 @@
   "Represent a valid, non expired, complete JWToken."
   (merge {(r-k :expire) NotExpired
           (r-k :premium-teams) PremiumTeams
-          (r-k :created-at) CreatedAt}
+          (r-k :token-created-at) CreatedAt}
          BaseClaims))
 
 (def IdTokenOrValidJWTClaims

@@ -185,15 +185,24 @@
 (def NotExpired
   (schema/pred (comp not past?)))
 
-(def SlackBot
+(def SlackBotKey
+  (schema/if keyword?
+    (schema/pred #(and (keyword? %)
+                       (unique-id? (name %))))
+    UniqueID))
+
+(def SlackBotMap
   {:id schema/Str
    :token schema/Str
    :slack-org-id schema/Str})
 
+(def SlackBotValue
+  (schema/if map?
+    SlackBotMap
+    [SlackBotMap])) ;; This is probably not needed, but since this was a vector before it's possible we break something
+
 (def SlackBots
-  {UniqueID (schema/if map?
-              SlackBot
-              [SlackBot])}) ;; This is probably not needed, but since this was a vector before it's possible we break something
+  {SlackBotKey SlackBotValue})
 
 (def GoogleToken
   {:access-token schema/Str
@@ -239,7 +248,7 @@
           ;; and will be force-refreshed
           (o-k :premium-teams) PremiumTeams
           ;; Adds a created-at field in prevision of adding a more accurate force-expire
-          (o-k :created-at) CreatedAt}
+          (o-k :token-created-at) CreatedAt}
          BaseClaims))
 
 (def ValidJWTClaims

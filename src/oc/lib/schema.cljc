@@ -3,10 +3,7 @@
   (:require [clojure.string :as s]
             [schema.core :as schema]
             [oc.lib.user :as lib-user]
-            #?(:clj  [clj-time.core :as t]
-               :cljs [cljs-time.core :as t])
-            #?(:clj  [clj-time.coerce :as tc]
-               :cljs [cljs-time.coerce :as tc])))
+            [oc.lib.time :as lib-time]))
 
 ;; ----- Utility functions -----
 
@@ -32,10 +29,12 @@
     true
     false))
 
+(def unique-id-reg-ex #"^(\d|[a-f]){4}-(\d|[a-f]){4}-(\d|[a-f]){4}$")
+
 (defn unique-id?
   "Is this a 12 character string fragment from a UUID e.g. 51ab-4c86-a474"
   [s]
-  (if (and s (string? s) (re-matches #"^(\d|[a-f]){4}-(\d|[a-f]){4}-(\d|[a-f]){4}$" s)) true false))
+  (if (and s (string? s) (re-matches unique-id-reg-ex s)) true false))
 
 (defn valid-email-address?
   "Return true if this is a valid email address according to the regex, otherwise false."
@@ -175,20 +174,21 @@
 
 ;; JWT Schemas
 
-(defn- past? [epoch]
-     ;; We know server is always in UTC
-  #?(:clj (t/before? (t/now) (tc/from-long epoch))
-     ;; but browsers return timezoned dates by default
-     ;; make sure we take into account the tz difference
-     :cljs (t/before? (t/from-default-timezone (t/now)) (tc/from-long epoch))))
-
 (def NotExpired
-  (schema/pred (comp not past?)))
+  (schema/pred (comp not lib-time/past?)))
 
 (def SlackBotKey
   (schema/if keyword?
     (schema/pred #(and (keyword? %)
-                       (unique-id? (name %))))
+                       ;; In #js keywordize-keys extract these as :"1234-1234-1234" instead of :1234-1234-1234
+                       ;; that's why we need to check unique-id inside
+                       (or (unique-id? (name %))
+                           (->> %
+                                name
+                                count
+                                dec
+                                (subs (name %) 1)
+                                unique-id?))))
     UniqueID))
 
 (def SlackBotMap
@@ -216,7 +216,7 @@
   [UniqueID])
 
 (def CreatedAt
-  (schema/pred past?))
+  (schema/pred lib-time/past?))
 
 (def BaseClaims
   (merge SlackUsers

@@ -239,7 +239,7 @@
    (:id-token ctx)
    (and (:id-token ctx) (:user ctx))
 
-   :default
+   :else
    false))
 
 (defn allow-authenticated

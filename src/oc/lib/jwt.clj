@@ -2,7 +2,7 @@
   (:require [defun.core :refer (defun defun-)]
             [schema.core :as schema]
             [clj-jwt.core :as jwt]
-            [clj-time.core :as t]
+            [oc.lib.time :as lib-time]
             [clojure.set :as clj-set]
             [oc.lib.db.common :as db-common]
             [oc.lib.schema :as lib-schema]
@@ -84,21 +84,32 @@
   [jwt-claims]
   (not (lib-schema/valid? lib-schema/ValidJWTClaims jwt-claims)))
 
+(defn- timestamp [t]
+  (lib-time/millis t))
+
 (defn expire-time
   "Given a token payload return the expiring date depending on the token content."
   [payload]
-  (-> (if (empty? (:slack-bots payload)) 2 24)
-      t/hours t/from-now .getMillis))
+  (let [expire-in (if (empty? (:slack-bots payload)) 2 24)]
+      (timestamp (lib-time/hours-from-now expire-in))))
+
+(defn creation-time []
+  (timestamp (lib-time/utc-now)))
 
 (defn expire
   "Set an expire property in the JWToken payload, longer if there's a bot, shorter if not."
   [payload]
   (assoc payload :expire (expire-time payload)))
 
+(defn creation
+  "Set a creation time property in the JWToken payload."
+  [payload]
+  (assoc payload :token-created-at (creation-time)))
+
 (defn timed-payload [payload]
   (-> payload
       expire
-      (assoc :token-created-at (.getMillis (t/now)))))
+      creation))
 
 (defn encode [payload passphrase]
   (-> payload

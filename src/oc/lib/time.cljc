@@ -7,6 +7,15 @@
                      [cljs-time.core :as time]
                      [cljs-time.coerce :as coerce])))
 
+;; ----- Helpers -----
+
+(defn utc-now []
+  #?(:clj (time/to-time-zone (time/now) time/utc)
+     :cljs (time/to-utc-time-zone (time/now))))
+
+(defn hours-from-now [hours]
+  (time/plus (utc-now) (time/hours hours)))
+
 ;; ----- ISO 8601 timestamp -----
 
 (def timestamp-format
@@ -21,12 +30,29 @@
 (defn current-timestamp
   "ISO 8601 string timestamp for the current time."
   []
-  (to-iso (time/now)))
+  (to-iso (utc-now)))
+
+;; ---- Epoch ----
+
+(defn epoch [t]
+  #?(:clj (coerce/from-epoch t)
+     :cljs (coerce/from-long (* t 1000))))
+
+(defn now-epoch []
+  (epoch (utc-now)))
 
 ;; ----- Timestamp in milliseconds -----
+
+(defn from-millis [t]
+  (coerce/from-long t))
 
 (defn millis [t]
   (coerce/to-long t))
 
 (defn now-ts []
-  (millis (time/now)))
+  (millis (utc-now)))
+
+;; ---- Checks ----
+
+(defn past? [ts]
+  (time/before? (from-millis ts) (utc-now)))

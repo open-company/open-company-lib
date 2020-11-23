@@ -46,6 +46,9 @@
 (defn from-millis [t]
   (coerce/from-long t))
 
+(defn from-epoch [t]
+  (coerce/from-long (* t 1000)))
+
 (defn millis [t]
   (coerce/to-long t))
 

@@ -243,7 +243,7 @@
          ))
 
 (def Claims
-  "Generic claims schema that accept every old jwt, adds optional eys"
+  "Generic claims schema that accept every old jwt plus the new optional keys."
   (merge {;; :premium-teams is not required but tokens w/o it are considered expired
           ;; and will be force-refreshed
           (o-k :premium-teams) PremiumTeams

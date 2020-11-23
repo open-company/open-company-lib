@@ -35,8 +35,8 @@
 ;; ---- Epoch ----
 
 (defn epoch [t]
-  #?(:clj (coerce/from-epoch t)
-     :cljs (coerce/from-long (* t 1000))))
+  #?(:clj (coerce/to-epoch t)
+     :cljs (coerce/to-long (* t 1000))))
 
 (defn now-epoch []
   (epoch (utc-now)))
@@ -54,5 +54,7 @@
 
 ;; ---- Checks ----
 
-(defn past? [ts]
-  (time/before? (from-millis ts) (utc-now)))
+(defn past?
+  "Use not-after? as shortcut for before? or equal?."
+  [ts]
+  (not (time/after? (from-millis ts) (utc-now))))

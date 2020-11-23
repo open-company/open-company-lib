@@ -21,6 +21,18 @@
   (let [teams (db-common/read-resources conn :teams :admins user-id)]
     (vec (map :team-id teams))))
 
+(schema/defn ^:always-validate premium-teams :- (schema/maybe [lib-schema/UniqueID])
+  "
+  Given the user-id of the user, return a sequence of team-ids for the teams the user is an admin of.
+
+  Requires a conn to the auth DB.
+  "
+  [conn :- lib-schema/Conn user-id :- lib-schema/UniqueID]
+  (let [user (db-common/read-resource conn :users user-id)]
+    (some->> (db-common/read-resources-by-primary-keys conn :teams (:teams user) [:team-id :premium])
+            (filter :premium)
+            (mapv :team-id))))
+
 (defn name-for
   "Fn moved to lib.user ns. Here for backwards compatability."
   ([user] (lib-user/name-for user))
@@ -74,15 +86,6 @@
         team-to-bots (zipmap (keys team-to-slack-orgs)
                              (map #(bot-for slack-org-to-bot % []) (vals team-to-slack-orgs)))] ; map of team to bot(s)
     (into {} (remove (comp empty? second) team-to-bots))))) ; remove any team with no bots
-
-(defn refresh?
-  "Return true/false if the JWToken needs to be refresh.
-   Can happen when the expire field contains a past date or
-   if the claims are missing a required key
-   (check ValidJWTClaims and Claims schema diffs, ValidJWTClaims is used only
-    to ignore id-tokens)."
-  [jwt-claims]
-  (not (lib-schema/valid? lib-schema/ValidJWTClaims jwt-claims)))
 
 (defn- timestamp [t]
   (lib-time/millis t))
@@ -175,6 +178,16 @@
       (if (contains? claims :teams)
         decoded-token
         (assoc-in decoded-token [:claims :teams] [(:team-id claims)])))))
+
+(defun refresh?
+  "Return true/false if the JWToken needs to be refreshed.
+   Can happen when the token is actually expired or
+   if it's an old format: see lib-schema/ValidJWTClaims
+   and lib-schema/Claims diffs.."
+  ([jwt-claims :guard map?]
+   (not (lib-schema/valid? lib-schema/ValidJWTClaims jwt-claims)))
+  ([jwtoken :guard schema/Str]
+   (refresh? (:claims (decode jwtoken)))))
 
 ;; Sign/unsign terminology coming from `buddy-sign` project
 ;; which this namespace should eventually be switched to

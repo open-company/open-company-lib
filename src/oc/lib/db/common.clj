@@ -2,7 +2,7 @@
   "CRUD functions on resources stored in RethinkDB."
   (:require [clojure.string :as s]
             [clojure.core.async :as async]
-            [defun.core :refer (defun defun-)]
+            [defun.core :refer (defun)]
             [rethinkdb.query :as r]
             [oc.lib.schema :as lib-schema]
             [oc.lib.time :as oc-time]))
@@ -36,7 +36,7 @@
   (or (string? value)
       (keyword? value)))
 
-(defn- drain-cursor
+(defn drain-cursor
   "If the result is a cursor, drain it into a Clojure sequence."
   [result]
   (if (= (type result) rethinkdb.net.Cursor)
@@ -641,7 +641,7 @@
   (update-resource conn table-name primary-key-name original-resource new-resource (current-timestamp)))
 
   ([conn table-name primary-key-name primary-key-value new-resource]
-  (if-let [original-resource (read-resource conn table-name primary-key-value)]
+  (when-let [original-resource (read-resource conn table-name primary-key-value)]
     (update-resource conn table-name primary-key-name original-resource (merge original-resource new-resource))))
 
   ([conn :guard conn?
@@ -767,7 +767,6 @@
 
 (comment
 
-  (require '[rethinkdb.query :as r])
   (require '[oc.lib.db.common :as db-common] :reload)
 
   (def conn (apply r/connect [:host "127.0.0.1" :port 28015 :db "open_company_storage_dev"]))

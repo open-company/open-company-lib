@@ -179,7 +179,7 @@
                  (json/encode {:username from
                   :icon_url "https://carrot.io/img/carrot_logo.png"
                   :text message})}}
-        {:keys [status headers body error] :as resp} @(http/post webhook options)]
+        {:keys [error]} @(http/post webhook options)]
     (not error)))
 
 (comment

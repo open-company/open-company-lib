@@ -115,7 +115,12 @@
 (defn unprocessable-entity-response [reason]
   (ring-response
     {:status 422
-      :body reason
+      :body (cond (keyword? reason)
+                  (name reason)
+                  (seq? reason)
+                  (json/generate-string reason {:pretty true})
+                  :else
+                  (str reason))
       :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}}))
 
 (defn location-response 

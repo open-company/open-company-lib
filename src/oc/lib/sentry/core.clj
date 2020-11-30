@@ -28,7 +28,7 @@
 
   ([handler sentry-config :guard :dsn]
    (let [{:keys [dsn release environment]} sentry-config]
-     (sentry-ring/wrap-report-exceptions handler dsn {})))
+     (sentry-ring/wrap-report-exceptions handler {})))
                                          ; {:postprocess-fn (fn [req e]
                                          ;                    (cond-> e
                                          ;                     (:environment sentry-config)  (assoc :environment (:environment sentry-config))
@@ -37,20 +37,8 @@
    (timbre/warn "No Sentry configuration found to wrap the handler.")
    handler))
 
-(defn- sentry-init-config [{:keys [dsn environment release deploy debug]}]
-  (fn [options]
-    (.setDsn options dsn)
-    (.setEnvironment options environment)
-    (.setRelease options release)
-    (.setDeploy options deploy)
-    (.setDebug options debug)))
-
 (defn init [sentry-config]
-  (let [sentry-client (sentry/init! (sentry-init-config sentry-config))]
-    (timbre/handle-uncaught-jvm-exceptions! (fn [throwable thread]
-                                              (capture throwable)
-                                              (timbre/error throwable "Uncaught exception on" (.getName thread) (.getMessage throwable))))
-    sentry-client))
+  (sentry/init! (:dsn sentry-config) sentry-config))
 
 (defrecord SentryCapturer [dsn release environment deploy debug]
   component/Lifecycle

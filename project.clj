@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.29-alpha61"
+(defproject open-company/lib "0.17.29-alpha62"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -41,7 +41,7 @@
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.1.2" :exclusions [commons-codec]]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
-    [com.taoensso/timbre "4.10.0" :exclusions [com.taoensso/encore]]
+    [com.taoensso/timbre "5.1.0" :exclusions [com.taoensso/encore]]
     ;; Java logging lib https://commons.apache.org/proper/commons-logging/
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [commons-logging "1.2"]
@@ -58,9 +58,9 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "2.119.0"]
+    [com.taoensso/encore "3.9.2"]
     ;; Interface to Sentry error reporting https://github.com/getsentry/sentry-clj
-    [io.sentry/sentry-clj "0.7.2"]
+    [io.sentry/sentry-clj "3.1.130"]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.15.3"]
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica

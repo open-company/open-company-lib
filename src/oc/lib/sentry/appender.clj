@@ -41,13 +41,9 @@
 
 (defn appender
   "Sentry timbre appender to send error level messages with a throwable to Sentry."
-  [{:keys [dsn release environment]}]
+  [{:keys [dsn] :as opts}]
   (assert dsn (str "The Sentry appender requires a dsn, none given:" dsn))
-  (let [sentry-client (sentry/init! dsn)]
-    (when release
-      (.setRelease sentry-client release))
-    (when environment
-      (.setEnvironment sentry-client environment)))
+  (sentry/init! dsn opts)
   {:doc "A timbre appender that sends errors to getsentry.com"
    :min-level :error ; critical this not drop to warn or below as this appender logs at warning level (infinite loop!)
    :enabled? true

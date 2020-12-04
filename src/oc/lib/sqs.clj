@@ -9,6 +9,7 @@
             [com.climate.squeedo.sqs-consumer :as sqs]
             [clojure.core.async :as async]
             [clojure.java.io :as io]
+            [oc.lib.sentry.core :as sentry]
             [amazonica.aws.s3 :as s3]
             [cheshire.core :as json]
             [taoensso.timbre :as timbre])
@@ -25,7 +26,8 @@
   (try
     (handler message done-channel)
     (catch Exception e
-      (timbre/error e)
+      (timbre/warn e)
+      (sentry/capture e)
       (throw e))))
 
 (defrecord SQSListener [sqs-creds sqs-queue message-handler]
@@ -37,12 +39,15 @@
   
   (start [component]
     (timbre/info "Starting SQSListener")
-    (assoc component :retriever (sqs/start-consumer sqs-queue message-handler)))
+    (let [retriever (sqs/start-consumer sqs-queue message-handler)]
+      (timbre/info "Started SQSListener")
+      (assoc component :retriever retriever)))
 
   (stop [component]
     (timbre/info "Stopping SQSListener")
     (when-let [consumer (:retriever component)] 
-      (sqs/stop-consumer consumer))
+      (sqs/stop-consumer consumer)
+      (timbre/info "Stopped SQSListener"))
     (assoc component :retriever nil)))
 
 (defn sqs-listener 

@@ -3,6 +3,7 @@
             [defun.core :refer (defun)]
             [taoensso.timbre :as timbre]
             [cheshire.core :as json]
+            [oc.lib.sentry.core :as sentry]
             [liberator.representation :refer (ring-response)]
             [liberator.core :refer (by-method)]
             [oc.lib.jwt :as jwt]))
@@ -148,7 +149,8 @@
     (unauthorized-response)))
 
 (defn handle-exception [t]
-  (timbre/error t)
+  (timbre/warn t)
+  (sentry/capture t)
   (error-response error-msg 500))
 
 ;; ----- Validations -----

@@ -186,7 +186,7 @@
    and lib-schema/Claims diffs.."
   ([jwt-claims :guard map?]
    (not (lib-schema/valid? lib-schema/ValidJWTClaims jwt-claims)))
-  ([jwtoken :guard schema/Str]
+  ([jwtoken :guard string?]
    (refresh? (:claims (decode jwtoken)))))
 
 ;; Sign/unsign terminology coming from `buddy-sign` project
@@ -237,4 +237,4 @@
   (assert (not (jwt/valid? new-jwt passphrase)) "New payload is not valid.")
 
   (assert (and (jwt/valid? new-jwt passphrase)
-               (not (jwt/refresh? new-jwt passphrase))) "New payload is valid, but needs refresh."))
+               (not (jwt/refresh? new-jwt))) "New payload is valid, but needs refresh."))

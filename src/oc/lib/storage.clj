@@ -4,6 +4,7 @@
             [clj-http.client :as http]
             [defun.core :refer (defun)]
             [cheshire.core :as json]
+            [oc.lib.sentry.core :as sentry]
             [taoensso.timbre :as timbre]
             [oc.lib.auth :as auth]))
 
@@ -77,9 +78,22 @@
     post-id]
    (let [jwt (auth/user-token user-data (:auth-server-url config)
               (:passphrase config) (:service-name config))]
-    (post-data-for config jwt org-slug board-id post-id)))
+    (post-data-for config jwt user-data org-slug board-id post-id)))
 
-  ([config :guard map? jwtoken :guard string? org-slug board-id post-id]
+  ([config :guard map? req-data :guard :error user-data org-slug board-id post-id]
+   (sentry/capture {:message (str "Error refreshing magic token for service " (:service-name config) ", error: " (:status req-data))
+                    :extra {:status (:status req-data)
+                            :error (:error req-data)
+                            :body (:body req-data)
+                            :user-id (:user-id user-data)
+                            :name (:name user-data)
+                            :org-slug org-slug
+                            :board-id board-id
+                            :post-id post-id
+                            :storage-server-url (:storage-server-url config)
+                            :auth-server-url (:auth-server-url config)}}))
+
+  ([config :guard map? jwtoken :guard string? user-data org-slug board-id post-id]
     (if-let [body (get-data (str (:storage-server-url config)) jwtoken)]
     (do
       (timbre/debug "Storage slash data:" (-> body :collection :items))

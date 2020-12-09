@@ -36,8 +36,11 @@
   (let [token-request
         @(http/get (str auth-server-url "/users/refresh/")
                    (get-options (magic-token user passphrase service-name)))]
-    (when (= 201 (:status token-request))
-      (:body token-request))))
+    (if (= 201 (:status token-request))
+      (:body token-request)
+      {:error true
+       :status (:status token-request)
+       :body (:body token-request)})))
 
 (defn user-data [user auth-server-url passphrase service-name]
   (let [user-request

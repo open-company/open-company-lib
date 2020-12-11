@@ -277,12 +277,14 @@
   :initialize-context (fn [ctx] (read-token (get-in ctx [:request :headers]) passphrase))
   :authorized? allow-anonymous
   :handle-unauthorized handle-unauthorized
+  :handle-exception handle-exception
   :handle-forbidden  (fn [ctx] (if (:jwtoken ctx) (forbidden-response) (unauthorized-response)))})
 
 (defn base-authenticated-resource [passphrase]{
   :initialize-context (fn [ctx] (read-token (get-in ctx [:request :headers]) passphrase))
   :handle-not-found (fn [_] (missing-response))
   :handle-unauthorized handle-unauthorized
+  :handle-exception handle-exception
   :handle-forbidden (fn [_] (forbidden-response))})
 
 (defn id-token-resource [passphrase]

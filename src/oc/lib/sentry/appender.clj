@@ -66,7 +66,7 @@
                                ; false     (sentry-interfaces/stacktrace throwable)
                                )
                result (try
-                        (apply sentry/send-event ["Hello there" payload])
+                        (sentry/send-event payload)
                         (catch Exception e
                           (timbre/warn "Error in sentry appender")
                           (timbre/warn e)

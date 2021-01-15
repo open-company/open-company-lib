@@ -59,8 +59,6 @@
                                throwable    (assoc :message (.getMessage throwable))
                                throwable    (assoc-in [:extra :exception-data] data)
                                throwable    (assoc :throwable throwable)
-                               ; environment  (assoc :environment environment)
-                               ; release      (assoc :release release)
                                ;; Disable for now
                                ; false     (trim-stacktrace)
                                ; false     (sentry-interfaces/stacktrace throwable)

@@ -33,11 +33,7 @@
 
   ([handler sentry-config :guard :dsn]
    (let [{:keys [dsn release environment]} sentry-config]
-     (sentry-ring/wrap-report-exceptions handler {:error-fn (fn [_req e] (slack/slack-report e))})))
-                                         ; {:postprocess-fn (fn [req e]
-                                         ;                    (cond-> e
-                                         ;                     (:environment sentry-config)  (assoc :environment (:environment sentry-config))
-                                         ;                     (:release sentry-config)      (assoc :release (:release sentry-config))))})))
+     (sentry-ring/wrap-report-exceptions handler {})))
   ([handler _]
    (timbre/warn "No Sentry configuration found to wrap the handler.")
    handler))

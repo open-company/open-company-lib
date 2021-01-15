@@ -3,6 +3,7 @@
 
 (ns oc.lib.sentry.appender
   (:require [sentry-clj.core :as sentry]
+            [oc.lib.slack :as slack]
             [taoensso.timbre :as timbre]))
 
 (def stacktrace-depth 20)
@@ -43,31 +44,34 @@
   "Sentry timbre appender to send error level messages with a throwable to Sentry."
   [{:keys [dsn] :as opts}]
   (assert dsn (str "The Sentry appender requires a dsn, none given:" dsn))
-  (sentry/init! dsn opts)
   {:doc "A timbre appender that sends errors to getsentry.com"
    :min-level :error ; critical this not drop to warn or below as this appender logs at warning level (infinite loop!)
    :enabled? true
    :async? true
    :rate-limit nil
    :fn (fn [args]
-          (timbre/warn "Sentry appender: invoked")
-          (let [throwable @(:?err_ args)
-                data      (if throwable
-                            (extract-data throwable @(:vargs_ args))
-                            (extract-message (:vargs args)))
-                payload (cond-> {:message data}
-                                throwable    (assoc :message (.getMessage throwable))
-                                throwable    (assoc-in [:extra :exception-data] data)
-                                throwable    (assoc :throwable throwable)
-                                ; environment  (assoc :environment environment)
-                                ; release      (assoc :release release)
-                                ;; Disable for now
-                                ; false     (trim-stacktrace)
-                                ; false     (sentry-interfaces/stacktrace throwable)
-                                )
-                result (try (sentry/send-event payload)
-                         (catch Exception e
-                           e))]
+         (timbre/warn "Sentry appender: invoked")
+         (let [throwable @(:?err_ args)
+               data      (if throwable
+                           (extract-data throwable @(:vargs_ args))
+                           (extract-message (:vargs args)))
+               payload (cond-> {:message data}
+                               throwable    (assoc :message (.getMessage throwable))
+                               throwable    (assoc-in [:extra :exception-data] data)
+                               throwable    (assoc :throwable throwable)
+                               ; environment  (assoc :environment environment)
+                               ; release      (assoc :release release)
+                               ;; Disable for now
+                               ; false     (trim-stacktrace)
+                               ; false     (sentry-interfaces/stacktrace throwable)
+                               )
+               result (try
+                        (apply sentry/send-event ["Hello there" payload])
+                        (catch Exception e
+                          (timbre/warn "Error in sentry appender")
+                          (timbre/warn e)
+                          (slack/slack-report e)
+                          e))]
             (timbre/warn "Sentry appender: captured -\n" result)))})
 
 (comment

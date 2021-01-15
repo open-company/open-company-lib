@@ -3,6 +3,7 @@
   (:require [clojure.walk :refer (keywordize-keys)]
             [org.httpkit.client :as http]
             [cheshire.core :as json]
+            [environ.core :refer (env)]
             [defun.core :refer (defun)]
             [taoensso.timbre :as timbre]))
 
@@ -181,6 +182,22 @@
                   :text message})}}
         {:keys [error]} @(http/post webhook options)]
     (not error)))
+
+(defn slack-report
+  [e]
+  (let [slack-alerts-webhook (env :open-company-slack-alerts-webhook)
+        service-name (or (env :service-name) "Unknown service")
+        short-server-name (env :short-server-name)
+        message (cond
+                  (instance? Exception e)
+                  (timbre/stacktrace e {:stacktrace-fonts false})
+                  :else
+                  (str e))
+        from (str service-name
+                  (cond
+                    (= short-server-name "staging") " (staging)"
+                    (#{"local" "localhost"} short-server-name) " (localhost)"))]
+    (message-webhook slack-alerts-webhook from message)))
 
 (comment
 

@@ -3,6 +3,7 @@
             [defun.core :refer (defun)]
             [taoensso.timbre :as timbre]
             [cheshire.core :as json]
+            [oc.lib.sentry.core :as sentry]
             [liberator.representation :refer (ring-response)]
             [liberator.core :refer (by-method)]
             [oc.lib.jwt :as jwt]))
@@ -148,7 +149,8 @@
     (unauthorized-response)))
 
 (defn handle-exception [t]
-  (timbre/error t)
+  (timbre/warn t)
+  (sentry/capture t)
   (error-response error-msg 500))
 
 ;; ----- Validations -----
@@ -275,12 +277,14 @@
   :initialize-context (fn [ctx] (read-token (get-in ctx [:request :headers]) passphrase))
   :authorized? allow-anonymous
   :handle-unauthorized handle-unauthorized
+  :handle-exception handle-exception
   :handle-forbidden  (fn [ctx] (if (:jwtoken ctx) (forbidden-response) (unauthorized-response)))})
 
 (defn base-authenticated-resource [passphrase]{
   :initialize-context (fn [ctx] (read-token (get-in ctx [:request :headers]) passphrase))
   :handle-not-found (fn [_] (missing-response))
   :handle-unauthorized handle-unauthorized
+  :handle-exception handle-exception
   :handle-forbidden (fn [_] (forbidden-response))})
 
 (defn id-token-resource [passphrase]

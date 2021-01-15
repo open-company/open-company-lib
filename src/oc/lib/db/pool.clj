@@ -1,8 +1,14 @@
 (ns oc.lib.db.pool
   "RethinkDB database connection pool."
   (:require [rethinkdb.query :as r]
-            [taoensso.timbre :as timbre])
+            [taoensso.timbre :as timbre]
+            [clojure.pprint])
   (:import [java.util.concurrent LinkedBlockingQueue TimeUnit]))
+
+;; Fix pprint of rethinkdb.com.Connection objects
+
+(defmethod clojure.pprint/simple-dispatch rethinkdb.core.Connection [o]
+  ((get-method clojure.pprint/simple-dispatch clojure.lang.IPersistentMap) o))
 
 ;; Opening & closing of connections
 

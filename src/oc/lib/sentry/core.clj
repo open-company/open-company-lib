@@ -24,20 +24,6 @@
    (capture {:message (.getMessage throwable-event)
              :throwable throwable-event})))
 
-;; ---- Helper function to wrap ring handlers with sentry capturer ----
-
-(defun wrap
-
-  ([handler sys-conf :guard :sentry-capturer]
-   (wrap handler (:sentry-capturer sys-conf)))
-
-  ([handler sentry-config :guard :dsn]
-   (let [{:keys [dsn release environment]} sentry-config]
-     (sentry-ring/wrap-report-exceptions handler {})))
-  ([handler _]
-   (timbre/warn "No Sentry configuration found to wrap the handler.")
-   handler))
-
 ;; ---- Sentry init and setup ----
 
 (defn ^:private create-sentry-logger

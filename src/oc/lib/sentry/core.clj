@@ -2,11 +2,14 @@
   (:require [com.stuartsierra.component :as component]
             [defun.core :refer (defun)]
             [cuerdas.core :as s]
-            [oc.lib.slack :as slack]
             [taoensso.timbre :as timbre]
             [sentry-clj.core :as sentry]
             [sentry-clj.ring :as sentry-ring]
+            [clojure.stacktrace :as clj-st]
             [oc.lib.sentry.appender :as sa]))
+
+(def help-email "hello@carrot.io")
+(def error-msg (str "We've been notified of this error. Please contact " help-email " for additional help."))
 
 ;; ---- Helper functions to capture errors and messages ----
 
@@ -23,6 +26,34 @@
   ([throwable-event]
    (capture {:message (.getMessage throwable-event)
              :throwable throwable-event})))
+
+;; ---- Helper function to wrap ring handlers with sentry capturer ----
+
+(defn ^:private stack-trace-html [t]
+  (str "<pre>" (with-out-str (clj-st/print-stack-trace t)) "</pre>"))
+
+(defn ^:private error-response
+  "Return a response with a simple error message on production, instead use the stack trace."
+  [config req throwable]
+  (assoc req
+         :status 500
+         :headers (merge (:headers req) {"Content-Type" "text/html"})
+         :body (str "<html><body>"
+                    (if (#{"prod" "production"} (:environment config))
+                      error-msg
+                      (stack-trace-html throwable))
+                    "</body></html>")))
+(defun wrap
+
+  ([handler config :guard :dsn]
+   (sentry-ring/wrap-report-exceptions handler {:preprocess-fn #(-> %
+                                                                    (assoc :method (name (:request-method %)))
+                                                                    (assoc :request-method (name (:request-method %))))
+                                                :error-fn (partial error-response config)}))
+
+  ([handler _]
+   (timbre/warn "No Sentry configuration found to wrap the handler.")
+   handler))
 
 ;; ---- Sentry init and setup ----
 

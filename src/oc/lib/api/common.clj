@@ -16,9 +16,6 @@
 (def json-mime-type "application/json")
 (def text-mime-type "text/plain")
 
-(def help-email "hello@carrot.io")
-(def error-msg (str "We've been notified of this error. Please contact " help-email " for additional help."))
-
 ;; ----- Ring Middleware -----
 
 (defn wrap-500
@@ -31,11 +28,11 @@
     (try
       (let [response (handler request)]
         (if (= 500 (:status response))
-          (assoc response :body error-msg)
+          (assoc response :body sentry/error-msg)
           response))
       (catch Throwable t
         (timbre/error t)
-        {:status 500 :body error-msg}))))
+        {:status 500 :body sentry/error-msg}))))
 
 ;; ----- Responses -----
 
@@ -151,7 +148,7 @@
 (defn handle-exception [t]
   (timbre/warn t)
   (sentry/capture t)
-  (error-response error-msg 500))
+  (error-response sentry/error-msg 500))
 
 ;; ----- Validations -----
 

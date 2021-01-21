@@ -199,10 +199,12 @@
 (def SlackBotValue
   (schema/if map?
     SlackBotMap
-    [SlackBotMap])) ;; This is probably not needed, but since this was a vector before it's possible we break something
+    [SlackBotMap]))
 
+;; In some old tokens the the :slack-bots key is an empty vector: []
+;; make sure that doesn't break the validation, but only if it's empty
 (def SlackBots
-  {SlackBotKey SlackBotValue})
+  (schema/if sequential? (schema/pred empty?) {SlackBotKey SlackBotValue}))
 
 (def GoogleToken
   {:access-token schema/Str

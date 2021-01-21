@@ -67,7 +67,7 @@
 
   Requires a conn to the auth DB.
   "
-  ([conn user :guard #(empty? (:teams %))] [])
+  ([conn user :guard #(empty? (:teams %))] {})
 
   ([conn user]
   (let [team-ids (:teams user)

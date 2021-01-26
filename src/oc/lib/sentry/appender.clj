@@ -50,27 +50,25 @@
    :async? true
    :rate-limit nil
    :fn (fn [args]
-         (timbre/warn "Sentry appender: invoked")
-         (let [throwable @(:?err_ args)
-               data      (if throwable
-                           (extract-data throwable @(:vargs_ args))
-                           (extract-message (:vargs args)))
-               payload (cond-> {:message data}
-                               throwable    (assoc :message (.getMessage throwable))
-                               throwable    (assoc-in [:extra :exception-data] data)
-                               throwable    (assoc :throwable throwable)
+         (let [throwable (:?err args)
+               message (if throwable
+                         (extract-data throwable @(:vargs_ args))
+                         (extract-message (:vargs args)))
+               payload (cond-> {:message message}
+                               throwable       (assoc :message (.getMessage throwable))
+                               throwable       (assoc-in [:extra :exception-data] message)
+                               throwable       (assoc :throwable throwable)
+                               (not throwable) (assoc :throwable (RuntimeException. message))
+                               (not throwable) (assoc-in [:data :vargs] (:vargs args))
                                ;; Disable for now
                                ; false     (trim-stacktrace)
                                ; false     (sentry-interfaces/stacktrace throwable)
-                               )
-               result (try
-                        (sentry/send-event payload)
-                        (catch Exception e
-                          (timbre/warn "Error in sentry appender")
-                          (timbre/warn e)
-                          (slack/slack-report e)
-                          e))]
-            (timbre/warn "Sentry appender: captured -\n" result)))})
+                               )]
+            (try
+              (sentry/send-event payload)
+              (catch Exception e
+                (timbre/error e)
+                (slack/slack-report e)))))})
 
 (comment
 

@@ -15,17 +15,31 @@
 
 (defun capture
   ([nil]
-   (timbre/warn "Failed capturing. \nEvent is empty!"))
-
-  ([data :guard :message]
-   (sentry/send-event data))
+   (capture "Warning: empty capture!"))
 
   ([message :guard string?]
-   (capture {:message message}))
+   (capture {:message message
+             :throwable (RuntimeException. message)}))
 
-  ([throwable-event]
+  ([kw :guard keyword?]
+   (capture (name kw)))
+
+  ([throwable-event :guard #(instance? Throwable %)]
    (capture {:message (.getMessage throwable-event)
-             :throwable throwable-event})))
+             :throwable throwable-event}))
+
+  ([data :guard map?]
+   (let [msg (str (or (:message data) (:throwable data) "Empty message event"))
+         fixed-data (if (instance? Throwable (:throwable data))
+                      data
+                      (assoc data :throwable (RuntimeException. msg)
+                                  :message msg))]
+     (sentry/send-event fixed-data)))
+
+  ([unknown-data-type]
+   (capture {:message "Uknown type"
+             :throwable (RuntimeException. "Unknown type")
+             :data {:data unknown-data-type}})))
 
 ;; ---- Helper function to wrap ring handlers with sentry capturer ----
 

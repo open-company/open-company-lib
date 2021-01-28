@@ -67,7 +67,7 @@
 (schema/defn ^:always-validate retrieve-by-container-item :- [{(schema/optional-key :org-id) lib-schema/UniqueID
                                                                (schema/optional-key :container-id) lib-schema/UniqueID
                                                                (schema/optional-key :item-id) lib-schema/UniqueID
-                                                               (schema/optional-key :container-item-id) lib-schema/UniqueID
+                                                               (schema/optional-key :container-item-id) lib-schema/DoubleUniqueID
                                                                (schema/optional-key :user-id) lib-schema/UniqueID
                                                                (schema/optional-key :seen-at) lib-schema/ISO8601
                                                                (schema/optional-key :seen-ttl) schema/Any}]

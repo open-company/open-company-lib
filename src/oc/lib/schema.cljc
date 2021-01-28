@@ -32,9 +32,18 @@
 (def unique-id-reg-ex #"^(\d|[a-f]){4}-(\d|[a-f]){4}-(\d|[a-f]){4}$")
 
 (defn unique-id?
-  "Is this a 12 character string fragment from a UUID e.g. 51ab-4c86-a474"
+  "Is this a 14 character string fragment from a UUID e.g. 51ab-4c86-a474"
   [s]
   (if (and s (string? s) (re-matches unique-id-reg-ex s)) true false))
+
+
+(def double-unique-id-reg-ex #"^(\d|[a-f]){4}-(\d|[a-f]){4}-(\d|[a-f]){4}(-(\d|[a-f]){4}-(\d|[a-f]){4}-(\d|[a-f]){4})?$")
+
+(defn double-unique-id?
+  "Is this a 29 character string fragment from a UUID e.g. 51ab-4c86-a474-15ab-d359-ff12
+   that is the composition of two UUIDs"
+  [s]
+  (if (and s (string? s) (re-matches double-unique-id-reg-ex s)) true false))
 
 (defn valid-email-address?
   "Return true if this is a valid email address according to the regex, otherwise false."
@@ -94,6 +103,8 @@
 (def UUIDStr (schema/pred uuid-string?))
 
 (def UniqueID (schema/pred unique-id?))
+
+(def DoubleUniqueID (schema/pred double-unique-id?))
 
 (def ISO8601 (schema/pred #(and (string? %)
                                 (re-matches #"(?i)^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$" %))))

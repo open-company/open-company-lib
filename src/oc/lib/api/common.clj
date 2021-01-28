@@ -70,9 +70,9 @@
   ([error status] (error-response error status {}))
   
   ([error status headers]
-  {:pre [(integer? status)
-         (map? headers)]}
-  (ring-response {
+   {:pre [(integer? status)
+          (map? headers)]}
+   (ring-response {
     :body error
     :status status
     :headers headers})))
@@ -145,10 +145,23 @@
     (refresh-token-response)
     (unauthorized-response)))
 
-(defn handle-exception [t]
-  (timbre/warn t)
-  (sentry/capture t)
-  (error-response sentry/error-msg 500))
+(defn- throwable? [e]
+  (instance? Throwable e))
+
+(defn handle-exception [ctx]
+  (let [?err (or (:exception ctx) (:error ctx) (:err ctx))
+        err (cond (throwable? ?err)
+                  ?err
+                  (or (:status ctx) (seq (:body ctx)))
+                  (RuntimeException. (str (or (:status ctx) "Unknown response") " error: " (subs (:body ctx) 0 (min 56 (count (:body ctx))))))
+                  :else
+                  (RuntimeException. "Unkown error"))]
+    ;; Use warn to avoid a duplicated sentry event
+    (timbre/warn err)
+    (sentry/capture {:throwable err
+                     :message {:message (str "Liberator handle-exception " (:status ctx))}
+                     :extra (select-keys ctx [:status :body :data :method :uri :url])})
+    (error-response sentry/error-msg 500)))
 
 ;; ----- Validations -----
 

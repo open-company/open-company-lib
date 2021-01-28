@@ -54,21 +54,21 @@
                message (if throwable
                          (extract-data throwable @(:vargs_ args))
                          (extract-message (:vargs args)))
-               payload (cond-> {:message message}
-                               throwable       (assoc :message (.getMessage throwable))
+               payload (cond-> {:message {:message message}
+                                :extra {:vargs (:vargs args)}}
+                               throwable       (assoc :message {:message (.getMessage throwable)})
                                throwable       (assoc-in [:extra :exception-data] message)
                                throwable       (assoc :throwable throwable)
-                               (not throwable) (assoc :throwable (RuntimeException. message))
-                               (not throwable) (assoc-in [:data :vargs] (:vargs args))
                                ;; Disable for now
                                ; false     (trim-stacktrace)
                                ; false     (sentry-interfaces/stacktrace throwable)
                                )]
             (try
-              (sentry/send-event payload)
-              (catch Exception e
-                (timbre/error e)
-                (slack/slack-report e)))))})
+             (let [r (sentry/send-event payload)]
+               (timbre/info "Sentry appender: captured -" r))
+             (catch Exception e
+               (slack/slack-report e)
+               e))))})
 
 (comment
 

@@ -6,7 +6,7 @@
      :cljs (:require [cljs-time.format :as format]
                      [cljs-time.core :as time]
                      [cljs-time.coerce :as coerce]))
-  #?(:clj (:import [org.joda.time LocalDate])))
+  #?(:clj (:import [org.joda.time DateTime])))
 
 ;; ----- Helpers -----
 
@@ -69,7 +69,7 @@
   ([] (csv-date (time/now)))
   ([date-time]
    (let [date-format (format/formatter "MMM dd yyyy hh:mma")
-         fixed-date-time (if #?(:clj  (instance? LocalDate date-time)
+         fixed-date-time (if #?(:clj  (instance? DateTime date-time)
                                 :cljs (time/date? date-time))
                            date-time
                            (from-iso date-time))]

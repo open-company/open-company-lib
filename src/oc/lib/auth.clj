@@ -53,12 +53,15 @@
           keywordize-keys
           (dissoc :links)))))
 
-(defn active-users [user team-id auth-server-url passphrase service-name]
-  (let [active-users-request @(http/get (str auth-server-url "/teams/" team-id "/active-users")
-                                        (get-options (magic-token user passphrase service-name)))]
-    (when (= 200 (:status active-users-request))
-      (-> active-users-request
-          :body
-          json/parse-string
-          keywordize-keys
-          (dissoc :links)))))
+(defn active-users
+  ([user auth-server-url passphrase service-name team-id]
+   (active-users (magic-token user passphrase service-name) auth-server-url team-id))
+  ([jwtoken auth-server-url team-id]
+   (let [active-users-request @(http/get (str auth-server-url "/teams/" team-id "/active-users")
+                                         (get-options jwtoken))]
+     (when (= 200 (:status active-users-request))
+       (-> active-users-request
+           :body
+           json/parse-string
+           keywordize-keys
+           (dissoc :links))))))

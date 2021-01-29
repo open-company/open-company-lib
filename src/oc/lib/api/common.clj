@@ -32,7 +32,8 @@
   (fn [request]
     (try
       (let [response (handler request)]
-        (if (= 500 (:status response))
+        (if (and prod?
+                 (= 500 (:status response)))
           (assoc response :body sentry/error-msg)
           response))
       (catch Throwable t

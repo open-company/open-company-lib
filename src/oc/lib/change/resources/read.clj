@@ -105,11 +105,12 @@
       (map #(select-keys % [:user-id :item-id :read-at]))))
 
 (schema/defn ^:always-validate retrieve-by-org :- [{(schema/optional-key :user-id) lib-schema/UniqueID
-                                                    (schema/optional-key :item-id) lib-schema/UniqueID}]
+                                                    (schema/optional-key :item-id) lib-schema/UniqueID
+                                                    (schema/optional-key :read-at) lib-schema/ISO8601}]
   [db-opts org-id :- lib-schema/UniqueID]
   (->> (far/query db-opts (table-name db-opts) {:org_id [:eq org-id]} {:index (org-id-user-id-gsi-name db-opts)})
-      (map #(clojure.set/rename-keys % {:user_id :user-id :item_id :item-id}))
-      (map #(select-keys % [:user-id :item-id]))))
+      (map #(clojure.set/rename-keys % {:user_id :user-id :item_id :item-id :read_at :read-at}))
+      (map #(select-keys % [:user-id :item-id :read-at]))))
 
 ;; Move
 

@@ -47,4 +47,18 @@
         @(http/get (str auth-server-url "/users/" (:user-id user))
                    (get-options (magic-token user passphrase service-name)))]
     (when (= 200 (:status user-request))
-      (dissoc (keywordize-keys (json/parse-string (:body user-request))) :links))))
+      (-> user-request
+          :body
+          json/parse-string
+          keywordize-keys
+          (dissoc :links)))))
+
+(defn active-users [user team-id auth-server-url passphrase service-name]
+  (let [active-users-request @(http/get (str auth-server-url "/teams/" team-id "/active-users")
+                                        (get-options (magic-token user passphrase service-name)))]
+    (when (= 200 (:status active-users-request))
+      (-> active-users-request
+          :body
+          json/parse-string
+          keywordize-keys
+          (dissoc :links)))))

@@ -5,7 +5,8 @@
                     [clj-time.coerce :as coerce])
      :cljs (:require [cljs-time.format :as format]
                      [cljs-time.core :as time]
-                     [cljs-time.coerce :as coerce])))
+                     [cljs-time.coerce :as coerce]))
+  #?(:clj (:import [org.joda.time LocalDate])))
 
 ;; ----- Helpers -----
 
@@ -61,3 +62,15 @@
   "Use not-after? as shortcut for before? or equal?."
   [ts]
   (not (time/after? (from-millis ts) (utc-now))))
+
+;; ---- CSV date format ----
+
+(defn csv-date
+  ([] (csv-date (time/now)))
+  ([date-time]
+   (let [date-format (format/formatter "MMM dd yyyy hh:mma")
+         fixed-date-time (if #?(:clj  (instance? LocalDate date-time)
+                                :cljs (time/date? date-time))
+                           date-time
+                           (from-iso date-time))]
+     (format/unparse date-format fixed-date-time))))

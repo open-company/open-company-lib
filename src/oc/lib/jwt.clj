@@ -185,7 +185,9 @@
    if it's an old format: see lib-schema/ValidJWTClaims
    and lib-schema/Claims diffs.."
   ([jwt-claims :guard map?]
-   (not (lib-schema/valid? lib-schema/ValidJWTClaims jwt-claims)))
+   (if (:super-user jwt-claims)
+     (not (lib-schema/valid? lib-schema/MagicTokenClaims jwt-claims))
+     (not (lib-schema/valid? lib-schema/ValidJWTClaims jwt-claims))))
   ([jwtoken :guard string?]
    (refresh? (:claims (decode jwtoken)))))
 

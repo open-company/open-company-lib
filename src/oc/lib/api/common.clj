@@ -4,6 +4,7 @@
             [taoensso.timbre :as timbre]
             [cheshire.core :as json]
             [oc.lib.sentry.core :as sentry]
+            [environ.core :refer (env)]
             [liberator.representation :refer (ring-response)]
             [liberator.core :refer (by-method)]
             [oc.lib.jwt :as jwt]))
@@ -15,6 +16,10 @@
 
 (def json-mime-type "application/json")
 (def text-mime-type "text/plain")
+
+;; ----- Prod check -----
+
+(def prod? (#{"production" "prod"} (env :environment)))
 
 ;; ----- Ring Middleware -----
 
@@ -39,36 +44,36 @@
 (defn text-response
   "Helper to format a text ring response"
   ([body status] (text-response body status {}))
-  
+
   ([body status headers]
   {:pre [(string? body)
          (integer? status)
          (map? headers)]}
   (ring-response {
-    :body body 
-    :status status 
+    :body body
+    :status status
     :headers (merge {"Content-Type" text-mime-type} headers)})))
 
 (defun json-response
   "Helper to format a generic JSON body ring response"
   ([body status] (json-response body status json-mime-type {}))
-  
+
   ([body status headers :guard map?] (json-response body status json-mime-type headers))
 
   ([body status mime-type :guard string?] (json-response body status mime-type {}))
 
   ([body :guard #(or (map? %) (sequential? %)) status mime-type headers]
   (json-response (json/generate-string body {:pretty true}) status mime-type headers))
-  
+
   ([body :guard string? status :guard integer? mime-type :guard string? headers :guard map?]
   (ring-response {:body body
-                  :status status 
+                  :status status
                   :headers (merge {"Content-Type" mime-type} headers)})))
 
 (defn error-response
   "Helper to format a JSON ring response with an error."
   ([error status] (error-response error status {}))
-  
+
   ([error status headers]
    {:pre [(integer? status)
           (map? headers)]}
@@ -121,7 +126,7 @@
                   (str reason))
       :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}}))
 
-(defn location-response 
+(defn location-response
   ([location body media-type] (location-response location body 201 media-type))
   ([location body status media-type]
   (ring-response
@@ -209,38 +214,102 @@
     :else
     (and (:jwtoken ctx) (:user ctx))))
 
-(defn get-token
+(defn- get-token-from-headers
   "
   Read supplied JWToken from the Authorization in the request headers.
 
   Return nil if no JWToken provided.
   "
   [headers]
-  (if-let [authorization (or (get headers "Authorization") (get headers "authorization"))]
+  (timbre/debug "Getting token from headers")
+  (when-let [authorization (or (get headers "Authorization") (get headers "authorization"))]
     (last (s/split authorization #" "))))
+
+(def ^:private -id-token-name "id-token")
+
+(defn- id-token-cookie-name []
+  (let [prefix (if prod?
+                 ""
+                 (or (env :oc-web-cookie-prefix) "localhost-"))]
+    (str prefix -id-token-name)))
+
+(def ^:private -jwt-name "jwt")
+
+(defn- jwtoken-cookie-name []
+  (let [prefix (if prod?
+                 ""
+                 (or (env :oc-web-cookie-prefix) "localhost-"))]
+    (str prefix -jwt-name)))
+
+(defn- get-token-from-cookies
+  "
+  Read supplied JWToken from request cookies.
+
+  Return nil if no JWToken provided.
+  "
+  [cookies]
+  (timbre/debug "Getting token from cookies")
+  (or (get-in cookies [(jwtoken-cookie-name) :value])
+      (get-in cookies [(id-token-cookie-name) :value])))
+
+(defn- get-token-from-params
+  "
+  Read supplied JWToken from the request parameters.
+
+  Return nil if no JWToken provided.
+
+  Token in parameters is accepted only for development.
+  "
+  [params]
+  (when-not prod?
+    (timbre/debug "Getting token from params")
+    (or (get params (keyword -jwt-name))
+        (get params -jwt-name)
+        (get params (keyword -id-token-name))
+        (get params -id-token-name))))
+
+(defn get-token [req]
+  (timbre/debug "Getting user token from request")
+  (or (get-token-from-headers (:headers req))
+      (get-token-from-cookies (:cookies req))
+      (get-token-from-params (:params req))))
 
 (defn read-token
   "Read supplied JWToken from the request headers.
 
+   If a valid token is supplied containing :super-user return :jwttoken and associated :user.
+   If a valid id-token is supplied return a map containing :id-token and associated :user.
    If a valid token is supplied return a map containing :jwtoken and associated :user.
    If invalid token is supplied return a map containing :jwtoken and false.
    If no Authorization headers are supplied return nil."
-  [headers passphrase]
-  (when-let [token (get-token headers)]
-    (cond
-     ;; identity token
-     (and (:id-token (:claims (jwt/decode token)))
-          (jwt/check-token token passphrase))
-     {:jwtoken false
-      :user (:claims (jwt/decode-id-token token passphrase))
-      :id-token token}
-
-     (jwt/valid? token passphrase)
-     {:jwtoken token
-      :user (:claims (jwt/decode token))}
-
-     :default
-     {:jwtoken false})))
+  [req passphrase]
+  (if-let [token (get-token req)]
+    (let [decoded-token (jwt/decode token)
+          check-token? (jwt/check-token token passphrase)
+          valid-token? (jwt/valid? token passphrase)]
+      (timbre/debug "Token found")
+      (cond
+        ;; super-user token
+        (and (-> decoded-token :claims :super-user)
+            check-token?)
+        {:jwtoken decoded-token
+        :user (:claims decoded-token)}
+        ;; identity token
+        (and (-> decoded-token :claims :id-token)
+              check-token?)
+        {:jwtoken false
+        :user (:claims (jwt/decode-id-token token passphrase))
+        :id-token token}
+        ;; Normmal user token
+        valid-token?
+        {:jwtoken token
+          :user (:claims decoded-token)}
+        ;; not valid token
+        :else
+        {:jwtoken false}))
+    (do ;; Return false since no JWToken was found
+      (timbre/debug "No token found")
+      false)))
 
 (defn allow-id-token
   "Allow options request. Allow jwtoken. Allow id token. Allow anonymous."
@@ -271,6 +340,7 @@
   [ctx]
   (cond (= (-> ctx :request :request-method) :options)
         true ; always allow options
+
         (:id-token ctx)
         (allow-id-token ctx)
 
@@ -284,14 +354,14 @@
 
 ;; verify validity of JWToken if it's provided, but it's not required
 (defn anonymous-resource [passphrase] {
-  :initialize-context (fn [ctx] (read-token (get-in ctx [:request :headers]) passphrase))
+  :initialize-context (fn [ctx] (read-token (:request ctx) passphrase))
   :authorized? allow-anonymous
   :handle-unauthorized handle-unauthorized
   :handle-exception handle-exception
   :handle-forbidden  (fn [ctx] (if (:jwtoken ctx) (forbidden-response) (unauthorized-response)))})
 
 (defn base-authenticated-resource [passphrase]{
-  :initialize-context (fn [ctx] (read-token (get-in ctx [:request :headers]) passphrase))
+  :initialize-context (fn [ctx] (read-token (:request ctx) passphrase))
   :handle-not-found (fn [_] (missing-response))
   :handle-unauthorized handle-unauthorized
   :handle-exception handle-exception

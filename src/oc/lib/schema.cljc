@@ -233,6 +233,7 @@
 
 (def BaseClaims
   (merge SlackUsers
+         GoogleUsers
          {:user-id UniqueID
           :teams [UniqueID]
           :admin [UniqueID]
@@ -254,6 +255,16 @@
           :expire schema/Num
           schema/Keyword schema/Any} ; and whatever else is in the JWT map to make it open for future extensions
          ))
+
+(def MagicTokenClaims
+  {:user {:user-id UniqueID
+          schema/Keyword schema/Any}
+   :user-id UniqueID
+   :name NonBlankStr
+   :auth-source schema/Any
+   :expire schema/Num
+   :token-created-at CreatedAt
+   schema/Keyword schema/Any})
 
 (def Claims
   "Generic claims schema that accept every old jwt plus the new optional keys."

@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.31-alpha2"
+(defproject open-company/lib "0.17.31-alpha3"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -129,6 +129,7 @@
     [com.taoensso/faraday "1.11.0-alpha1" :exclusions [com.taoensso/nippy com.amazonaws/aws-java-sdk-dynamodb org.tukaani/xz joda-time com.taoensso/encore]]
     ;; This is needed by sentry-clj if we want to use the ring middleware
     [ring/ring-core "1.8.0" :exclusions [clj-time joda-time commons-codec]]
+    [clojure.java-time "0.3.2"]
   ]
 
   :profiles {

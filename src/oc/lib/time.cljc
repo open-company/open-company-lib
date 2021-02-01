@@ -2,11 +2,13 @@
   "Functions related to time and timestamps."
   #?(:clj (:require [clj-time.format :as format]
                     [clj-time.core :as time]
-                    [clj-time.coerce :as coerce])
+                    [clj-time.coerce :as coerce]
+                    [defun.core :refer (defun)]
+                    [java-time :as jt])
      :cljs (:require [cljs-time.format :as format]
                      [cljs-time.core :as time]
-                     [cljs-time.coerce :as coerce]))
-  #?(:clj (:import [org.joda.time DateTime])))
+                     [cljs-time.coerce :as coerce]
+                     [defun.core :refer (defun)])))
 
 ;; ----- Helpers -----
 
@@ -65,12 +67,26 @@
 
 ;; ---- CSV date format ----
 
-(defn csv-date
-  ([] (csv-date (time/now)))
+#?(:clj
+(defun csv-date
+  ([]
+   (csv-date (time/now) (time/default-time-zone)))
+  ([tz]
+   (csv-date (time/now) tz))
+  ([nil tz]
+   (csv-date (time/now) tz))
+  ([date-time :guard string? tz]
+   (csv-date (jt/instant date-time) tz))
+  ([date-time nil]
+   (csv-date date-time (time/default-time-zone)))
+  ([date-time tz]
+   (jt/format "MMM dd YYYY hh:mma" (jt/zoned-date-time date-time "CET"))))
+:cljs
+(defun csv-date
+  ([] (csv-date (utc-now)))
+  ([date-time :guard string?]
+   (csv-date (from-iso date-time)))
   ([date-time]
    (let [date-format (format/formatter "MMM dd yyyy hh:mma")
-         fixed-date-time (if #?(:clj  (instance? DateTime date-time)
-                                :cljs (time/date? date-time))
-                           date-time
-                           (from-iso date-time))]
-     (format/unparse date-format fixed-date-time))))
+         fixed-date-time (time/to-default-time-zone date-time)]
+     (format/unparse date-format fixed-date-time)))))

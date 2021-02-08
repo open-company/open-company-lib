@@ -67,7 +67,17 @@
 
 ;; ---- CSV date format ----
 
-#?(:clj
+#?(
+:clj
+(defun format-inst [inst format]
+  (jt/format format inst))
+
+:cljs
+(defun format-inst [inst format]
+  (format/unparse inst format)))
+
+#?(
+:clj
 (defun csv-date
   ([]
    (csv-date (time/now) (time/default-time-zone)))
@@ -80,13 +90,40 @@
   ([date-time nil]
    (csv-date date-time (time/default-time-zone)))
   ([date-time tz]
-   (jt/format "MMM dd YYYY hh:mma" (jt/zoned-date-time date-time "CET"))))
+   (format-inst "MMM dd YYYY" (jt/zoned-date-time date-time "CET"))))
+
 :cljs
 (defun csv-date
   ([] (csv-date (utc-now)))
   ([date-time :guard string?]
    (csv-date (from-iso date-time)))
   ([date-time]
-   (let [date-format (format/formatter "MMM dd yyyy hh:mma")
+   (let [date-format (format/formatter "MMM dd yyyy")
          fixed-date-time (time/to-default-time-zone date-time)]
-     (format/unparse date-format fixed-date-time)))))
+     (format-inst date-format fixed-date-time)))))
+
+#?(
+:clj
+(defun csv-date-time
+  ([]
+  (csv-date-time (time/now) (time/default-time-zone)))
+  ([tz]
+  (csv-date-time (time/now) tz))
+  ([nil tz]
+  (csv-date-time (time/now) tz))
+  ([date-time :guard string? tz]
+  (csv-date-time (jt/instant date-time) tz))
+  ([date-time nil]
+  (csv-date-time date-time (time/default-time-zone)))
+  ([date-time tz]
+  (format-inst "MMM dd YYYY hh:mma" (jt/zoned-date-time date-time "CET"))))
+
+:cljs
+(defun csv-date-time
+  ([] (csv-date-time (utc-now)))
+  ([date-time :guard string?]
+  (csv-date-time (from-iso date-time)))
+  ([date-time]
+  (let [date-format (format/formatter "MMM dd yyyy hh:mma")
+        fixed-date-time (time/to-default-time-zone date-time)]
+    (format-inst date-format fixed-date-time)))))

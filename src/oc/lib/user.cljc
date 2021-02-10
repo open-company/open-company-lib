@@ -63,3 +63,15 @@
   ([user :guard #(not (s/blank? (:last-name %)))] (:last-name user))
   ([user :guard #(not (s/blank? (:name %)))] (:name user))
   ([user] (name-for (:email user) "")))
+
+(defun name-for-csv
+  "
+  Get a name to display in the analytics files.
+
+  Do not use the email as fallback, use the user-id instead.
+  "
+  ([user-map :guard map?] (name-for-csv (:first-name user-map) (:last-name user-map) (:user-id user-map)))
+  ([_first-name :guard s/blank? _last-name :guard s/blank? user-id] user-id)
+  ([first-name _last-name :guard s/blank? _user-id] first-name)
+  ([_first-name :guard s/blank? last-name _user-id] last-name)
+  ([first-name last-name _user-id] (s/trim (str first-name " " last-name))))

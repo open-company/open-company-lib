@@ -69,28 +69,35 @@
 
 #?(
 :clj
-(defun format-inst [inst format]
-  (jt/format format inst))
+(defun format-inst
+
+  ([format-string inst :guard #(instance? org.joda.time.DateTime %)]
+   (format/unparse (format/formatter format-string) inst))
+
+  ([format-string inst :guard #(or (jt/zoned-date-time? %) (jt/instant? %))]
+   (jt/format (jt/formatter format-string) inst)))
 
 :cljs
-(defun format-inst [inst format]
-  (format/unparse inst format)))
+(defn format-inst [format-string inst]
+  (format/unparse (format/formatter format-string) inst)))
+
+(def csv-date-format "MMM dd YYYY")
 
 #?(
 :clj
 (defun csv-date
   ([]
-   (csv-date (time/now) (time/default-time-zone)))
+   (csv-date (jt/instant) (time/default-time-zone)))
   ([tz]
-   (csv-date (time/now) tz))
+   (csv-date (jt/instant) tz))
   ([nil tz]
-   (csv-date (time/now) tz))
+   (csv-date (jt/instant) tz))
   ([date-time :guard string? tz]
    (csv-date (jt/instant date-time) tz))
   ([date-time nil]
    (csv-date date-time (time/default-time-zone)))
   ([date-time tz]
-   (format-inst "MMM dd YYYY" (jt/zoned-date-time date-time "CET"))))
+   (format-inst csv-date-format (jt/zoned-date-time date-time tz))))
 
 :cljs
 (defun csv-date
@@ -98,25 +105,25 @@
   ([date-time :guard string?]
    (csv-date (from-iso date-time)))
   ([date-time]
-   (let [date-format (format/formatter "MMM dd yyyy")
-         fixed-date-time (time/to-default-time-zone date-time)]
-     (format-inst date-format fixed-date-time)))))
+   (format-inst csv-date-format (time/to-default-time-zone date-time)))))
+
+(def csv-date-time-format "MMM dd YYYY hh:mma")
 
 #?(
 :clj
 (defun csv-date-time
   ([]
-  (csv-date-time (time/now) (time/default-time-zone)))
+  (csv-date-time (jt/instant) (time/default-time-zone)))
   ([tz]
-  (csv-date-time (time/now) tz))
+  (csv-date-time (jt/instant) tz))
   ([nil tz]
-  (csv-date-time (time/now) tz))
+  (csv-date-time (jt/instant) tz))
   ([date-time :guard string? tz]
   (csv-date-time (jt/instant date-time) tz))
   ([date-time nil]
   (csv-date-time date-time (time/default-time-zone)))
   ([date-time tz]
-  (format-inst "MMM dd YYYY hh:mma" (jt/zoned-date-time date-time "CET"))))
+  (format-inst csv-date-time-format (jt/zoned-date-time date-time tz))))
 
 :cljs
 (defun csv-date-time
@@ -124,6 +131,4 @@
   ([date-time :guard string?]
   (csv-date-time (from-iso date-time)))
   ([date-time]
-  (let [date-format (format/formatter "MMM dd yyyy hh:mma")
-        fixed-date-time (time/to-default-time-zone date-time)]
-    (format-inst date-format fixed-date-time)))))
+   (format-inst csv-date-time-format (time/to-default-time-zone date-time)))))

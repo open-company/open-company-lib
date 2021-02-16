@@ -2,6 +2,7 @@
   "Get list of sections from the storage service."
   (:require [clojure.walk :refer (keywordize-keys)]
             [clj-http.client :as http]
+            [oc.lib.schema :as lib-schema]
             [defun.core :refer (defun)]
             [cheshire.core :as json]
             [oc.lib.sentry.core :as sentry]
@@ -55,6 +56,14 @@
       (timbre/warn "Unable to retrieve org data.") 
       default-on-error)))
 
+(defun org-data
+  ([config org-slug user-id :guard lib-schema/unique-id?]
+   (let [{auth-server-url :auth-server-url passphrase :passphrase service-name :service-name} config
+         jwtoken (auth/user-token {:user-id user-id} auth-server-url passphrase service-name)]
+     (org-data config org-slug jwtoken)))
+  ([config org-slug jwtoken]
+   (get-data (str (:storage-server-url config) "/orgs/" org-slug) jwtoken)))
+
 (defun post-data-for
   "
   Retrieve the data for the specified post from the Storage service.
@@ -100,9 +109,7 @@
       (let [orgs (-> body :collection :items)
             org (first (filter #(= org-slug (:slug %)) orgs))]
         (if org
-          (let [org-data (get-data (str (:storage-server-url config)
-                                        "/orgs/"
-                                        (:slug org)) jwtoken)
+          (let [org (org-data (:storage-server-url config) (:slug org) jwtoken)
                 data (get-data (str (:storage-server-url config)
                                     "/orgs/"
                                     (:slug org)

@@ -42,16 +42,27 @@
        :status (:status token-request)
        :body (:body token-request)})))
 
+(defn- parse-response [response]
+  (-> response
+      :body
+      json/parse-string
+      keywordize-keys))
+
 (defn user-data [user auth-server-url passphrase service-name]
   (let [user-request
         @(http/get (str auth-server-url "/users/" (:user-id user))
                    (get-options (magic-token user passphrase service-name)))]
     (when (= 200 (:status user-request))
       (-> user-request
-          :body
-          json/parse-string
-          keywordize-keys
+          parse-response
           (dissoc :links)))))
+
+(defn team-data [{:keys [auth-server-url passphrase service-name]} team-id user-id]
+  (let [jwtoken  (magic-token {:user-id user-id} passphrase service-name)
+        team-request @(http/get (str auth-server-url "/teams/" team-id)
+                                (get-options jwtoken))]
+    (when (= 200 (:status team-request))
+      (parse-response team-request))))
 
 (defn active-users
   ([user auth-server-url passphrase service-name team-id]
@@ -61,7 +72,5 @@
                                          (get-options jwtoken))]
      (when (= 200 (:status active-users-request))
        (-> active-users-request
-           :body
-           json/parse-string
-           keywordize-keys
+           parse-response
            (dissoc :links))))))

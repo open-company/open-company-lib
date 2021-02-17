@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.32-alpha"
+(defproject open-company/lib "0.17.33-alpha1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -130,6 +130,11 @@
     ;; This is needed by sentry-clj if we want to use the ring middleware
     [ring/ring-core "1.8.0" :exclusions [clj-time joda-time commons-codec]]
     [clojure.java-time "0.3.2"]
+    ;; Clojure Slack REST API https://github.com/julienXX/clj-slack
+    ;; NB: clj-http pulled in manually
+    ;; NB: org.clojure/data.json pulled in manually
+    ;; NB: org.clojure/tools.logging pulled in manually
+    [org.julienxx/clj-slack "0.6.3" :exclusions [clj-http org.clojure/data.json org.clojure/tools.logging]]
   ]
 
   :profiles {

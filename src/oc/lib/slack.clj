@@ -5,7 +5,16 @@
             [cheshire.core :as json]
             [environ.core :refer (env)]
             [defun.core :refer (defun)]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as timbre]
+            [clj-slack.conversations :as slack-conversations]))
+
+(declare alert-pagination)
+
+(def ^:private -slack-endpoint "https://slack.com/api")
+(def ^:private -slack-connection {:api-url -slack-endpoint})
+
+(defn- slack-connection [token]
+  (merge -slack-connection {:token token}))
 
 ;; https://www.cs.tut.fi/~jkorpela/chars/spaces.html
 (def marker-char (char 8203)) ; U+200B a Unicode zero width space, used to mark comment messages originating with OC
@@ -58,10 +67,32 @@
   (:members (slack-api :users.list {:token token})))
 
 (defn get-dm-channel [token user-id]
-  (-> (slack-api :im.open {:token token :user user-id}) :channel :id))
+  (let [options {:users user-id}
+        resp (slack-conversations/open (slack-connection token) options)]
+    (alert-pagination resp :conversations.list options)
+    (if (:ok resp)
+      (-> resp :channel :id)
+      (report-slack-error resp (ex-info "Slack conversations/list" {:method :conversations.list
+                                                                    :options options})))))
 
-(defn get-channels [token]
-  (:channels (slack-api :channels.list {:token token})))
+(defn get-channels
+  ([token]
+   (get-channels token {:exclude-archived true
+                        :type [:public-channels :private-channels]
+                        :limit 1000}))
+  ([token  {exclude-archived :exclude_archived limit :limit cursor :cursor types :types :or {types "public_channel" ;; public_channel,private_channel,mpim,im
+                                                                                             limit 1000
+                                                                                             exclude-archived true}}]
+   (let [opts (cond->  {:types types
+                        :limit (str limit)
+                        :exclude_archived (str exclude-archived)}
+                cursor (assoc :cursor (str cursor)))
+         resp (slack-conversations/list (slack-connection token) opts)]
+     (alert-pagination resp :conversations.list opts)
+     (if (:ok resp)
+       (:channels resp)
+       (report-slack-error resp (ex-info "clj-slack API error" {:method :conversations.list
+                                                                :opts opts}))))))
 
 (defn post-message
   "Post a message as the bot."
@@ -198,6 +229,10 @@
                     (= short-server-name "staging") " (staging)"
                     (#{"local" "localhost"} short-server-name) " (localhost)"))]
     (message-webhook slack-alerts-webhook from message)))
+
+(defn alert-pagination [slack-response method & [parameters]]
+  (when (some-> slack-response :response_metadata :next-cursor)
+    (slack-report (format "Pagination reached for Slack %s with parameters: %s" method parameters))))
 
 (comment
 

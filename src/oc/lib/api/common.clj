@@ -19,7 +19,10 @@
 
 ;; ----- Prod check -----
 
-(def prod? (#{"production" "prod"} (env :environment)))
+;; Without staging
+;; (def prod? (#{"production" "prod"} (env :environment)))
+;; With staging
+(def prod? (= "production" (env :env)))
 
 ;; ----- Ring Middleware -----
 
@@ -33,7 +36,8 @@
     (try
       (let [response (handler request)]
         (if (and prod?
-                 (= 500 (:status response)))
+                 (or (<= 500 (:status response) 599)
+                     (= 422 (:status response))))
           (assoc response :body sentry/error-msg)
           response))
       (catch Throwable t
@@ -116,16 +120,32 @@
     :body forbidden
     :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}}))
 
-(defn unprocessable-entity-response [reason]
+(defn unprocessable-entity-response [reason & [status]]
   (ring-response
-    {:status 422
-      :body (cond (keyword? reason)
-                  (name reason)
-                  (seq? reason)
-                  (json/generate-string reason {:pretty true})
-                  :else
-                  (str reason))
-      :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}}))
+   {:status (or status 422)
+    :body (cond (keyword? reason)
+                (name reason)
+                (seq? reason)
+                (json/generate-string reason {:pretty true})
+                :else
+                (str reason))
+    :headers {"Content-Type" (format "%s;charset=%s" (if (seq? reason) json-mime-type text-mime-type) UTF8)}}))
+
+(defn unprocessable-entity-handler [{reason :reason status :status}]
+  (let [response-body (if prod?
+                        sentry/error-msg
+                        reason)
+        capture-message (cond (seq? reason)
+                              "Unprocessable entity"
+                              (keyword? reason)
+                              (name reason)
+                              :else
+                              (str reason))]
+    (sentry/capture {:throwable (RuntimeException. "422 - Unprocessable entity")
+                     :message {:message capture-message}
+                     :extra {:reason reason
+                             :status status}})
+    (unprocessable-entity-response response-body (or status 422))))
 
 (defn location-response
   ([location body media-type] (location-response location body 201 media-type))
@@ -397,7 +417,8 @@
     :put (fn [ctx] (malformed-json? ctx))
     :patch (fn [ctx] (malformed-json? ctx))})
   :can-put-to-missing? (fn [_] false)
-  :conflict? (fn [_] false)})
+  :conflict? (fn [_] false)
+  :handle-unprocessable-entity unprocessable-entity-handler})
 
 (defn open-company-anonymous-resource [passphrase]
   (merge open-company-resource (anonymous-resource passphrase)))

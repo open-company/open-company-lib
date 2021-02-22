@@ -69,10 +69,10 @@
 (defn get-dm-channel [token user-id]
   (let [options {:users user-id}
         resp (slack-conversations/open (slack-connection token) options)]
-    (alert-pagination resp :conversations.list options)
+    (alert-pagination resp :conversations.open options)
     (if (:ok resp)
       (-> resp :channel :id)
-      (report-slack-error resp (ex-info "Slack conversations/list" {:method :conversations.list
+      (report-slack-error resp (ex-info "Slack conversations/open" {:method :conversations.open
                                                                     :options options})))))
 
 (defn get-channels

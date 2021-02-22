@@ -36,8 +36,9 @@
     (try
       (let [response (handler request)]
         (if (and prod?
-                 (or (<= 500 (:status response) 599)
-                     (= 422 (:status response))))
+                 (and (:status response)
+                      (or (<= 500 (:status response) 599)
+                          (= 422 (:status response)))))
           (assoc response :body sentry/error-msg)
           response))
       (catch Throwable t

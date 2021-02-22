@@ -77,9 +77,7 @@
 
 (defn get-channels
   ([token]
-   (get-channels token {:exclude-archived true
-                        :type [:public-channels :private-channels]
-                        :limit 1000}))
+   (get-channels token {}))
   ([token  {exclude-archived :exclude_archived limit :limit cursor :cursor types :types :or {types "public_channel" ;; public_channel,private_channel,mpim,im
                                                                                              limit 1000
                                                                                              exclude-archived true}}]

@@ -6,7 +6,8 @@
             [environ.core :refer (env)]
             [defun.core :refer (defun)]
             [taoensso.timbre :as timbre]
-            [clj-slack.conversations :as slack-conversations]))
+            [clj-slack.conversations :as slack-conversations]
+            [clj-slack.chat :as slack-chat]))
 
 (declare alert-pagination)
 
@@ -36,17 +37,24 @@
 (defn slack-api [method params]
   (timbre/info "Making slack request:" method)
   (let [url (str "https://slack.com/api/" (name method))
-        {:keys [status headers body error] :as resp} @(http/get url {:query-params params :as :text})]
+        fixed-params (dissoc params :token)
+        query-params {:query-params fixed-params :as :text}
+        req-headers (when (:token params)
+                      {:headers {"Authorization" (format "Bearer %s" (:token params))}})
+        request-data (merge query-params req-headers)
+        {:keys [status headers body error] :as resp} @(http/get url request-data)]
     (if error
       (report-slack-error body (ex-info "Error from Slack API"
                                 {:method method
                                  :params params
-                                 :status status
-                                 :body body}))
+                                 :response {:status status :headers headers :body body :error error}
+                                 :request-data request-data}))
       (do 
         (timbre/trace "Slack response:" body)
         (try
           (let [response-body (-> body json/decode keywordize-keys)]
+            (when (:ok response-body)
+              (alert-pagination response-body method params))
             (if-not (:ok response-body)
               (report-slack-error body (ex-info "Slack request was rejected"
                                          {:body body
@@ -91,6 +99,9 @@
        (:channels resp)
        (report-slack-error resp (ex-info "clj-slack API error" {:method :conversations.list
                                                                 :opts opts}))))))
+
+(defn get-event-parties [app-token event-context]
+  (slack-api :apps.event.authorizations.list {:token app-token :event_context event-context}))
 
 (defn post-message
   "Post a message as the bot."

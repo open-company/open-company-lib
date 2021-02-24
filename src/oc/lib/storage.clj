@@ -109,7 +109,7 @@
       (let [orgs (-> body :collection :items)
             org (first (filter #(= org-slug (:slug %)) orgs))]
         (if org
-          (let [org (org-data (:storage-server-url config) (:slug org) jwtoken)
+          (let [org (org-data config (:slug org) jwtoken)
                 data (get-data (str (:storage-server-url config)
                                     "/orgs/"
                                     (:slug org)

@@ -249,8 +249,6 @@
           (o-k :slack-bots) SlackBots
           (o-k :google-id) schema/Str
           (o-k :google-token) schema/Any
-          (o-k :digest-delivery) schema/Any
-          (o-k :latest-digest-delivery) schema/Any
           :refresh-url NonBlankStr
           :expire schema/Num
           schema/Keyword schema/Any} ; and whatever else is in the JWT map to make it open for future extensions

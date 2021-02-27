@@ -19,7 +19,7 @@
 
 ;; ----- Prod check -----
 
-(def prod? (#{"production" "prod"} (env :environment)))
+(defn prod? [] (#{"production" "prod"} (env :environment)))
 
 ;; ----- Ring Middleware -----
 
@@ -32,7 +32,7 @@
   (fn [request]
     (try
       (let [response (handler request)]
-        (if (and prod?
+        (if (and (prod?)
                  (= 500 (:status response)))
           (assoc response :body sentry/error-msg)
           response))
@@ -229,7 +229,7 @@
 (def ^:private -id-token-name "id-token")
 
 (defn- id-token-cookie-name []
-  (let [prefix (if prod?
+  (let [prefix (if (prod?)
                  ""
                  (or (env :oc-web-cookie-prefix) "localhost-"))]
     (str prefix -id-token-name)))
@@ -237,7 +237,7 @@
 (def ^:private -jwt-name "jwt")
 
 (defn- jwtoken-cookie-name []
-  (let [prefix (if prod?
+  (let [prefix (if (prod?)
                  ""
                  (or (env :oc-web-cookie-prefix) "localhost-"))]
     (str prefix -jwt-name)))
@@ -262,7 +262,7 @@
   Token in parameters is accepted only for development.
   "
   [params]
-  (when-not prod?
+  (when-not (prod?)
     (timbre/debug "Getting token from params")
     (or (get params (keyword -jwt-name))
         (get params -jwt-name)

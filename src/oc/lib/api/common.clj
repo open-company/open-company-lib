@@ -19,10 +19,10 @@
 
 ;; ----- Prod check -----
 
-;; Without staging
-;; (def prod? (#{"production" "prod"} (env :environment)))
-;; With staging
-(def prod? (= "production" (env :env)))
+(defn prod? []
+  ;; Use the following to test prod env on staging
+  ;; (#{"production" "prod"} (env :env))
+  (#{"production" "prod"} (env :environment)))
 
 ;; ----- Ring Middleware -----
 
@@ -35,7 +35,7 @@
   (fn [request]
     (try
       (let [response (handler request)]
-        (if (and prod?
+        (if (and (prod?)
                  (and (:status response)
                       (or (<= 500 (:status response) 599)
                           (= 422 (:status response)))))
@@ -250,7 +250,7 @@
 (def ^:private -id-token-name "id-token")
 
 (defn- id-token-cookie-name []
-  (let [prefix (if prod?
+  (let [prefix (if (prod?)
                  ""
                  (or (env :oc-web-cookie-prefix) "localhost-"))]
     (str prefix -id-token-name)))
@@ -258,7 +258,7 @@
 (def ^:private -jwt-name "jwt")
 
 (defn- jwtoken-cookie-name []
-  (let [prefix (if prod?
+  (let [prefix (if (prod?)
                  ""
                  (or (env :oc-web-cookie-prefix) "localhost-"))]
     (str prefix -jwt-name)))
@@ -283,7 +283,7 @@
   Token in parameters is accepted only for development.
   "
   [params]
-  (when-not prod?
+  (when-not (prod?)
     (timbre/debug "Getting token from params")
     (or (get params (keyword -jwt-name))
         (get params -jwt-name)

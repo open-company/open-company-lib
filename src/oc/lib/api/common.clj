@@ -133,7 +133,7 @@
     :headers {"Content-Type" (format "%s;charset=%s" (if (seq? reason) json-mime-type text-mime-type) UTF8)}}))
 
 (defn unprocessable-entity-handler [{reason :reason status :status}]
-  (let [response-body (if prod?
+  (let [response-body (if (prod?)
                         sentry/error-msg
                         reason)
         capture-message (cond (seq? reason)

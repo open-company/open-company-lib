@@ -28,10 +28,12 @@
              :throwable throwable-event}))
 
   ([data :guard map?]
-   (let [msg (str (or (:message (:message data)) (:message data) (:throwable data) "Empty message event"))
-         fixed-data (if (instance? Throwable (:throwable data))
-                      data
-                      (assoc data :message {:message msg}))]
+   (let [message (:message data)
+         fixed-data (if (string? message)
+                      (-> data
+                          (dissoc :message)
+                          (assoc-in [:message :message] message))
+                      data)]
      (sentry/send-event fixed-data)))
 
   ([unknown-data-type]

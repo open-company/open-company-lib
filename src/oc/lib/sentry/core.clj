@@ -1,4 +1,23 @@
 (ns oc.lib.sentry.core
+  "Adapter for sentry.io server side capture. Provides a
+   oc.lib.sentry.core/init
+   ([dsn {:environment production :release oc-production-abcdef :debug false}])
+    Returns a function that you can call to capture an invent on Sentry.
+    There is no need to store the returned function, to capture an event you can use capture.
+
+   oc.lib.sentry.core/capture
+   ([message :guard string?] [kw :guard keyword?] [throwable-event :guard #(instance? Throwable %)] [data :guard map?])
+    It compose a map with the following structure: {:message {:message your message or error name/title} :throwable your-throwable}
+    and pass it to the saved send event function. Logs an erro if that is not provided and tries to call sentry-clj.core/send-event directly.
+
+   If you use a stuartsierra/component like most of our services you can simply use
+
+   oc.lib.sentry.core/map->SentryCapturer
+   ([sentry-config])
+    Where sentry-config is map with the following keys: :dsn, :environment, :debug, :release.
+    Add this as first dependency of your system to make sure it's initialized as first. This will
+    take care of calling init and keeping a reference around. This will also setup the timbre appender so
+    every logged error is automatically passed to sentry."
   (:require [com.stuartsierra.component :as component]
             [defun.core :refer (defun)]
             [cuerdas.core :as s]
@@ -11,7 +30,21 @@
 (def help-email "hello@carrot.io")
 (def error-msg (str "We've been notified of this error. Please contact " help-email " for additional help."))
 
+(def ^:private user-context-keys [:name :first-name :last-name :avatar-url :auth-source :teams
+                                  :email :premium-teams :admin :token-created-at :expire :refresh-url])
+
+(defn ctx->extra
+  "Helper function to get some extra informations from the Liberator context map."
+  [{user :user :as ctx}]
+  (as-> {} extra
+      (if (map? user)
+        (assoc extra :user (select-keys user user-context-keys))
+        (assoc extra :user user))
+      (merge extra (select-keys ctx [:status :body :data :method :uri :url :x-forwarded-for]))))
+
 ;; ---- Helper functions to capture errors and messages ----
+
+(defonce -sentry-logger (atom nil))
 
 (defun capture
   ([nil]
@@ -33,8 +66,15 @@
                       (-> data
                           (dissoc :message)
                           (assoc-in [:message :message] message))
-                      data)]
-     (sentry/send-event fixed-data)))
+                      data)
+         capture-fn @-sentry-logger]
+     (if (fn? capture-fn)
+       (capture-fn fixed-data)
+       (do
+         (timbre/errorf "Error capturing event to Sentry: %s" data)
+         (timbre/debug "Trying to send error anyway via sentry/send-event...")
+         (sentry/send-event fixed-data)
+         (timbre/debug "... done")))))
 
   ([unknown-data-type]
    (capture {:message {:message "Uknown type"}
@@ -74,21 +114,26 @@
   "Create a Sentry Logger using the supplied `dsn`.
    If no `dsn` is supplied, simply log the `event` to a `logger`."
   [{:keys [dsn] :as config}]
+  (println "DBG create-sentry-logger with dsn" dsn config)
   (if dsn
-    (do
+    (let [send-event-fn (fn [event]
+                          (try
+                            (sentry/send-event event)
+                            (catch Exception e
+                              (timbre/errorf "Error submitting event '%s' to Sentry!" event)
+                              (timbre/error e))))]
+      (println "DBG send-event-fn" send-event-fn)
       (timbre/infof "Initialising Sentry with '%s'." dsn)
       (sentry/init! dsn config)
-      (timbre/merge-config! {:appenders {:sentry (sa/appender config)}})
-      (fn [event]
-        (try
-          (sentry/send-event event)
-          (catch Exception e
-            (timbre/errorf "Error submitting event '%s' to Sentry!" event)
-            (timbre/error e)))))
+      (println "DBG sentry initialized" send-event-fn)
+      (timbre/merge-config! {:appenders {:sentry (sa/appender send-event-fn config)}})
+      (println "DBG timbre appender added")
+      send-event-fn)
     (do
+      (println "DBG no DSN")
       (timbre/warn "No Sentry DSN provided. Sentry events will be logged locally!")
       (fn [event]
-        (timbre/infof "Sentry Event '%s'." event)))))
+        (timbre/infof "Sentry Event not captured (no DSN) '%s'." event)))))
 
 (defn init
   "Initialise Sentry with the provided `config` and return a function that can be
@@ -109,11 +154,19 @@
    is entirely possible that it can be re-initialised multiple times.  **This
    behaviour is not ideal nor supported**."
   [config]
-  (create-sentry-logger config))
+  (println "DBG init" config)
+  (println "DBG    already initialized?" @-sentry-logger)
+  (if-not @-sentry-logger
+    (let [sl (create-sentry-logger config)]
+      (println "DBG  logger:" sl)
+      (reset! -sentry-logger sl)
+      (println "DBG  stored logger:" @-sentry-logger)
+      sl)
+    @-sentry-logger))
 
 ;; ---- Sentry component for our system ----
 
-(defrecord SentryCapturer [dsn release environment deploy debug]
+(defrecord SentryCapturer [dsn release environment deploy debug test-fn]
   component/Lifecycle
 
   (start [component]
@@ -128,13 +181,17 @@
                     :deploy deploy
                     :environment environment
                     :debug debug}
-            sentry-client (init config)]
+            capture-fn (init config)]
         (timbre/info "[sentry-capturer] started")
-        (assoc component :sentry-client sentry-client))))
+        (timbre/debug "[sentry-capturer] log function" capture-fn)
+        (when (and test-fn
+                   (fn? capture-fn))
+          (capture-fn {:message "Test this"}))
+        (assoc component :sentry-logger capture-fn))))
 
-  (stop [{:keys [sentry-client] :as component}]
-    (if sentry-client
+  (stop [{:keys [sentry-logger] :as component}]
+    (if sentry-logger
       (do
         (timbre/info "[sentry-capturer] stopped")
-        (assoc component :sentry-client nil))
+        (assoc component :sentry-logger nil))
       component)))

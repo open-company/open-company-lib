@@ -132,7 +132,7 @@
                 (str reason))
     :headers {"Content-Type" (format "%s;charset=%s" (if (seq? reason) json-mime-type text-mime-type) UTF8)}}))
 
-(defn unprocessable-entity-handler [{reason :reason status :status}]
+(defn unprocessable-entity-handler [{reason :reason status :status :as ctx}]
   (let [response-body (if (prod?)
                         sentry/error-msg
                         reason)
@@ -145,7 +145,8 @@
     (sentry/capture {:throwable (RuntimeException. "422 - Unprocessable entity")
                      :message {:message capture-message}
                      :extra {:reason reason
-                             :status status}})
+                             :status status
+                             :user (sentry/ctx->extra ctx)}})
     (unprocessable-entity-response response-body (or status 422))))
 
 (defn location-response
@@ -187,7 +188,7 @@
     (timbre/warn err)
     (sentry/capture {:throwable err
                      :message {:message (str "Liberator handle-exception " (:status ctx))}
-                     :extra (select-keys ctx [:status :body :data :method :uri :url])})
+                     :extra (sentry/ctx->extra ctx)})
     (error-response sentry/error-msg 500)))
 
 ;; ----- Validations -----
@@ -376,7 +377,8 @@
 
 ;; verify validity of JWToken if it's provided, but it's not required
 (defn anonymous-resource [passphrase] {
-  :initialize-context (fn [ctx] (read-token (:request ctx) passphrase))
+  :initialize-context (fn [ctx]
+                        (read-token (:request ctx) passphrase))
   :authorized? allow-anonymous
   :handle-unauthorized handle-unauthorized
   :handle-exception handle-exception

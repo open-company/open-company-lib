@@ -34,9 +34,12 @@
                           (dissoc :message)
                           (assoc-in [:message :message] message))
                       data)]
+     (timbre/infof "Capturing event to sentry %s" (get-in fixed-data [:message :message]))
+     (timbre/debug fixed-data)
      (sentry/send-event fixed-data)))
 
   ([unknown-data-type]
+   (timbre/debug "Capturing unknown type event")
    (capture {:message {:message "Uknown type"}
              :extra {:data unknown-data-type}})))
 
@@ -81,6 +84,7 @@
       (timbre/merge-config! {:appenders {:sentry (sa/appender config)}})
       (fn [event]
         (try
+          (timbre/debug "Sending event to Sentry" (get-in event [:message :message]))
           (sentry/send-event event)
           (catch Exception e
             (timbre/errorf "Error submitting event '%s' to Sentry!" event)

@@ -60,7 +60,7 @@
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
     [com.taoensso/encore "3.9.2"]
     ;; Interface to Sentry error reporting https://github.com/getsentry/sentry-clj
-    [io.sentry/sentry-clj "4.2.139"]
+    [io.sentry/sentry-clj "4.3.143"]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.15.3"]
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica

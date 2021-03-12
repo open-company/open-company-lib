@@ -2,11 +2,16 @@
   (:require [com.stuartsierra.component :as component]
             [defun.core :refer (defun)]
             [cuerdas.core :as s]
+            [environ.core :refer (env)]
             [taoensso.timbre :as timbre]
-            [sentry-clj.core :as sentry]
+            [sentry-clj.core :as sentry-clj]
             [sentry-clj.ring :as sentry-ring]
             [clojure.stacktrace :as clj-st]
-            [oc.lib.sentry.appender :as sa]))
+            [oc.lib.slack :as slack-lib]
+            [oc.lib.sentry.appender :as sa])
+  (:import [java.util UUID]))
+
+(defonce -send-event (atom nil))
 
 (def help-email "hello@carrot.io")
 (def error-msg (str "We've been notified of this error. Please contact " help-email " for additional help."))
@@ -34,9 +39,9 @@
                           (dissoc :message)
                           (assoc-in [:message :message] message))
                       data)]
-     (timbre/infof "Capturing event to sentry %s" (get-in fixed-data [:message :message]))
-     (timbre/debug fixed-data)
-     (sentry/send-event fixed-data)))
+     (timbre/debugf "Capturing event to sentry %s" (get-in fixed-data [:message :message]))
+     (timbre/trace fixed-data)
+     (@-send-event fixed-data)))
 
   ([unknown-data-type]
    (timbre/debug "Capturing unknown type event")
@@ -80,19 +85,24 @@
   (if dsn
     (do
       (timbre/infof "Initialising Sentry with '%s'." dsn)
-      (sentry/init! dsn config)
-      (timbre/merge-config! {:appenders {:sentry (sa/appender config)}})
-      (fn [event]
-        (try
-          (timbre/debug "Sending event to Sentry" (get-in event [:message :message]))
-          (sentry/send-event event)
-          (catch Exception e
-            (timbre/errorf "Error submitting event '%s' to Sentry!" event)
-            (timbre/error e)))))
+      (reset! -send-event (fn [event]
+                            (let [oc-unique-id (str (UUID/randomUUID))
+                                  unique-id-event (assoc-in event [:extra :OC-Unique-ID] oc-unique-id)]
+                              (try
+                                (timbre/infof "Capturing event %s to Sentry OC-Unique-ID %s" (get-in event [:message :message]) oc-unique-id)
+                                (sentry-clj/send-event unique-id-event)
+                                (catch Exception e
+                                  (timbre/warnf "Failed sending event with OC-Unique-ID %s to Sentry" oc-unique-id)
+                                  (when-not (#{"local" "localhost"} (env :environment))
+                                    (timbre/infof "Sending #alert to Slack for failed capture")
+                                    (slack-lib/slack-report (str (ex-message e) " OC-Unique-ID: " oc-unique-id))))))))
+      (timbre/merge-config! {:appenders {:sentry (sa/appender -send-event config)}})
+      @-send-event)
     (do
       (timbre/warn "No Sentry DSN provided. Sentry events will be logged locally!")
-      (fn [event]
-        (timbre/infof "Sentry Event '%s'." event)))))
+      (reset! -send-event (fn [event]
+                            (timbre/infof "Sentry Event '%s'." event)))
+      @-send-event)))
 
 (defn init
   "Initialise Sentry with the provided `config` and return a function that can be
@@ -132,13 +142,14 @@
                     :deploy deploy
                     :environment environment
                     :debug debug}
-            sentry-client (init config)]
+            send-fn (init config)]
         (timbre/info "[sentry-capturer] started")
-        (assoc component :sentry-client sentry-client))))
+        (assoc component :sentry-send-fn send-fn))))
 
-  (stop [{:keys [sentry-client] :as component}]
-    (if sentry-client
+  (stop [{:keys [sentry-send-fn] :as component}]
+    (if sentry-send-fn
       (do
         (timbre/info "[sentry-capturer] stopped")
-        (assoc component :sentry-client nil))
+        (reset! -send-event nil)
+        (assoc component :sentry-send-fn nil))
       component)))

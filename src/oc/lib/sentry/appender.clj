@@ -2,8 +2,7 @@
 ;; Thanks Tom!
 
 (ns oc.lib.sentry.appender
-  (:require [sentry-clj.core :as sentry]
-            [oc.lib.slack :as slack]
+  (:require [oc.lib.slack :as slack]
             [taoensso.timbre :as timbre]))
 
 (def stacktrace-depth 20)
@@ -42,7 +41,7 @@
 
 (defn appender
   "Sentry timbre appender to send error level messages with a throwable to Sentry."
-  [{:keys [dsn] :as opts}]
+  [send-event-atom {:keys [dsn] :as opts}]
   (assert dsn (str "The Sentry appender requires a dsn, none given:" dsn))
   {:doc "A timbre appender that sends errors to getsentry.com"
    :min-level :error ; critical this not drop to warn or below as this appender logs at warning level (infinite loop!)
@@ -63,12 +62,8 @@
                                ; false     (trim-stacktrace)
                                ; false     (sentry-interfaces/stacktrace throwable)
                                )]
-            (try
-             (let [r (sentry/send-event payload)]
-               (timbre/info "Sentry appender: captured -" r))
-             (catch Exception e
-               (slack/slack-report e)
-               e))))})
+           ;; No need to wrap this in try/catch or log around it, the send-event-atom function already handles all that
+           (@send-event-atom payload)))})
 
 (comment
 

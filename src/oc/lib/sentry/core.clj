@@ -85,6 +85,7 @@
   (if dsn
     (do
       (timbre/infof "Initialising Sentry with '%s'." dsn)
+      (sentry-clj/init! dsn config)
       (reset! -send-event (fn [event]
                             (let [oc-unique-id (str (UUID/randomUUID))
                                   unique-id-event (assoc-in event [:extra :OC-Unique-ID] oc-unique-id)]

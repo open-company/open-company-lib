@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.18.0-alpha"
+(defproject open-company/lib "0.18.0-alpha1"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -14,7 +14,7 @@
   ;; All profile dependencies
   :dependencies [
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.11.0-alpha1" :scope "provided"]
+    [org.clojure/clojure "1.10.3" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "1.1.587"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
@@ -119,7 +119,7 @@
     [com.googlecode.owasp-java-html-sanitizer/owasp-java-html-sanitizer "20191001.1"]
     ;; HTTP client https://github.com/dakrone/clj-http
     ;; NB: org.apache.httpcomponents/httpclient is pulled in by amazonica
-    [clj-http "3.10.0" :exclusions [org.apache.httpcomponents/httpclient]]
+    [clj-http "3.12.0" :exclusions [org.apache.httpcomponents/httpclient]]
     ;; String manipulation library https://github.com/funcool/cuerdas
     [funcool/cuerdas "2020.03.26-3"]
     ;; DynamoDB client https://github.com/ptaoussanis/faraday

@@ -2,6 +2,7 @@
   "Prismatic schema common data schema fragments."
   (:require [clojure.string :as s]
             [schema.core :as schema]
+            [oc.lib.color :as lib-color]
             [oc.lib.user :as lib-user]
             [oc.lib.time :as lib-time]))
 
@@ -158,11 +159,7 @@
                                          :scope NonBlankStr}}}})
 ;; Brand color schema
 
-(defn hex-color? [c]
-  (and (string? c)
-       (re-matches #"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" c)))
-
-(def HEXColor (schema/pred hex-color?))
+(def HEXColor (schema/pred lib-color/valid-hex-color?))
 
 (def RGBChannel (schema/pred #(<= 0 % 254)))
 

@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.17.35-alpha3"
+(defproject open-company/lib "0.18.0-alpha"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -14,14 +14,14 @@
   ;; All profile dependencies
   :dependencies [
     ;; Lisp on the JVM http://clojure.org/documentation
-    [org.clojure/clojure "1.10.2-alpha1" :scope "provided"]
+    [org.clojure/clojure "1.11.0-alpha1" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
     [org.clojure/core.async "1.1.587"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "1.0.0"]
     ;; Clojure reader https://github.com/clojure/tools.reader
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [org.clojure/tools.reader "1.3.2"]
+    [org.clojure/tools.reader "1.3.5"]
     ;; Tools for writing macros https://github.com/clojure/tools.macro
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [org.clojure/tools.macro "0.1.5"]
@@ -39,7 +39,7 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility function for encoding and decoding data https://github.com/ring-clojure/ring-codec
     ;; NB: commons-codec gets picked up from amazonica
-    [ring/ring-codec "1.1.2" :exclusions [commons-codec]]
+    [ring/ring-codec "1.1.3"]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
     [com.taoensso/timbre "5.1.0" :exclusions [com.taoensso/encore]]
     ;; Java logging lib https://commons.apache.org/proper/commons-logging/
@@ -47,7 +47,7 @@
     [commons-logging "1.2"]
     ;; Java codec library https://commons.apache.org/proper/commons-codec/
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
-    [commons-codec "1.14"]
+    ;; [commons-codec "1.15"]
     ;; WebSocket server https://github.com/ptaoussanis/sente
     ;; NB: timbre is pulled in manually
     ;; ----------------------------------------------------------------------------------------
@@ -58,7 +58,7 @@
     ;; ----------------------------------------------------------------------------------------
     ;; Utility functions https://github.com/ptaoussanis/encore
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
-    [com.taoensso/encore "3.9.2"]
+    [com.taoensso/encore "3.18.0"]
     ;; Interface to Sentry error reporting https://github.com/getsentry/sentry-clj
     [io.sentry/sentry-clj "4.3.143"]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
@@ -70,11 +70,11 @@
     ;; NB: com.fasterxml.jackson.core/jackson-databind is pulled in manually
     ;; NB: com.amazonaw/aws-java-sdk-dynamodb is pulled in manually to get a newer version
     ;; NB: com.amazonaws/aws-java-sdk-kms is pulled in by com.amazonaw/aws-java-sdk-dynamodb
-    [amazonica "0.3.152"
-     :exclusions [joda-time commons-logging commons-codec com.fasterxml.jackson.core/jackson-databind
-                  com.amazonaws/aws-java-sdk-dynamodb com.amazonaws/aws-java-sdk-kms]]
+    [amazonica "0.3.153"
+     :exclusions [joda-time commons-logging com.fasterxml.jackson.core/jackson-databind
+                  com.amazonaws/aws-java-sdk-dynamodb com.amazonaws/aws-java-sdk-kms io.netty/netty-buffer]]
     ;; DynamoDB SDK
-    [com.amazonaws/aws-java-sdk-dynamodb "1.11.762"]
+    [com.amazonaws/aws-java-sdk-dynamodb "1.11.978" :exclusions [org.apache.httpcomponents/httpcore]]
     ;; Data binding and tree for XML https://github.com/FasterXML/jackson-databind
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [com.fasterxml.jackson.core/jackson-databind "2.11.2"]
@@ -86,7 +86,7 @@
     [com.apa512/rethinkdb "0.15.26" :exclusions [aleph org.clojure/tools.logging]]
     ;; Asynch comm. for clojure (http-client) https://github.com/ztellman/aleph
     ;; NB: Not used directly, dependency of RethinkDB
-    [aleph "0.4.7-alpha5" :exclusions [io.netty/netty-all]]
+    [aleph "0.4.7-alpha7" :exclusions [io.netty/netty-all]]
     ;; ----------------------------------------------------------------------------------------
     ;; --- NB: DO NOT UPDATE TO nety-all 5.x
     ;; Asynchronous event-driven network application framework https://netty.io/
@@ -128,7 +128,7 @@
     ;; NB: encore pulled in from oc.lib
     [com.taoensso/faraday "1.11.0-alpha1" :exclusions [com.taoensso/nippy com.amazonaws/aws-java-sdk-dynamodb org.tukaani/xz joda-time com.taoensso/encore]]
     ;; This is needed by sentry-clj if we want to use the ring middleware
-    [ring/ring-core "1.8.0" :exclusions [clj-time joda-time commons-codec]]
+    [ring/ring-core "1.9.1" :exclusions [clj-time joda-time]]
     [clojure.java-time "0.3.2"]
     ;; Clojure Slack REST API https://github.com/julienXX/clj-slack
     ;; NB: clj-http pulled in manually
@@ -148,7 +148,7 @@
         ;; NB: joda-time is pulled in by clj-time
         ;; NB: commons-codec pulled in manually
         ;; NB: io.aviso/pretty pulled in by timbre
-        [midje "1.9.9" :exclusions [io.aviso/pretty joda-time org.clojure/tools.macro clj-time commons-codec]]
+        [midje "1.9.10" :exclusions [io.aviso/pretty joda-time org.clojure/tools.macro clj-time]]
       ]
       :plugins [
         ;; Example-based testing https://github.com/marick/lein-midje
@@ -171,7 +171,7 @@
         ;; pretty-print the lein project map https://github.com/technomancy/leiningen/tree/master/lein-pprint
         [lein-pprint "1.3.2"]
         ;; Check for outdated dependencies https://github.com/xsc/lein-ancient
-        [lein-ancient "0.6.15"]
+        [lein-ancient "1.0.0-RC3"]
         ;; Catch spelling mistakes in docs and docstrings https://github.com/cldwalker/lein-spell
         [lein-spell "0.1.0"]
         ;; Dead code finder (use carefully, false positives) https://github.com/venantius/yagni

@@ -1,4 +1,4 @@
-(ns oc.lib.component.run-blocker
+(ns oc.lib.component.keep-alive
   (:require [clojure.core.async :refer (chan <!! >!)]
             [taoensso.timbre :as timbre]
             [com.stuartsierra.component :as component]))
@@ -11,7 +11,7 @@
   (timbre/info "Blocking excecution..")
   (>! running-chan true))
 
-(defrecord RunBlocker []
+(defrecord KeepAlive []
 
   :load-ns true ; needed for Eastwood linting
 
@@ -19,14 +19,14 @@
   component/Lifecycle
 
   (start [component]
-    (timbre/info "Starting RunBlocker")
+    (timbre/info "Starting KeepAlive")
     (let [channel (chan)]
       (block! channel)
-      (timbre/info "Started RunBlocker")
+      (timbre/info "Started KeepAlive")
       (assoc component :running true :running-chan channel)))
 
   (stop [component]
-    (timbre/info "Stopping RunBlocker")
+    (timbre/info "Stopping KeepAlive")
     (unblock! (:running-chan component))
-    (timbre/info "Stopped RunBlocker")
+    (timbre/info "Stopped KeepAlive")
     (assoc component :running false :running-chan nil)))

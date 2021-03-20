@@ -2,7 +2,7 @@
 ;; Thanks Tom!
 
 (ns oc.lib.sentry.appender
-  (:require [oc.lib.slack :as slack]
+  (:require [clojure.string :as clj-string]
             [taoensso.timbre :as timbre]))
 
 (def stacktrace-depth 20)
@@ -25,7 +25,7 @@
       {:custom-data (merge ex-data (:custom-data arg-data {}))})))
 
 (defn- extract-message [args]
-  (clojure.string/join " " (map str args)))
+  (clj-string/join " " (map str args)))
 
 (defn- trim-stacktrace
   "Reduce the stacktrace to just `stacktrace-depth` many frames to avoid too big a body for Sentry."

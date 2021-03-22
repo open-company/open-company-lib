@@ -4,7 +4,8 @@
             [schema.core :as schema]
             [oc.lib.schema :as lib-schema]
             [taoensso.timbre :as timbre]
-            [oc.lib.dynamo.common :as ttl]))
+            [clojure.set :as clj-set]
+            [oc.lib.dynamo.ttl :as ttl]))
 
 (def entire-container "9999-9999-9999")
 
@@ -61,7 +62,7 @@
         {:filter-expr "#k > :v"
          :expr-attr-names {"#k" "ttl"}
          :expr-attr-vals {":v" (ttl/ttl-now)}})
-      (map #(clojure.set/rename-keys % {:container_id :container-id :item_id :item-id :seen_at :seen-at}))
+      (map #(clj-set/rename-keys % {:container_id :container-id :item_id :item-id :seen_at :seen-at}))
       (map #(select-keys % [:container-id :item-id :seen-at]))))
 
 (schema/defn ^:always-validate retrieve-by-container-item :- [{(schema/optional-key :org-id) lib-schema/UniqueID
@@ -75,7 +76,7 @@
   (->> (far/query db-opts (table-name db-opts) {:container_id [:eq container-id]
                                                 :item_id [:eq item-id]}
                   {:index (container-id-item-id-gsi-name db-opts)})
-       (map #(clojure.set/rename-keys % {:org_id :org-id
+       (map #(clj-set/rename-keys % {:org_id :org-id
                                          :container_id :container-id
                                          :item_id :item-id
                                          :container_item_id :container-item-id
@@ -91,7 +92,7 @@
   (->> (far/query db-opts (table-name db-opts) {:org_id [:eq org-id]
                                                 :user_id [:eq user-id]}
                                                {:index (org-id-user-id-gsi-name db-opts)})
-      (map #(clojure.set/rename-keys % {:container_id :container-id :item_id :item-id :seen_at :seen-at}))
+      (map #(clj-set/rename-keys % {:container_id :container-id :item_id :item-id :seen_at :seen-at}))
       (map #(select-keys % [:item-id :container-id :seen-at]))))
 
 (schema/defn ^:always-validate retrieve-by-user-container :- {(schema/optional-key :org-id) lib-schema/UniqueID
@@ -103,7 +104,7 @@
                                                            {:index (container-id-gsi-name db-opts)})]
     (if (seq seen-items)
       (-> (first seen-items)
-       (clojure.set/rename-keys {:container_id :container-id :org_id :org-id :seen_at :seen-at})
+       (clj-set/rename-keys {:container_id :container-id :org_id :org-id :seen_at :seen-at})
        (select-keys [:org-id :container-id :seen-at]))
       {})))
 
@@ -118,7 +119,7 @@
                                                       :expr-attr-vals {":v" item-id}})]
     (when-let [item (first items)]
       (-> item
-       (clojure.set/rename-keys {:org_id :org-id :container_id :container-id :item_id :item-id :seen_at :seen-at})
+       (clj-set/rename-keys {:org_id :org-id :container_id :container-id :item_id :item-id :seen_at :seen-at})
        (select-keys [:org-id :container-id :item-id :seen-at])))))
 
 (schema/defn ^:always-validate store!

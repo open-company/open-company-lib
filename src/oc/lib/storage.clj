@@ -58,10 +58,13 @@
 
 (defun org-data
   ([config org-slug user-id :guard lib-schema/unique-id?]
+   (timbre/debugf "Loading org data with for slug %s by user-id %s. Config: %s" org-slug user-id config)
    (let [{auth-server-url :auth-server-url passphrase :passphrase service-name :service-name} config
          jwtoken (auth/user-token {:user-id user-id} auth-server-url passphrase service-name)]
+     (timbre/debugf "Retrieved JWT for user: %s" jwtoken)
      (org-data config org-slug jwtoken)))
   ([config org-slug jwtoken]
+   (timbre/debugf "Requesting data for org %s with jwtoken: %s. Config: %s" org-slug jwtoken config)
    (get-data (str (:storage-server-url config) "/orgs/" org-slug) jwtoken)))
 
 (defun post-data-for

@@ -2,6 +2,7 @@
   "Retrieve tuples from read table of Change service"
   (:require [taoensso.faraday :as far]
             [schema.core :as schema]
+            [clojure.set :as clj-set]
             [taoensso.timbre :as timbre]
             [oc.lib.schema :as lib-schema]))
 
@@ -55,7 +56,7 @@
                                                      :read-at lib-schema/ISO8601}]
   [db-opts item-id :- lib-schema/UniqueID]
   (->> (far/query db-opts (table-name db-opts) {:item_id [:eq item-id]})
-      (map #(clojure.set/rename-keys % {:user_id :user-id :avatar_url :avatar-url :read_at :read-at}))
+      (map #(clj-set/rename-keys % {:user_id :user-id :avatar_url :avatar-url :read_at :read-at}))
       (map #(select-keys % [:user-id :name :avatar-url :read-at]))))
 
 (schema/defn ^:always-validate retrieve-by-user :- [{(schema/optional-key :container-id) lib-schema/UniqueID
@@ -64,7 +65,7 @@
   [db-opts user-id :- lib-schema/UniqueID]
   (->>
       (far/query db-opts (table-name db-opts) {:user_id [:eq user-id]} {:index (user-id-gsi-name db-opts)})
-      (map #(clojure.set/rename-keys % {:container_id :container-id :item_id :item-id :read_at :read-at}))
+      (map #(clj-set/rename-keys % {:container_id :container-id :item_id :item-id :read_at :read-at}))
       (map #(select-keys % [:container-id :item-id :read-at]))))
 
 (schema/defn ^:always-validate retrieve-by-user-item :- {(schema/optional-key :org-id) lib-schema/UniqueID
@@ -77,7 +78,7 @@
   [db-opts user-id :- lib-schema/UniqueID item-id :- lib-schema/UniqueID]
   (-> (far/get-item db-opts (table-name db-opts) {:item_id item-id
                                                   :user_id user-id})
-      (clojure.set/rename-keys {:org_id :org-id :container_id :container-id :item_id :item-id :user_id :user-id :avatar_url :avatar-url :read_at :read-at})
+      (clj-set/rename-keys {:org_id :org-id :container_id :container-id :item_id :item-id :user_id :user-id :avatar_url :avatar-url :read_at :read-at})
       (select-keys [:org-id :container-id :item-id :user-id :name :avatar-url :read-at])))
 
 (schema/defn ^:always-validate retrieve-by-user-container :- [{:item-id lib-schema/UniqueID
@@ -86,7 +87,7 @@
   (->>
       (far/query db-opts (table-name db-opts) {:user_id [:eq user-id] :container_id [:eq container-id]}
                                               {:index (user-id-gsi-name db-opts)})
-      (map #(clojure.set/rename-keys % {:item_id :item-id :read_at :read-at}))
+      (map #(clj-set/rename-keys % {:item_id :item-id :read_at :read-at}))
       (map #(select-keys % [:item-id :read-at]))))
 
 (schema/defn ^:always-validate retrieve-by-user-org :- [{(schema/optional-key :item-id) lib-schema/UniqueID
@@ -94,14 +95,14 @@
                                                          (schema/optional-key :read-at) lib-schema/ISO8601}]
   [db-opts user-id :- lib-schema/UniqueID org-id :- lib-schema/UniqueID]
   (->> (far/query db-opts (table-name db-opts) {:org_id [:eq org-id] :user_id [:eq user-id]} {:index (org-id-user-id-gsi-name db-opts)})
-      (map #(clojure.set/rename-keys % {:container_id :container-id :item_id :item-id :read_at :read-at}))
+      (map #(clj-set/rename-keys % {:container_id :container-id :item_id :item-id :read_at :read-at}))
       (map #(select-keys % [:item-id :container-id :read-at]))))
 
 (schema/defn ^:always-validate retrieve-by-container :- [{(schema/optional-key :user-id) lib-schema/UniqueID
                                                           (schema/optional-key :item-id) lib-schema/UniqueID}]
   [db-opts container-id :- lib-schema/UniqueID]
   (->> (far/query db-opts (table-name db-opts) {:container_id [:eq container-id]} {:index (container-id-gsi-name db-opts)})
-      (map #(clojure.set/rename-keys % {:user_id :user-id :item_id :item-id :read_at :read-at}))
+      (map #(clj-set/rename-keys % {:user_id :user-id :item_id :item-id :read_at :read-at}))
       (map #(select-keys % [:user-id :item-id :read-at]))))
 
 (schema/defn ^:always-validate retrieve-by-org :- [{(schema/optional-key :user-id) lib-schema/UniqueID
@@ -109,7 +110,7 @@
                                                     (schema/optional-key :read-at) lib-schema/ISO8601}]
   [db-opts org-id :- lib-schema/UniqueID]
   (->> (far/query db-opts (table-name db-opts) {:org_id [:eq org-id]} {:index (org-id-user-id-gsi-name db-opts)})
-      (map #(clojure.set/rename-keys % {:user_id :user-id :item_id :item-id :read_at :read-at}))
+      (map #(clj-set/rename-keys % {:user_id :user-id :item_id :item-id :read_at :read-at}))
       (map #(select-keys % [:user-id :item-id :read-at]))))
 
 ;; Move

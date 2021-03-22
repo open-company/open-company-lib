@@ -1,4 +1,4 @@
-(ns oc.lib.dynamo.common
+(ns oc.lib.dynamo.ttl
   (:require [amazonica.aws.dynamodbv2 :as dynamodbv2]
             [clj-time.core :as time]
             [clj-time.coerce :as coerce]))

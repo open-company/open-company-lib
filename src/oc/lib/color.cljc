@@ -52,11 +52,12 @@
       (valid-hex-color? color-string)))
 
 (defn hex->rgb [hex-color]
-  (let [colors (rest (string/split hex-color #""))
-        fixed-colors (if (= 3 (count colors))
-                       (mapcat (partial repeat 2) colors)
-                       colors)
-        red (take 2 fixed-colors)
-        green (take 2 (drop 2 fixed-colors))
-        blue (take 2 (drop 4 fixed-colors))]
-    (map #(-> (conj % "0x") (string/join) (read-string)) [red green blue])))
+  (when-let [[_ hex-nums] (valid-hex-color? hex-color)]
+    (let [color-chars (rest (string/split hex-nums #""))
+          fixed-colors (if (= 3 (count color-chars))
+                        (mapcat (partial repeat 2) color-chars)
+                        color-chars)
+          red (take 2 fixed-colors)
+          green (take 2 (drop 2 fixed-colors))
+          blue (take 2 (drop 4 fixed-colors))]
+      (mapv #(-> (conj % "0x") (string/join) (read-string)) [red green blue]))))

@@ -85,6 +85,8 @@
            (allowAttributes (string-array ["src"
                                            "alt"
                                            "class"
+                                           "width"
+                                           "height"
                                            "data-media-type"
                                            "data-thumbnail"]))
              (onElements (string-array ["img"]))

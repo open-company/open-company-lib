@@ -20,11 +20,43 @@
 ;; ----- Prod check -----
 
 (defn prod? []
-  ;; Use the following to test prod env on staging
+  ;; Use the following to avoid seeing stack traces on staging
   ;; (#{"production" "prod"} (env :env))
-  (#{"production" "prod"} (env :environment)))
+  (#{"production" "prod"} (or (env :environment) "prod")))
 
 ;; ----- Ring Middleware -----
+
+(defn- error-stack-trace [exc]
+  (when (instance? Throwable exc)
+    (s/join "\n" (map str (.getStackTrace exc)))))
+
+(defn- error-string [exc]
+  (str (ex-message exc)
+       (when-let [st (error-stack-trace exc)]
+        (str "\n\n" st))
+       (when-let [ed (ex-data exc)]
+         (str "\n\n" ed))))
+
+(defn- adjust-response-error [resp-error]
+  (or (and (prod?) sentry/error-msg)
+      (error-string resp-error)
+      sentry/error-msg))
+
+(defn- error-from-response [response]
+  (adjust-response-error (or (:throwable response)
+                             (:error response)
+                             (:exception response)
+                             (:body response)
+                             (:reason response))))
+
+(defn- adjust-response-body [response]
+  (let [status (int (or (:status response) 0))
+        error-status? (or (<= 500 status 599)
+                          (= 422 status)
+                          (= 0 status))]
+    (if error-status?
+      (assoc response :body (error-from-response response))
+      response)))
 
 (defn wrap-500
   "
@@ -35,15 +67,10 @@
   (fn [request]
     (try
       (let [response (handler request)]
-        (if (and (prod?)
-                 (and (:status response)
-                      (or (<= 500 (:status response) 599)
-                          (= 422 (:status response)))))
-          (assoc response :body sentry/error-msg)
-          response))
+        (adjust-response-body response))
       (catch Throwable t
         (timbre/error t)
-        {:status 500 :body sentry/error-msg}))))
+        {:status 500 :body (adjust-response-error t)}))))
 
 ;; ----- Responses -----
 

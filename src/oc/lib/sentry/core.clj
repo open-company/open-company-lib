@@ -163,7 +163,7 @@
 
 ;; ---- Sentry component for our system ----
 
-(defrecord SentryCapturer [dsn release environment deploy debug test-fn]
+(defrecord SentryCapturer [dsn release environment deploy debug]
   component/Lifecycle
 
   (start [component]

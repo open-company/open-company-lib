@@ -1,8 +1,9 @@
 (ns oc.lib.html
   "Functions related to processing HTML."
   (:require [cuerdas.core :as str]
+            [clojure.string :as s]
             #?(:clj [jsoup.soup :as soup]))
-  #?(:clj (:import [org.owasp.html HtmlPolicyBuilder Sanitizers])))
+  #?(:clj (:import [org.owasp.html HtmlPolicyBuilder])))
 
 (defn- thumbnail-elements [body exclude-gifs?]
   (let [thumbnail-selector (if exclude-gifs?
@@ -151,3 +152,11 @@
        (if-not decode-entities?
          sanitized
          (.text (soup/parse sanitized))))))
+
+
+(defn strip-xss-tags
+  "
+   Current xss tags are script, style, and input.
+  "
+  [data]
+  (when data (s/replace data #"(?i)<\/?((script|style|input){1})(\s?[^<>]*)>" "")))

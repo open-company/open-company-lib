@@ -2,6 +2,7 @@
   "Functions related to processing text."
   (:require [clojure.string :as s]
             [cuerdas.core :as str]
+            [oc.lib.html :as oc-html]
             [jsoup.soup :as soup]))
 
 (defn attribution
@@ -36,14 +37,6 @@
                               :else
                               (first author-names))]
     (str item-count " " item-name (when (> item-count 1) "s") " by " author-attribution)))
-
-
-(defn strip-xss-tags
-  "
-   Current xss tags are script, style, and input.
-  "
-  [data]
-  (when data (s/replace data #"(?i)<\/?((script|style|input){1})(\s?[^<>]*)>" "")))
 
 (defn- clean-body-text [body]
   (-> body
@@ -160,3 +153,8 @@
               {:href (board-url-fn (-> new-boards-list last :slug))}
               (-> new-boards-list last :name)]
             "."]))))
+
+
+(def strip-xss-tags
+  "This is needed for backward compatibility."
+  oc-html/strip-xss-tags)

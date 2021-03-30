@@ -2,8 +2,7 @@
 ;; Thanks Tom!
 
 (ns oc.lib.sentry.appender
-  (:require [sentry-clj.core :as sentry]
-            [oc.lib.slack :as slack]
+  (:require [clojure.string :as clj-string]
             [taoensso.timbre :as timbre]))
 
 (def stacktrace-depth 20)
@@ -26,7 +25,7 @@
       {:custom-data (merge ex-data (:custom-data arg-data {}))})))
 
 (defn- extract-message [args]
-  (clojure.string/join " " (map str args)))
+  (clj-string/join " " (map str args)))
 
 (defn- trim-stacktrace
   "Reduce the stacktrace to just `stacktrace-depth` many frames to avoid too big a body for Sentry."
@@ -42,37 +41,29 @@
 
 (defn appender
   "Sentry timbre appender to send error level messages with a throwable to Sentry."
-  ([opts]
-   (timbre/warn "Timbre appender called without the send-event function, using sentry-clj.core/send-event instead.")
-   (appender sentry/send-event (assoc opts :no-send-event-fn true)))
-  ([send-event {:keys [dsn no-send-event-fn] :as opts}]
-   (assert dsn (str "The Sentry appender requires a dsn, none given:" dsn))
-   {:doc "A timbre appender that sends errors to getsentry.com"
-    :min-level :error ; critical this not drop to warn or below as this appender logs at warning level (infinite loop!)
-    :enabled? true
-    :async? true
-    :rate-limit nil
-    :fn (fn [args]
-          (let [throwable (:?err args)
-                message (if throwable
-                          (extract-data throwable @(:vargs_ args))
-                          (extract-message (:vargs args)))
-                payload (cond-> {:message {:message message}
-                                 :extra {:vargs (:vargs args)}}
-                                throwable       (assoc :message {:message (.getMessage throwable)})
-                                throwable       (assoc-in [:extra :exception-data] message)
-                                throwable       (assoc :throwable throwable)
-                                no-send-event-fn (assoc [:extra :no-send-event-fn] true)
-                                ;; Disable for now
-                                ; false     (trim-stacktrace)
-                                ; false     (sentry-interfaces/stacktrace throwable)
-                                )]
-             (try
-               (let [r (send-event payload)]
-                (timbre/info "Sentry appender: captured -" r))
-              (catch Exception e
-                (slack/slack-report e)
-                e))))}))
+  [send-event-atom {:keys [dsn] :as opts}]
+  (assert dsn (str "The Sentry appender requires a dsn, none given:" dsn))
+  {:doc "A timbre appender that sends errors to getsentry.com"
+   :min-level :error ; critical this not drop to warn or below as this appender logs at warning level (infinite loop!)
+   :enabled? true
+   :async? true
+   :rate-limit nil
+   :fn (fn [args]
+         (let [throwable (:?err args)
+               message (if throwable
+                         (extract-data throwable @(:vargs_ args))
+                         (extract-message (:vargs args)))
+               payload (cond-> {:message {:message message}
+                                :extra {:vargs (:vargs args)}}
+                               throwable       (assoc :message {:message (.getMessage throwable)})
+                               throwable       (assoc-in [:extra :exception-data] message)
+                               throwable       (assoc :throwable throwable)
+                               ;; Disable for now
+                               ; false     (trim-stacktrace)
+                               ; false     (sentry-interfaces/stacktrace throwable)
+                               )]
+           ;; No need to wrap this in try/catch or log around it, the send-event-atom function already handles all that
+           (@send-event-atom payload)))})
 
 (comment
 

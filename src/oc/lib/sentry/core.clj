@@ -115,7 +115,6 @@
   "Create a Sentry Logger using the supplied `dsn`.
    If no `dsn` is supplied, simply log the `event` to a `logger`."
   [{:keys [dsn] :as config}]
-  (println "DBG create-sentry-logger with dsn" dsn config)
   (if dsn
     (do
       (timbre/infof "Initialising Sentry with '%s'." dsn)
@@ -134,7 +133,6 @@
       (timbre/merge-config! {:appenders {:sentry (sa/appender -send-event config)}})
       @-send-event)
     (do
-      (println "DBG no DSN")
       (timbre/warn "No Sentry DSN provided. Sentry events will be logged locally!")
       (reset! -send-event (fn [event]
                             (timbre/infof "Sentry Event '%s'." event)))
@@ -159,14 +157,8 @@
    is entirely possible that it can be re-initialised multiple times.  **This
    behaviour is not ideal nor supported**."
   [config]
-  (println "DBG init" config)
-  (println "DBG    already initialized?" @-sentry-logger)
   (if-not @-sentry-logger
-    (let [sl (create-sentry-logger config)]
-      (println "DBG  logger:" sl)
-      (reset! -sentry-logger sl)
-      (println "DBG  stored logger:" @-sentry-logger)
-      sl)
+    (reset! -sentry-logger (create-sentry-logger config))
     @-sentry-logger))
 
 ;; ---- Sentry component for our system ----

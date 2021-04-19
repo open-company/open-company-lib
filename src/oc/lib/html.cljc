@@ -135,28 +135,29 @@
            (toFactory)))))
 
 #?(:clj
-   (defn sanitize-html
-     "Sanitizes HTML content assumed to have been created by a (untrusted) user."
-     [html-str]
-     (.sanitize user-input-html-policy html-str)
-     ))
+(defn sanitize-html
+  "Sanitizes HTML content assumed to have been created by a (untrusted) user."
+  [html-str]
+  (.sanitize user-input-html-policy html-str)))
 
 #?(:clj
-   (defn strip-html-tags
-     "Reduces an html string to only its textual content, removing all tags. Takes
-     optional args:
-       - `:decode-entities?` if true, will decode HTML entities (e.g. &#64;)"
-     [html-str & {:keys [decode-entities?] :as opts}]
-     (let [policy    (.toFactory (HtmlPolicyBuilder.))
-           sanitized (.sanitize policy html-str)]
-       (if-not decode-entities?
-         sanitized
-         (.text (soup/parse sanitized))))))
+(defn strip-html-tags
+  "Reduces an html string to only its textual content, removing all tags. Takes
+  optional args:
+    - `:decode-entities?` if true, will decode HTML entities (e.g. &#64;)"
+  [html-str & {:keys [decode-entities?] :as opts}]
+  (let [policy    (.toFactory (HtmlPolicyBuilder.))
+        sanitized (.sanitize policy html-str)]
+    (if-not decode-entities?
+      sanitized
+      (.text (soup/parse sanitized))))))
 
+(def xss-tags-rx (re-pattern "(?i)</?((script|style|input){1})(\\s?[^<>]*)>"))
 
 (defn strip-xss-tags
   "
    Current xss tags are script, style, and input.
   "
   [data]
-  (when data (s/replace data #"(?i)<\/?((script|style|input){1})(\s?[^<>]*)>" "")))
+  (when data
+    (s/replace data xss-tags-rx "")))

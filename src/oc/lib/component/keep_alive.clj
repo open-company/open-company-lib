@@ -8,7 +8,7 @@
   (<!! running-chan))
 
 (defn- unblock! [running-chan]
-  (timbre/info "Blocking excecution..")
+  (timbre/info "Unblocking excecution..")
   (>! running-chan true))
 
 (defrecord KeepAlive []

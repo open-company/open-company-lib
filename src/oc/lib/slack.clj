@@ -29,41 +29,48 @@
   [text]
   (str marker-char text))
 
-(defn report-slack-error [body e]
-  (timbre/info "Error parsing Slack response" body)
-  (timbre/warn e)
-  (throw e))
+(defn report-slack-error
+  ([body e] (report-slack-error body e false))
+  ([body e throw?]
+   (timbre/info "Error parsing Slack response" body)
+   (timbre/warn e)
+   (when throw?
+     (throw e))
+   e))
 
-(defn slack-api [method params]
-  (timbre/info "Making slack request:" method)
-  (let [url (str "https://slack.com/api/" (name method))
-        fixed-params (dissoc params :token)
-        query-params {:query-params fixed-params :as :text}
-        req-headers (when (:token params)
-                      {:headers {"Authorization" (format "Bearer %s" (:token params))}})
-        request-data (merge query-params req-headers)
-        {:keys [status headers body error] :as resp} @(http/get url request-data)]
-    (if error
-      (report-slack-error body (ex-info "Error from Slack API"
-                                {:method method
-                                 :params params
-                                 :response {:status status :headers headers :body body :error error}
-                                 :request-data request-data}))
-      (do 
-        (timbre/trace "Slack response:" body)
-        (try
-          (let [response-body (-> body json/decode keywordize-keys)]
-            (when (:ok response-body)
-              (alert-pagination response-body method params))
-            (if-not (:ok response-body)
-              (report-slack-error body (ex-info "Slack request was rejected"
-                                         {:body body
-                                          :status status
-                                          :method method
-                                          :params params}))
-              response-body))
-          (catch com.fasterxml.jackson.core.JsonParseException e
-            (report-slack-error body e)))))))
+(defn slack-api
+  ([method params] (slack-api method params {}))
+  ([method params options]
+   (timbre/info "Making slack request:" method)
+   (let [url (str "https://slack.com/api/" (name method))
+         fixed-params (dissoc params :token)
+         query-params {:query-params fixed-params :as :text}
+         req-headers (when (:token params)
+                       {:headers {"Authorization" (format "Bearer %s" (:token params))}})
+         request-data (merge query-params req-headers)
+         {:keys [status headers body error] :as resp} @(http/get url request-data)]
+     (if error
+       (report-slack-error body (ex-info "Error from Slack API"
+                                 {:method method
+                                  :params params
+                                  :response {:status status :headers headers :body body :error error}
+                                  :request-data request-data}))
+       (do
+         (timbre/trace "Slack response:" body)
+         (try
+           (let [response-body (-> body json/decode keywordize-keys)]
+             (when (:ok response-body)
+               (alert-pagination response-body method params))
+             (if-not (:ok response-body)
+               (report-slack-error body (ex-info "Slack request was rejected"
+                                          {:body body
+                                           :status status
+                                           :method method
+                                           :params params})
+                                   (not (:avoid-throw-on-not-ok options)))
+               response-body))
+           (catch com.fasterxml.jackson.core.JsonParseException e
+             (report-slack-error body e))))))))
 
 (defn get-team-info [token]
   (:team (slack-api :team.info {:token token})))
@@ -140,7 +147,8 @@
   (slack-api :chat.unfurl {:token user-token
                            :channel channel
                            :ts ts
-                           :unfurls url-data}))
+                           :unfurls url-data}
+                          {:avoid-throw-on-not-ok true}))
 
 (defn- slack-timestamp?
   "Slack timestamps look like: 1518175926.000301"

@@ -78,25 +78,31 @@
 
 ;; ---- Sentry init and setup ----
 
+(defn ^:private event-capture [session-id event]
+  (let [oc-unique-id (str (UUID/randomUUID))
+        unique-id-event (-> event
+                            (assoc-in [:extra :OC-Unique-ID] oc-unique-id)
+                            (assoc-in [:extra :session-id] session-id)
+                            (assoc-in [:tags :OC-Unique-ID] oc-unique-id)
+                            (assoc-in [:tags :session-id] session-id))]
+    (try
+      (timbre/infof "Capturing event %s to Sentry OC-Unique-ID %s" (get-in event [:message :message]) oc-unique-id)
+      (sentry-clj/send-event unique-id-event)
+      (catch Exception e
+        (timbre/warnf "Failed sending event with OC-Unique-ID %s to Sentry" oc-unique-id)
+        (when-not (#{"local" "localhost"} (env :environment))
+          (timbre/infof "Sending #alert to Slack for failed capture")
+          (slack-lib/slack-report (str (ex-message e) " OC-Unique-ID: " oc-unique-id)))))))
+
 (defn ^:private create-sentry-logger
   "Create a Sentry Logger using the supplied `dsn`.
    If no `dsn` is supplied, simply log the `event` to a `logger`."
   [{:keys [dsn] :as config}]
   (if dsn
-    (do
-      (timbre/infof "Initialising Sentry with '%s'." dsn)
+    (let [sentry-session-id (str (UUID/randomUUID))]
+      (timbre/infof "Initialising Sentry session %s with '%s'." sentry-session-id dsn)
       (sentry-clj/init! dsn config)
-      (reset! -send-event (fn [event]
-                            (let [oc-unique-id (str (UUID/randomUUID))
-                                  unique-id-event (assoc-in event [:extra :OC-Unique-ID] oc-unique-id)]
-                              (try
-                                (timbre/infof "Capturing event %s to Sentry OC-Unique-ID %s" (get-in event [:message :message]) oc-unique-id)
-                                (sentry-clj/send-event unique-id-event)
-                                (catch Exception e
-                                  (timbre/warnf "Failed sending event with OC-Unique-ID %s to Sentry" oc-unique-id)
-                                  (when-not (#{"local" "localhost"} (env :environment))
-                                    (timbre/infof "Sending #alert to Slack for failed capture")
-                                    (slack-lib/slack-report (str (ex-message e) " OC-Unique-ID: " oc-unique-id))))))))
+      (reset! -send-event (partial event-capture sentry-session-id))
       (timbre/merge-config! {:appenders {:sentry (sa/appender -send-event config)}})
       @-send-event)
     (do

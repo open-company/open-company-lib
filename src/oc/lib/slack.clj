@@ -93,7 +93,7 @@
 (defn get-channels
   ([token]
    (get-channels token {}))
-  ([token  {exclude-archived :exclude_archived limit :limit cursor :cursor types :types :or {types "public_channel" ;; public_channel,private_channel,mpim,im
+  ([token  {exclude-archived :exclude_archived limit :limit cursor :cursor types :types :or {types "public_channel,private_channel" ;; public_channel,private_channel,mpim,im
                                                                                              limit 1000
                                                                                              exclude-archived true}}]
    (let [opts (cond->  {:types types

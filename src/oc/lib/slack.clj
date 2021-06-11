@@ -6,8 +6,7 @@
             [environ.core :refer (env)]
             [defun.core :refer (defun)]
             [taoensso.timbre :as timbre]
-            [clj-slack.conversations :as slack-conversations]
-            [clj-slack.chat :as slack-chat]))
+            [clj-slack.conversations :as slack-conversations]))
 
 (declare alert-pagination)
 
@@ -93,8 +92,12 @@
 (defn get-channels
   ([token]
    (get-channels token {}))
-  ([token  {exclude-archived :exclude_archived limit :limit cursor :cursor types :types :or {types "public_channel" ;; public_channel,private_channel,mpim,im
-                                                                                             limit 1000
+  ([token  {exclude-archived :exclude_archived limit :limit cursor :cursor types :types :or {types (str                 ;; Request all conversations:
+                                                                                                    "public_channel,"   ;; - all the normal (public) channels
+                                                                                                    "private_channel,"  ;; - private channels: only those where the bot is invited
+                                                                                                    "mpim,"             ;; - multi-user im: like private but they don't have a name and they are unique by user list
+                                                                                                    "im")               ;; - im: one-on-one with the bot
+                                                                                             limit 3000
                                                                                              exclude-archived true}}]
    (let [opts (cond->  {:types types
                         :limit (str limit)

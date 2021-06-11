@@ -113,6 +113,9 @@
 (defn get-event-parties [app-token event-context]
   (slack-api :apps.event.authorizations.list {:token app-token :event_context event-context}))
 
+(defn join-channel [bot-token channel-id]
+  (slack-api :conversations.join {:token bot-token :channel channel-id}))
+
 (defn post-message
   "Post a message as the bot."
   [bot-token channel text]

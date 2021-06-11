@@ -123,7 +123,8 @@
   (o-k :type) NonBlankStr
   :slack-org-id NonBlankStr
   :channel-name NonBlankStr
-  :channel-id NonBlankStr})
+  :channel-id NonBlankStr
+  (o-k :needs-join) (schema/maybe schema/Bool)})
 
 (def SlackThread (merge SlackChannel {
                     :thread NonBlankStr

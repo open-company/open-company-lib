@@ -21,43 +21,60 @@
 
 ; ;; ----- Storage atom and functions -----
 
-(def watchers (atom {}))
+(defonce watchers (atom {}))
 
 (defn add-watcher
   "Add a client, make sure the read/write is atomic to avoid race conditions"
   [watch-id client-id]
   (swap! watchers
-   (fn [w]
-    (let [item-watchers (or (get w watch-id) #{})
-          watcher-ids (or (get w client-id) #{})]
-      (assoc w client-id (conj watcher-ids watch-id)
-               watch-id (conj item-watchers client-id))))))
+   #(as-> % updated-watchers
+      (update updated-watchers watch-id (fn [watching-client-ids]
+                                          (conj (into #{} watching-client-ids) client-id)))
+      (update updated-watchers client-id (fn [client-watched-ids]
+                                           (conj (into #{} client-watched-ids) watch-id))))))
 
-(defn remove-watcher
+(defn- remove-watch-id-for-client
+  "NB: this works also as remove"
+  [client-id watch-map watch-id]
+  (as-> watch-map nw
+    (if (seq (get nw client-id))
+      (update nw client-id #(disj (into #{} %) watch-id))
+      nw)
+    (if (empty? (get nw client-id))
+      (dissoc nw client-id)
+      nw)))
+
+(def ^{:private true} remove-client-id-for-watch remove-watch-id-for-client)
+
+(defun remove-watcher
   "Remove watchers for client,
    first signature remove all watchers for a client and remove the client-id itself when done,
    second signature remove a specific watcher only for a client,
    make sure the read/write is atomic to avoid race conditions"
-  ([client-id]
-    (swap! watchers
-     (fn [w]
-      (let [by-client (or (get w client-id) #{})
-            with-watch-id (reduce #(let [item-watchers (or (get w %2) #{})
-                                         next-watch-id (disj item-watchers client-id)]
-                                    (assoc %1 %2 next-watch-id))
-                           w by-client)]
-        (dissoc with-watch-id client-id)))))
+  ([client-id :guard lib-schema/unique-id?]
+   (remove-watcher :all client-id))
 
-  ([watch-id client-id]
-    (swap! watchers
-     (fn [w]
-      (let [item-watchers (or (get w watch-id) #{})
-            next-watch-id (disj item-watchers client-id)
-            with-watch-id (assoc w watch-id next-watch-id)
-            dissoc-client-id (empty? next-watch-id)]
-        (if dissoc-client-id
-          (dissoc with-watch-id client-id)
-          with-watch-id))))))
+  ([:all client-id :guard lib-schema/unique-id?]
+   (swap! watchers
+          #(as-> % updated-watchers
+             (reduce (partial remove-watch-id-for-client client-id)
+                     updated-watchers (get updated-watchers client-id #{}))
+             (dissoc updated-watchers client-id))))
+
+  ([watch-id :guard lib-schema/unique-id? :all]
+   (swap! watchers
+          #(as-> % updated-watchers
+             (reduce (partial remove-client-id-for-watch watch-id)
+                     updated-watchers (get updated-watchers watch-id #{}))
+             (dissoc updated-watchers watch-id))))
+
+  ([watch-id :guard lib-schema/unique-id? client-id :guard lib-schema/unique-id?]
+   (swap! watchers
+          #(as-> % updated-watchers
+             (remove-watch-id-for-client client-id updated-watchers watch-id)
+             (if (empty? (get updated-watchers watch-id))
+               (dissoc updated-watchers watch-id)
+               updated-watchers)))))
 
 (defn watchers-for [watch-id]
   (vec (get @watchers watch-id)))

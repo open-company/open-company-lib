@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.18.0-alpha8"
+(defproject open-company/lib "0.18.0-alpha9"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -60,7 +60,7 @@
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
     [com.taoensso/encore "3.18.0"]
     ;; Interface to Sentry error reporting https://github.com/getsentry/sentry-clj
-    [io.sentry/sentry-clj "4.3.146"]
+    [io.sentry/sentry-clj "5.0.149"]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.15.3"]
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica

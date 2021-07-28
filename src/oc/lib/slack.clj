@@ -110,6 +110,20 @@
        (report-slack-error resp (ex-info "clj-slack API error" {:method :conversations.list
                                                                 :opts opts}))))))
 
+(defn get-conversation-history
+  "Load the messages of a given discussion."
+  ([token channel-id]
+   (get-conversation-history token channel-id 100))
+  ([token channel-id limit & [cursor]]
+   (let [opts (cond-> {:limit (str limit)}
+                cursor (assoc :cursor (str cursor)))
+         resp (slack-conversations/history (slack-connection token) channel-id opts)]
+     (alert-pagination resp :conversations.history opts)
+     (if (:ok resp)
+       (:messages resp)
+       (report-slack-error resp (ex-info "clj-slack API error" {:method :conversations.history
+                                                                :opts opts}))))))
+
 (defn get-event-parties [app-token event-context]
   (slack-api :apps.event.authorizations.list {:token app-token :event_context event-context}))
 

@@ -1,4 +1,4 @@
-(defproject open-company/lib "0.19.0-alpha5"
+(defproject open-company/lib "0.20.0-alpha"
   :description "OpenCompany Common Library"
   :url "https://github.com/open-company/open-company-lib"
   :license {
@@ -16,7 +16,7 @@
     ;; Lisp on the JVM http://clojure.org/documentation
     [org.clojure/clojure "1.10.3" :scope "provided"]
     ;; Async programming and communication https://github.com/clojure/core.async
-    [org.clojure/core.async "1.1.587"]
+    [org.clojure/core.async "1.3.618"]
     ;; Erlang-esque pattern matching https://github.com/clojure/core.match
     [org.clojure/core.match "1.0.0"]
     ;; Clojure reader https://github.com/clojure/tools.reader
@@ -41,7 +41,7 @@
     ;; NB: commons-codec gets picked up from amazonica
     [ring/ring-codec "1.1.3"]
     ;; Pure Clojure/Script logging library https://github.com/ptaoussanis/timbre
-    [com.taoensso/timbre "5.1.0" :exclusions [com.taoensso/encore]]
+    [com.taoensso/timbre "5.1.2" :exclusions [com.taoensso/encore]]
     ;; Java logging lib https://commons.apache.org/proper/commons-logging/
     ;; NB: Not used directly, but a very common dependency, so pulled in for manual version management
     [commons-logging "1.2"]
@@ -60,7 +60,7 @@
     ;; NB: Not used directly, forcing this version of encore, a dependency of Timbre and Sente
     [com.taoensso/encore "3.18.0"]
     ;; Interface to Sentry error reporting https://github.com/getsentry/sentry-clj
-    [io.sentry/sentry-clj "5.0.149"]
+    [io.sentry/sentry-clj "5.0.151"]
     ;; WebMachine (REST API server) port to Clojure https://github.com/clojure-liberator/liberator
     [liberator "0.15.3"]
     ;; A comprehensive Clojure client for the AWS API. https://github.com/mcohen01/amazonica
@@ -126,7 +126,7 @@
     ;; NB: com.amazonaws/aws-java-sdk-dynamodb is pulled in by amazonica
     ;; NB: joda-time is pulled in by clj-time
     ;; NB: encore pulled in from oc.lib
-    [com.taoensso/faraday "1.11.0-alpha1" :exclusions [com.taoensso/nippy com.amazonaws/aws-java-sdk-dynamodb org.tukaani/xz joda-time com.taoensso/encore]]
+    [com.taoensso/faraday "1.11.2" :exclusions [com.taoensso/nippy com.amazonaws/aws-java-sdk-dynamodb org.tukaani/xz joda-time com.taoensso/encore]]
     ;; This is needed by sentry-clj if we want to use the ring middleware
     [ring/ring-core "1.9.1" :exclusions [clj-time joda-time]]
     [clojure.java-time "0.3.2"]

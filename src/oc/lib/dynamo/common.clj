@@ -1,5 +1,6 @@
 (ns oc.lib.dynamo.common
-  (:require [amazonica.aws.dynamodbv2 :as dynamodbv2]
+  (:require [taoensso.faraday :as far]
+            [amazonica.aws.dynamodbv2 :as dynamodbv2]
             [clj-time.core :as time]
             [clj-time.coerce :as coerce]))
 
@@ -50,3 +51,13 @@
               :table-name table-name
               :time-to-live-specification {:attribute-name fixed-ttl-field-name :enabled false}))
         (println "TTL already disabled on " table-name)))))
+
+(defn gsi-exists-on-table?
+  "Returns true if the global secondary index with the given name exists on the
+  table named table-name, false otherwise."
+  [dynamodb-opts index-name table-name]
+  (let [index-key          (keyword index-name)
+        matches-index-key? #(= index-key (:name %))
+        table-desc         (far/describe-table dynamodb-opts table-name)
+        gsindexes          (:gsindexes table-desc)]
+    (some matches-index-key? gsindexes)))

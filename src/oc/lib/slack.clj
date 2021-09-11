@@ -105,7 +105,7 @@
                 cursor (assoc :cursor (str cursor)))
          resp (slack-conversations/list (slack-connection token) opts)]
      (if (:ok resp)
-       (if-let [next-curosr (some-> resp :response_metadata :next_cursor)]
+       (if-let [next-cursor (some-> resp :response_metadata :next_cursor)]
          (concat (:channels resp) (get-channels token (assoc opts :cursor next-cursor)))
          (:channels resp))
        (report-slack-error resp (ex-info "clj-slack API error" {:method :conversations.list
@@ -269,7 +269,7 @@
     (message-webhook slack-alerts-webhook from message)))
 
 (defn alert-pagination [slack-response method & [parameters]]
-  (when (some-> hp-channels :response_metadata :next_cursor)
+  (when (some-> slack-response :response_metadata :next_cursor)
     (slack-report (format "Pagination reached for Slack %s with parameters: %s" method parameters))))
 
 (comment

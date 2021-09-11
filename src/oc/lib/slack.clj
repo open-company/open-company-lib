@@ -97,19 +97,23 @@
                                                                                                     "private_channel,"  ;; - private channels: only those where the bot is invited
                                                                                                     "mpim,"             ;; - multi-user im: like private but they don't have a name and they are unique by user list
                                                                                                     "im")               ;; - im: one-on-one with the bot
-                                                                                             limit 3000
+                                                                                             limit 1000
                                                                                              exclude-archived true}}]
    (let [opts (cond->  {:types types
                         :limit (str limit)
                         :exclude_archived (str exclude-archived)}
-                cursor (assoc :cursor (str cursor)))
+                (seq cursor) (assoc :cursor (str cursor)))
          resp (slack-conversations/list (slack-connection token) opts)]
      (if (:ok resp)
        (if-let [next-cursor (some-> resp :response_metadata :next_cursor)]
-         (concat (:channels resp) (get-channels token (assoc opts :cursor next-cursor)))
+         (->> (assoc opts :cursor next-cursor)
+              (get-channels token)
+              (concat (:channels resp)))
          (:channels resp))
-       (report-slack-error resp (ex-info "clj-slack API error" {:method :conversations.list
-                                                                :opts opts}))))))
+       (->> {:method :conversations.list
+             :opts opts}
+            (ex-info "clj-slack API error")
+            (report-slack-error resp))))))
 
 (defn get-conversation-history
   "Load the messages of a given discussion."

@@ -103,9 +103,10 @@
                         :limit (str limit)
                         :exclude_archived (str exclude-archived)}
                 (seq cursor) (assoc :cursor (str cursor)))
-         resp (slack-conversations/list (slack-connection token) opts)]
+         resp (slack-conversations/list (slack-connection token) opts)
+         next-cursor (some-> resp :response_metadata :next_cursor)]
      (if (:ok resp)
-       (if-let [next-cursor (some-> resp :response_metadata :next_cursor)]
+       (if (seq next-cursor)
          (->> (assoc opts :cursor next-cursor)
               (get-channels token)
               (concat (:channels resp)))

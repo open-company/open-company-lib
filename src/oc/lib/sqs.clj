@@ -11,9 +11,26 @@
             [clojure.java.io :as io]
             [oc.lib.sentry.core :as sentry]
             [amazonica.aws.s3 :as s3]
+            [clojure.string :as cstr]
             [cheshire.core :as json]
-            [taoensso.timbre :as timbre])
+            [taoensso.timbre :as timbre]
+            [oc.lib.api.common :refer (prod?)]
+            [environ.core :refer (env)])
    (:import [java.util.zip GZIPInputStream]))
+
+(def INTENTIONALLY-EMPTY-QUEUE "INTENTIONALLY-EMPTY-QUEUE")
+
+(defn warn-empty-queue [sqs-queue]
+  (if (prod?)
+    (timbre/errorf "An empty queue named: %s is being used in %s." sqs-queue (env :environment))
+    (timbre/warnf "An empty queue named: %s is being used in %s." sqs-queue (env :environment))))
+
+(defn check-empty-queue [sqs-queue]
+  (let [queue-is-empty? (or (= INTENTIONALLY-EMPTY-QUEUE sqs-queue)
+                            (cstr/blank? sqs-queue))]
+    (when queue-is-empty?
+      (warn-empty-queue sqs-queue))
+    (not queue-is-empty?)))
 
 (defn ack
   "Acknowledge the completion of message handling."
@@ -58,13 +75,17 @@
   (sqs-listener sqs-creds sqs-queue message-handler))
 
   ([sqs-creds sqs-queue message-handler]
-  (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)})))
+  (if (check-empty-queue sqs-queue)
+    (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)})
+    {:intentionally-empty-listener true
+     :message-handler #(timbre/tracef "Disposing incoming message %s" %)
+     :sqs-queue sqs-queue})))
 
 (defn- read-from-s3
   [record]
   (let [bucket (get-in record [:s3 :bucket :name])
         object-key (get-in record [:s3 :object :key])
-        s3-parsed (clojure.string/join
+        s3-parsed (cstr/join
                    "\n"
                    (->
                     (s3/get-object bucket object-key)

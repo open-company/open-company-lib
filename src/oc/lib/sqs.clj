@@ -14,25 +14,19 @@
             [clojure.string :as cstr]
             [cheshire.core :as json]
             [taoensso.timbre :as timbre]
-            [oc.lib.api.common :refer (prod?)]
             [environ.core :refer (env)])
    (:import [java.util.zip GZIPInputStream]))
 
-(def INTENTIONALLY-EMPTY-QUEUE "INTENTIONALLY-EMPTY-QUEUE")
-
-(defn warn-empty-queue [sqs-queue]
-  (timbre/debugf "Sending warning for empty queue, prod? %s environemnt: %s" (prod?) (env :environment))
-  (if (prod?)
-    (timbre/errorf "An empty queue named: %s is being used in %s." sqs-queue (env :environment))
-    (timbre/warnf "An empty queue named: %s is being used in %s." sqs-queue (env :environment))))
+(def empty-queue-rx #"(?i)(INTENTIONALLY.EMPTY.QUEUE)?")
+(def intentionally-empty-queue? #(->> % (re-matches empty-queue-rx) seq))
 
 (defn check-empty-queue [sqs-queue]
   (timbre/debug "Checking empty queue:" sqs-queue)
-  (let [queue-is-empty? (or (= INTENTIONALLY-EMPTY-QUEUE sqs-queue)
+  (let [queue-is-empty? (or (intentionally-empty-queue? sqs-queue)
                             (cstr/blank? sqs-queue))]
     (timbre/debug "Queue empty?" queue-is-empty?)
     (when queue-is-empty?
-      (warn-empty-queue sqs-queue))
+      (timbre/errorf "An empty queue named: %s is being used in %s." sqs-queue (env :environment)))
     queue-is-empty?))
 
 (defn ack
@@ -94,7 +88,7 @@
                    (->
                     (s3/get-object bucket object-key)
                     :object-content
-                    (java.util.zip.GZIPInputStream.)
+                    (GZIPInputStream.)
                     io/reader
                     line-seq))]
     (try

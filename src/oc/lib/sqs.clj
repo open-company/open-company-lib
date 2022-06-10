@@ -21,16 +21,19 @@
 (def INTENTIONALLY-EMPTY-QUEUE "INTENTIONALLY-EMPTY-QUEUE")
 
 (defn warn-empty-queue [sqs-queue]
+  (timbre/debugf "Sending warning for empty queue, prod? %s environemnt: %s" (prod?) (env :environment))
   (if (prod?)
     (timbre/errorf "An empty queue named: %s is being used in %s." sqs-queue (env :environment))
     (timbre/warnf "An empty queue named: %s is being used in %s." sqs-queue (env :environment))))
 
 (defn check-empty-queue [sqs-queue]
+  (timbre/debug "Checking empty queue:" sqs-queue)
   (let [queue-is-empty? (or (= INTENTIONALLY-EMPTY-QUEUE sqs-queue)
                             (cstr/blank? sqs-queue))]
+    (timbre/debug "Queue empty?" queue-is-empty?)
     (when queue-is-empty?
       (warn-empty-queue sqs-queue))
-    (not queue-is-empty?)))
+    queue-is-empty?))
 
 (defn ack
   "Acknowledge the completion of message handling."
@@ -56,8 +59,13 @@
   
   (start [component]
     (timbre/info "Starting SQSListener")
-    (let [retriever (sqs/start-consumer sqs-queue message-handler)]
+    (let [empty-queue? (check-empty-queue sqs-queue)
+          retriever (if empty-queue?
+                      #(timbre/debugf "[EMPTY_SQS_QUEUE_LISTENER] Disposing message %s" %)
+                      (sqs/start-consumer sqs-queue message-handler))]
       (timbre/info "Started SQSListener")
+      (when empty-queue?
+        (timbre/debugf "Queue %s is empty, SQS consumer started with fake handler" sqs-queue))
       (assoc component :retriever retriever)))
 
   (stop [component]
@@ -75,11 +83,7 @@
   (sqs-listener sqs-creds sqs-queue message-handler))
 
   ([sqs-creds sqs-queue message-handler]
-  (if (check-empty-queue sqs-queue)
-    (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)})
-    {:intentionally-empty-listener true
-     :message-handler #(timbre/tracef "Disposing incoming message %s" %)
-     :sqs-queue sqs-queue})))
+  (map->SQSListener {:sqs-creds sqs-creds :sqs-queue sqs-queue :message-handler (partial log-handler message-handler)})))
 
 (defn- read-from-s3
   [record]

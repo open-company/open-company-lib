@@ -9,18 +9,19 @@
   Given a ttl value, make sure it's an integer to avoid errors, and return the epoch
   of now plus the ttl in days.
   "
-  [ttl]
+  ([ttl]
+   (ttl-epoch ttl time/days))
+  ([ttl time-delta-fn]
   (let [fixed-ttl (if (string? ttl)
                     (Integer/parseInt (re-find #"\d+" ttl)) ; TTL value from env var is a string
                     ttl) ; default is an int
-        ttl-date (time/plus (time/now) (time/days fixed-ttl))]
-    (coerce/to-epoch ttl-date)))
+        ttl-date (time/plus (time/now) (time-delta-fn fixed-ttl))]
+    (coerce/to-epoch ttl-date))))
 
 (defn ttl-now
   "Return the current time in seconds since the UNIX epoch."
   []
   (coerce/to-epoch (time/now)))
-
 
 (defn maybe-enable-ttl
   "Given the DynamoDB options, and a table name, enable the TTL on the table, if it is not already enabled."

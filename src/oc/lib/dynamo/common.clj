@@ -12,11 +12,11 @@
   ([ttl]
    (ttl-epoch ttl time/days))
   ([ttl time-delta-fn]
-  (let [fixed-ttl (if (string? ttl)
-                    (Integer/parseInt (re-find #"\d+" ttl)) ; TTL value from env var is a string
-                    ttl) ; default is an int
-        ttl-date (time/plus (time/now) (time-delta-fn fixed-ttl))]
-    (coerce/to-epoch ttl-date))))
+   (let [fixed-ttl (if (string? ttl)
+                     (Integer/parseInt (re-find #"\d+" ttl)) ; TTL value from env var is a string
+                     ttl) ; default is an int
+         ttl-date (time/plus (time/now) (time-delta-fn fixed-ttl))]
+     (coerce/to-epoch ttl-date))))
 
 (defn ttl-now
   "Return the current time in seconds since the UNIX epoch."

@@ -37,17 +37,24 @@
        (when-let [ed (ex-data exc)]
          (str "\n\n" ed))))
 
-(defn- adjust-response-error [resp-error]
-  (or (and (prod?) sentry/error-msg)
-      (error-string resp-error)
-      sentry/error-msg))
+(defn- throwable? [e]
+  (instance? Throwable e))
+
+(defn- adjust-response-error
+  ([resp-error] (adjust-response-error resp-error false))
+  ([resp-error override-default-error-message?]
+   (cond override-default-error-message? resp-error
+         (prod?) sentry/error-msg
+         (throwable? resp-error) (error-string resp-error)
+         :else sentry/error-msg)))
 
 (defn- error-from-response [response]
   (adjust-response-error (or (:throwable response)
                              (:error response)
                              (:exception response)
                              (:body response)
-                             (:reason response))))
+                             (:reason response))
+                         (:override-default-error-message response)))
 
 (defn- adjust-response-body [response]
   (let [status (int (or (:status response) 0))
@@ -148,7 +155,10 @@
     :body forbidden
     :headers {"Content-Type" (format "text/plain;charset=%s" UTF8)}}))
 
-(defn unprocessable-entity-response [reason & [status]]
+(defn unprocessable-entity-response
+  ([reason] (unprocessable-entity-response reason nil false))
+  ([reason status] (unprocessable-entity-response reason status false))
+  ([reason status override-default-error-message?]
   (ring-response
    {:status (or status 422)
     :body (cond (keyword? reason)
@@ -157,9 +167,10 @@
                 (json/generate-string reason {:pretty true})
                 :else
                 (str reason))
-    :headers {"Content-Type" (format "%s;charset=%s" (if (seq? reason) json-mime-type text-mime-type) UTF8)}}))
+    :override-default-error-message override-default-error-message?
+    :headers {"Content-Type" (format "%s;charset=%s" (if (seq? reason) json-mime-type text-mime-type) UTF8)}})))
 
-(defn unprocessable-entity-handler [{reason :reason status :status}]
+(defn unprocessable-entity-handler [{reason :reason status :status override-default-error-message :override-default-error-message}]
   (let [response-body (if (prod?)
                         sentry/error-msg
                         reason)
@@ -172,8 +183,9 @@
     (sentry/capture {:throwable (RuntimeException. "422 - Unprocessable entity")
                      :message {:message capture-message}
                      :extra {:reason reason
-                             :status status}})
-    (unprocessable-entity-response response-body (or status 422))))
+                             :status status
+                             :override-default-error-message override-default-error-message}})
+    (unprocessable-entity-response response-body (or status 422) override-default-error-message)))
 
 (defn location-response
   ([location body media-type] (location-response location body 201 media-type))
@@ -198,9 +210,6 @@
   (if (refresh-token? ctx)
     (refresh-token-response)
     (unauthorized-response)))
-
-(defn- throwable? [e]
-  (instance? Throwable e))
 
 (defn handle-exception [ctx]
   (let [?err (or (:exception ctx) (:error ctx) (:err ctx))

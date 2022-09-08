@@ -97,18 +97,24 @@
                                                                                                     "private_channel,"  ;; - private channels: only those where the bot is invited
                                                                                                     "mpim,"             ;; - multi-user im: like private but they don't have a name and they are unique by user list
                                                                                                     "im")               ;; - im: one-on-one with the bot
-                                                                                             limit 3000
+                                                                                             limit 1000
                                                                                              exclude-archived true}}]
    (let [opts (cond->  {:types types
                         :limit (str limit)
                         :exclude_archived (str exclude-archived)}
-                cursor (assoc :cursor (str cursor)))
-         resp (slack-conversations/list (slack-connection token) opts)]
-     (alert-pagination resp :conversations.list opts)
+                (seq cursor) (assoc :cursor (str cursor)))
+         resp (slack-conversations/list (slack-connection token) opts)
+         next-cursor (some-> resp :response_metadata :next_cursor)]
      (if (:ok resp)
-       (:channels resp)
-       (report-slack-error resp (ex-info "clj-slack API error" {:method :conversations.list
-                                                                :opts opts}))))))
+       (if (seq next-cursor)
+         (->> (assoc opts :cursor next-cursor)
+              (get-channels token)
+              (concat (:channels resp)))
+         (:channels resp))
+       (->> {:method :conversations.list
+             :opts opts}
+            (ex-info "clj-slack API error")
+            (report-slack-error resp))))))
 
 (defn get-conversation-history
   "Load the messages of a given discussion."
@@ -268,7 +274,7 @@
     (message-webhook slack-alerts-webhook from message)))
 
 (defn alert-pagination [slack-response method & [parameters]]
-  (when (some-> slack-response :response_metadata :next-cursor)
+  (when (some-> slack-response :response_metadata :next_cursor)
     (slack-report (format "Pagination reached for Slack %s with parameters: %s" method parameters))))
 
 (comment

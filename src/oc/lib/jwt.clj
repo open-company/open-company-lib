@@ -92,9 +92,8 @@
 
 (defn expire-time
   "Given a token payload return the expiring date depending on the token content."
-  [payload]
-  (let [expire-in (if (empty? (:slack-bots payload)) 2 24)]
-      (timestamp (lib-time/hours-from-now expire-in))))
+  []
+  (timestamp (lib-time/hours-from-now 24)))
 
 (defn creation-time []
   (timestamp (lib-time/utc-now)))
@@ -102,7 +101,7 @@
 (defn expire
   "Set an expire property in the JWToken payload, longer if there's a bot, shorter if not."
   [payload]
-  (assoc payload :expire (expire-time payload)))
+  (assoc payload :expire (expire-time)))
 
 (defn creation
   "Set a creation time property in the JWToken payload."
